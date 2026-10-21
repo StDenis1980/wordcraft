@@ -5163,6 +5163,10 @@ dependencies = [
 ]
 
 [[package]]
+name = "wordcraft-brand"
+version = "0.9.0"
+
+[[package]]
 name = "wordcraft-cli"
 version = "0.9.0"
 dependencies = [
@@ -5178,6 +5182,9 @@ dependencies = [
 [[package]]
 name = "wordcraft-control-key"
 version = "0.9.0"
+dependencies = [
+ "wordcraft-brand",
+]
 
 [[package]]
 name = "wordcraft-doc"
@@ -5224,6 +5231,7 @@ dependencies = [
  "sha2",
  "thiserror 2.0.21",
  "unicode-bidi",
+ "wordcraft-brand",
  "wordcraft-doc",
  "wordcraft-geom",
  "zeroize",
@@ -5245,6 +5253,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror 2.0.21",
+ "wordcraft-brand",
  "wordcraft-doc",
  "wordcraft-docbin",
  "wordcraft-docx",
@@ -5284,6 +5293,7 @@ dependencies = [
  "log",
  "proptest",
  "quick-xml",
+ "wordcraft-brand",
  "wordcraft-doc",
  "wordcraft-geom",
  "zip",
@@ -5348,6 +5358,7 @@ dependencies = [
  "kurbo",
  "log",
  "thiserror 2.0.21",
+ "wordcraft-brand",
  "wordcraft-doc",
  "wordcraft-fonts",
  "wordcraft-geom",

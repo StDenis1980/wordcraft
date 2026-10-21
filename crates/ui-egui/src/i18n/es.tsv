@@ -2654,3 +2654,6 @@ preview	Title	Título
 	Type a size in any unit, such as 5 cm or 300 px. The other side follows, so the picture keeps its proportions.	Escribe un tamaño en cualquier unidad, como 5 cm o 300 px. El otro lado se ajusta, así que la imagen conserva sus proporciones.
 
 	Import…	Importar…
+	Support	Soporte
+	Get help and support	Obtener ayuda y soporte
+	A free, open-source word processor written from scratch in Rust.	Un procesador de textos libre y de código abierto, escrito desde cero en Rust.

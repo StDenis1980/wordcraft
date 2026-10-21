@@ -2686,19 +2686,43 @@ fn body(app: &mut WordApp, ui: &mut Ui, d: &mut Dialog) -> bool {
                     ui.label(egui::RichText::new(tl!("WordCraft")).font(semibold(22.0)));
                     let build = option_env!("WORDCRAFT_BUILD_SHA").map(|s| s.get(..8).unwrap_or(s)).unwrap_or(tl!("development build"));
                     ui.label(crate::i18n::fmt(tl!("Version {version} ({build})"), &[("version", env!("CARGO_PKG_VERSION")), ("build", build)]));
-                    ui.label(tl!(
-                        "A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team."
-                    ));
-                    ui.add_space(6.0);
-                    ui.hyperlink_to(tl!("getartcraft.com/apps/wordcraft"), "https://getartcraft.com/apps/wordcraft");
-                    ui.hyperlink_to(tl!("Join us on Discord: discord.gg/artcraft"), "https://discord.gg/artcraft");
-                    ui.hyperlink_to(tl!("Source code: github.com/storytold/wordcraft"), "https://github.com/storytold/wordcraft");
-                    ui.add_space(6.0);
-                    ui.label(
-                        egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
-                            .small()
-                            .weak(),
-                    );
+                    if wordcraft_engine::brand::REBRANDED {
+                        // The ArtCraft marks and community are only the release's
+                        // (docs/brand/LICENSE-brand.txt): a plain-text credit, the build's own
+                        // links, and the code's copyright notice, which stays as it is.
+                        use wordcraft_engine::brand;
+                        ui.label(tl!("A free, open-source word processor written from scratch in Rust."));
+                        if let Some(publisher) = brand::PUBLISHER {
+                            ui.label(egui::RichText::new(publisher).weak());
+                        }
+                        ui.label(egui::RichText::new("Based on WordCraft by the ArtCraft team.").weak());
+                        ui.add_space(6.0);
+                        ui.hyperlink_to(brand::APP_PAGE, brand::APP_PAGE);
+                        if brand::GITHUB != brand::APP_PAGE {
+                            ui.hyperlink_to(brand::GITHUB, brand::GITHUB);
+                        }
+                        if brand::SUPPORT != brand::APP_PAGE {
+                            ui.hyperlink_to(tl!("Get help and support"), brand::SUPPORT);
+                        }
+                        ui.add_space(6.0);
+                        ui.label(
+                            egui::RichText::new("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors.").small().weak(),
+                        );
+                    } else {
+                        ui.label(tl!(
+                            "A free, open-source word processor written from scratch in Rust.\nPart of the Crafting Apps from the ArtCraft team."
+                        ));
+                        ui.add_space(6.0);
+                        ui.hyperlink_to(tl!("getartcraft.com/apps/wordcraft"), "https://getartcraft.com/apps/wordcraft");
+                        ui.hyperlink_to(tl!("Join us on Discord: discord.gg/artcraft"), "https://discord.gg/artcraft");
+                        ui.hyperlink_to(tl!("Source code: github.com/storytold/wordcraft"), "https://github.com/storytold/wordcraft");
+                        ui.add_space(6.0);
+                        ui.label(
+                            egui::RichText::new(tl!("MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors."))
+                                .small()
+                                .weak(),
+                        );
+                    }
                 }
             }
             let (ok, cancel) = buttons(ui, tl!("Close"));

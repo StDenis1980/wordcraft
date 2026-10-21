@@ -131,6 +131,13 @@ impl Catalog {
         (catalog, errors)
     }
 
+    /// Rewrites every translation with `f` (the product name of a rebranded build).
+    pub fn map_translations(&mut self, f: impl Fn(&str) -> String) {
+        for translation in self.plain.values_mut().chain(self.contextual.values_mut()) {
+            *translation = f(translation);
+        }
+    }
+
     pub fn plain(&self, s: &str) -> Option<&str> {
         self.plain.get(s).map(String::as_str)
     }

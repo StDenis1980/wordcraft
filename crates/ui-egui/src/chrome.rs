@@ -332,12 +332,17 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                         icons::paint(
                             ui.painter(),
                             Rect::from_center_size(pos2(r.min.x + 13.0, r.center().y), vec2(14.0, 14.0)),
-                            "discord",
+                            community_icon(),
                             t.on_accent,
                             t.on_accent,
                         );
-                        ui.painter().text(pos2(r.min.x + 24.0, r.center().y), Align2::LEFT_CENTER, tl!("Discord"), medium(11.5), t.on_accent);
-                        if resp.on_hover_text(tl!("Join the ArtCraft community on Discord")).clicked() {
+                        ui.painter().text(pos2(r.min.x + 24.0, r.center().y), Align2::LEFT_CENTER, community_label(), medium(11.5), t.on_accent);
+                        let hover = if wordcraft_engine::brand::REBRANDED {
+                            tl!("Get help and support")
+                        } else {
+                            tl!("Join the ArtCraft community on Discord")
+                        };
+                        if resp.on_hover_text(hover).clicked() {
                             let _ = app.run("ui.discord", json!({}));
                         }
                         ui.add_space(8.0);
@@ -380,7 +385,7 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
             // Centred title.
             let title = if !app.has_document() {
                 // No document open (#1129): the app's name alone.
-                "WordCraft".to_string()
+                wordcraft_engine::brand::NAME.to_string()
             } else {
                 format!(
                     "{} — {}",
@@ -626,6 +631,17 @@ impl WordApp {
         }
         self.word_count.1
     }
+}
+
+/// The community button's label: the ArtCraft Discord in the release, the build's own support in
+/// a rebranded one (the ArtCraft community is only the release's, docs/brand/LICENSE-brand.txt).
+pub(crate) fn community_label() -> &'static str {
+    if wordcraft_engine::brand::REBRANDED { tl!("Support") } else { tl!("Discord") }
+}
+
+/// The community button's icon: Discord's mark only where it links to Discord.
+pub(crate) fn community_icon() -> &'static str {
+    if wordcraft_engine::brand::REBRANDED { "help" } else { "discord" }
 }
 
 #[cfg(test)]
