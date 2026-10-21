@@ -173,6 +173,7 @@ impl Exempt {
             || plain.starts_with("Style") || plain.starts_with("Table Style ") // a new style's default name
             || plain.contains('┬') || plain.contains('\u{2061}') // equation input (UnicodeMath), drawn as math
             || matches!(plain, "WordCraft" | "WordCraft User" | "Discord" | "https://" | "auto" | "I. II. III." | "i. ii. iii.")
+            || is_brand_text(plain)
             || plain == "CONFIDENTIAL" // the watermark dialog's text: document content, kept as typed
             || plain == "Figure 1" // the caption dialog's sample: the label goes into the document as is
     }
@@ -182,6 +183,19 @@ impl Exempt {
 /// untranslated_interface_text -- --nocapture` prints the report. It runs with the other tests:
 /// input is synthetic and timed by `TIME`, Read Aloud never starts a speech thread, and
 /// process-wide names other tests change are gathered every frame.
+/// What a rebranded build draws as is: its name, publisher and addresses, the default author
+/// name, and the About box's credit and copyright notice (kept in English, as the licence has it).
+fn is_brand_text(plain: &str) -> bool {
+    use wordcraft_engine::brand;
+    brand::REBRANDED
+        && (plain == brand::NAME
+            || plain == format!("{} User", brand::NAME)
+            || brand::PUBLISHER == Some(plain)
+            || [brand::APP_PAGE, brand::GITHUB, brand::SUPPORT].contains(&plain)
+            || plain == "Based on WordCraft by the ArtCraft team."
+            || plain == "MIT OR Apache-2.0. Copyright (c) 2026 ArtCraft Team and the WordCraft contributors.")
+}
+
 #[test]
 fn untranslated_interface_text() {
     pseudo::set(true);

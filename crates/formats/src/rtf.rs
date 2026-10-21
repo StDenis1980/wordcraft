@@ -746,7 +746,7 @@ fn export_with(m: &Meta, w: &Writer, body: &str, sec: &wordcraft_doc::SectionPro
     for c in &w.t.colors {
         out.push_str(&format!("\\red{}\\green{}\\blue{};", c.0, c.1, c.2));
     }
-    out.push_str("}\n{\\*\\generator WordCraft;}\n{\\stylesheet{\\s0\\snext0 Normal;}");
+    out.push_str(&format!("}}\n{{\\*\\generator {};}}\n{{\\stylesheet{{\\s0\\snext0 Normal;}}", rtf_generator()));
     for n in 1..=6u32 {
         let sz = HEAD_SIZES.get(n as usize - 1).copied().unwrap_or(12.0);
         out.push_str(&format!("{{\\s{n}\\sbasedon0\\snext0\\outlinelevel{}\\keepn\\b\\fs{} heading {n};}}", n - 1, (sz * 2.0) as i32));
@@ -2728,6 +2728,23 @@ pub fn import(bytes: &[u8]) -> Result<Document, String> {
         doc.styles.default_chr.font = default_font;
     }
     Ok(doc)
+}
+
+/// The product name for `{\*\generator …;}`: printable ASCII as is, `\ { }` escaped, and `;`
+/// (which ends the group's text) or anything else as `\uN?`, the UTF-16 unit as a signed number.
+fn rtf_generator() -> String {
+    let mut out = String::new();
+    for unit in wordcraft_brand::NAME.encode_utf16() {
+        match char::from_u32(u32::from(unit)) {
+            Some(c @ ('\\' | '{' | '}')) => {
+                out.push('\\');
+                out.push(c);
+            }
+            Some(c) if c.is_ascii() && !c.is_ascii_control() && c != ';' => out.push(c),
+            _ => out.push_str(&format!("\\u{}?", i16::from_ne_bytes(unit.to_ne_bytes()))),
+        }
+    }
+    out
 }
 
 #[cfg(test)]

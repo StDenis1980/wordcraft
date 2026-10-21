@@ -1031,10 +1031,10 @@ mod tests {
         );
         h.run_steps(4);
         assert!(h.query_by_label("Start-up").is_some(), "the section is there");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label(&wordcraft_engine::brand::rebrand("Show the Start screen when WordCraft starts")).click();
         h.run_steps(4);
         assert!(!h.state().ui.start_screen, "the checkbox turns it off");
-        h.get_by_label("Show the Start screen when WordCraft starts").click();
+        h.get_by_label(&wordcraft_engine::brand::rebrand("Show the Start screen when WordCraft starts")).click();
         h.run_steps(4);
         assert!(h.state().ui.start_screen, "and on again");
     }

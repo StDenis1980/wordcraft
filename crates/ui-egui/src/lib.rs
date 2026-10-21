@@ -1681,7 +1681,8 @@ impl WordApp {
                 ));
             }
             "ui.discord" => {
-                self.canvas.open_url = Some("https://discord.gg/artcraft".into());
+                // The ArtCraft Discord in the release; a rebranded build's own support page.
+                self.canvas.open_url = Some(wordcraft_engine::brand::SUPPORT.into());
                 json!({})
             }
             "ui.caretAnimation" => {
@@ -1764,7 +1765,13 @@ impl WordApp {
     }
 
     pub fn status(&mut self, s: impl Into<String>) {
-        self.status_msg = Some((s.into(), now_ms()));
+        // Engine and shell messages name the product too; a rebranded build shows its own name.
+        let s = s.into();
+        let s = match wordcraft_engine::brand::rebrand(&s) {
+            std::borrow::Cow::Borrowed(_) => s,
+            std::borrow::Cow::Owned(rebranded) => rebranded,
+        };
+        self.status_msg = Some((s, now_ms()));
     }
 
     /// Media key of the selected picture, if any.
@@ -2245,9 +2252,9 @@ impl WordApp {
             ctx.open_url(egui::OpenUrl::new_tab(url));
         }
         let title = if self.has_document() {
-            format!("{}{} - WordCraft", self.title_stem(), if self.session.dirty { " •" } else { "" })
+            format!("{}{} - {}", self.title_stem(), if self.session.dirty { " •" } else { "" }, wordcraft_engine::brand::NAME)
         } else {
-            "WordCraft".to_string()
+            wordcraft_engine::brand::NAME.to_string()
         };
         if title != self.sent_title {
             ctx.send_viewport_cmd(egui::ViewportCommand::Title(title.clone()));
@@ -2970,7 +2977,7 @@ mod tests {
         let a = h.state_mut();
         assert!(!a.ui.backstage, "Esc leaves the Start screen");
         assert!(!a.has_document(), "for an empty window, not a blank document");
-        assert_eq!(a.sent_title, "WordCraft", "the window is titled with the app alone");
+        assert_eq!(a.sent_title, wordcraft_engine::brand::NAME, "the window is titled with the app alone");
         // The ribbon's commands are off, but Help, the File tab and the settings work.
         for id in ["format.bold", "text.insert", "file.save", "file.saveAs", "file.print", "edit.paste", "insert.table", "ui.print"] {
             assert!(!widgets::enabled(a, id), "{id} is off with no document");
@@ -5344,9 +5351,10 @@ mod tests {
             );
             h.run_steps(4);
             assert!(h.query_by_label("Show the community button in the title bar").is_some(), "hook {hook}: the Options page rendered");
-            assert_eq!(h.query_by_label(LABEL).is_some(), hook, "hook {hook}: the button");
+            let label = wordcraft_engine::brand::rebrand(LABEL);
+            assert_eq!(h.query_by_label(&label).is_some(), hook, "hook {hook}: the button");
             if hook {
-                h.get_by_label(LABEL).click();
+                h.get_by_label(&label).click();
                 h.run_steps(2);
                 assert_eq!(calls.get(), 1, "the button ran the hook");
             }

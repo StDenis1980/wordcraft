@@ -646,7 +646,7 @@ impl Session {
             goal_x: None,
             page_hint: 0,
             registry: Arc::new(crate::cmd::registry()),
-            author: "WordCraft User".into(),
+            author: format!("{} User", crate::brand::NAME),
             initials: String::new(),
             painter: None,
             status: String::new(),

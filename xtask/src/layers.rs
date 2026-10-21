@@ -34,7 +34,9 @@ impl Class {
 /// prefix.
 pub const TABLE: &[(&str, Class)] = &[
     ("geom", Class::Layer(0)),
-    ("control-key", Class::Standalone),
+    ("brand", Class::Standalone),
+    // Reads the brand for the settings folder name.
+    ("control-key", Class::Layer(1)),
     ("doc", Class::Layer(1)),
     ("fonts", Class::Layer(1)),
     ("metafile", Class::Layer(1)),

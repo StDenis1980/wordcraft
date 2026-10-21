@@ -170,9 +170,12 @@ pub static LANGUAGES: [LangInfo; 23] = [
 impl LangInfo {
     fn catalog(&self) -> &Catalog {
         self.catalog.get_or_init(|| {
-            let (catalog, errors) = Catalog::parse(self.source);
+            let (mut catalog, errors) = Catalog::parse(self.source);
             for error in errors {
                 log::warn!("{} interface catalog: {error}; that entry shows in English", self.code);
+            }
+            if wordcraft_engine::brand::REBRANDED {
+                catalog.map_translations(|s| wordcraft_engine::brand::rebrand(s).into_owned());
             }
             catalog
         })
@@ -372,7 +375,7 @@ pub fn trc<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
     if pseudo::on() {
         return pseudo::mark(s);
     }
-    lang.catalog().in_context(context, s).unwrap_or(s)
+    lang.catalog().in_context(context, s).unwrap_or_else(|| branded(s))
 }
 
 /// Lowercase translated interface labels and UI search queries in the current language.
@@ -400,7 +403,21 @@ pub fn tr(lang: Lang, s: &str) -> &str {
     if pseudo::on() {
         return pseudo::mark(s);
     }
-    lang.catalog().plain(s).unwrap_or(s)
+    lang.catalog().plain(s).unwrap_or_else(|| branded(s))
+}
+
+/// An English source string with the product name of this build ([`wordcraft_engine::brand`]).
+/// Translations get theirs when their catalog loads; the English text is the source, so a
+/// rebranded build keeps one copy of each English string that names the product.
+fn branded(s: &str) -> &str {
+    use wordcraft_engine::brand;
+    if !brand::REBRANDED || !s.contains(brand::UPSTREAM_NAME) {
+        return s;
+    }
+    static SEEN: OnceLock<std::sync::Mutex<std::collections::HashMap<String, &'static str>>> = OnceLock::new();
+    let mut seen = SEEN.get_or_init(Default::default).lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    // The interface's own strings are a fixed set, so this holds at most one copy of each.
+    seen.entry(s.to_owned()).or_insert_with(|| Box::leak(wordcraft_engine::brand::rebrand(s).into_owned().into_boxed_str()))
 }
 
 /// A style's name as the interface shows it: built-in styles (`Normal`, `Heading 2`, `TOC 3`) in
