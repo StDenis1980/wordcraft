@@ -374,7 +374,9 @@ fn main() -> eframe::Result {
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title(wordcraft_engine::brand::NAME)
-            .with_app_id(wordcraft_engine::brand::APP_ID)
+            // The Linux packages (packaging/linux) still install the release's desktop entry and icons
+            // under the release's id; the window class has to match them until they follow the brand.
+            .with_app_id(wordcraft_engine::brand::UPSTREAM_APP_ID)
             .with_inner_size([1440.0, 920.0])
             .with_min_inner_size([760.0, 480.0])
             .with_drag_and_drop(true)
