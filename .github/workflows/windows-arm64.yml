@@ -3,9 +3,9 @@
 # binaries are ARM64, run the CLI natively, and uninstall. (A native ARM64 `cargo test` job is left
 # out for now: PdfCraft saw an intermittent access violation in egui UI tests there.)
 #
-# IberOffice: this used to call storytold/craft-common-actions/.github/workflows/windows-arm64.yml,
+# Tinta Office: this used to call storytold/craft-common-actions/.github/workflows/windows-arm64.yml,
 # which wants the install folder to be one path component under Program Files and names the
-# artifacts after the upstream app. Iber Texto installs into Program Files\IberOffice\Iber Texto, so
+# artifacts after the upstream app. Tinta Texto installs into Program Files\Tinta Office\Tinta Texto, so
 # the same steps are inlined here with the fork's folder and artifact names; the executables keep
 # their upstream names (wordcraft.exe, wordcraft-cli.exe).
 name: Windows ARM64
@@ -61,7 +61,7 @@ jobs:
         run: ./packaging/windows/package.ps1 -Arch arm64
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: iber-texto-windows-arm64
+          name: tinta-texto-windows-arm64
           path: dist/arm64/*
           if-no-files-found: error
           retention-days: 7
@@ -74,17 +74,17 @@ jobs:
     steps:
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          name: iber-texto-windows-arm64
+          name: tinta-texto-windows-arm64
           path: dist
       - name: Install the MSI, check it, run it, uninstall it
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
-          $msi = (Get-ChildItem dist/iber-texto-*-windows-arm64.msi | Select-Object -First 1).FullName
-          if (-not $msi) { throw 'no iber-texto-*-windows-arm64.msi in the artifact' }
+          $msi = (Get-ChildItem dist/tinta-texto-*-windows-arm64.msi | Select-Object -First 1).FullName
+          if (-not $msi) { throw 'no tinta-texto-*-windows-arm64.msi in the artifact' }
           $p = Start-Process msiexec.exe -ArgumentList '/i', "`"$msi`"", '/qn', '/l*v', 'install.log' -Wait -PassThru
           if ($p.ExitCode -ne 0) { Get-Content install.log -Tail 60; throw "msiexec /i exited $($p.ExitCode)" }
-          $dir = Join-Path $env:ProgramFiles 'IberOffice\Iber Texto'
+          $dir = Join-Path $env:ProgramFiles 'Tinta Office\Tinta Texto'
 
           foreach ($exe in 'wordcraft.exe', 'wordcraft-cli.exe') {
             $path = Join-Path $dir $exe
@@ -94,7 +94,7 @@ jobs:
             if ($machine -ne 0xAA64) { throw "$exe is for machine 0x$('{0:X}' -f $machine), not ARM64" }
             Write-Output "ok $path (ARM64)"
           }
-          $lnk = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'Iber Texto.lnk'
+          $lnk = Join-Path ([Environment]::GetFolderPath('CommonPrograms')) 'Tinta Texto.lnk'
           if (-not (Test-Path -LiteralPath $lnk)) { throw "no Start Menu shortcut at $lnk" }
           Write-Output "ok $lnk"
 

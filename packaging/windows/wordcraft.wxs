@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  Iber Texto MSI, the IberOffice build of WordCraft (WiX Toolset v5: `dotnet tool install -g wix`,
+  Tinta Texto MSI, the Tinta Office build of WordCraft (WiX Toolset v5: `dotnet tool install -g wix`,
   plus its UI and Util extensions: `wix extension add -g WixToolset.UI.wixext/5.0.2` and the same
   for WixToolset.Util.wixext). Built by package.ps1:
 
     wix build wordcraft.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
       -d Version=1.2.3 -d BinDir=... -d IconPath=... -d LicenseRtf=... -o out.msi
 
-  Per-machine install into Program Files\IberOffice\Iber Texto with a Start Menu shortcut. The
+  Per-machine install into Program Files\Tinta Office\Tinta Texto with a Start Menu shortcut. The
   installer shows the standard WiX dialogs: welcome + license, progress, and a finish page.
 
-  Product identity (keep in sync with the brand values in .cargo/config.toml): name "Iber Texto",
-  manufacturer "IberOffice", ProgIds IberTexto.*, Capabilities under Software\IberOffice\Iber Texto,
-  registered as "IberTexto" (apps/wordcraft/src/default_apps.rs opens Settings on that name).
+  Product identity (keep in sync with the brand values in .cargo/config.toml): name "Tinta Texto",
+  manufacturer "Tinta Office", ProgIds TintaTexto.*, Capabilities under Software\Tinta Office\Tinta Texto,
+  registered as "TintaTexto" (apps/wordcraft/src/default_apps.rs opens Settings on that name).
   The executables keep their upstream names (wordcraft.exe, wordcraft-cli.exe), so the keys named
   after the exe (App Paths\wordcraft.exe, Classes\Applications\wordcraft.exe) are the one place
   shared with an upstream WordCraft install on the same machine.
 
-  UpgradeCode and the component GUIDs below belong to Iber Texto alone: they were generated for
+  UpgradeCode and the component GUIDs below belong to Tinta Texto alone: they were generated for
   this fork and differ from upstream WordCraft's, so the two install side by side. Never copy them
   from (or into) WordCraft or a sibling Craft app: Windows Installer treats every package sharing an
   UpgradeCode as one product, so a shared code makes one app's installer refuse to install ("a newer version is
@@ -25,22 +25,22 @@
 -->
 <Wix xmlns="http://wixtoolset.org/schemas/v4/wxs" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
   <Package
-      Name="Iber Texto"
-      Manufacturer="IberOffice"
+      Name="Tinta Texto"
+      Manufacturer="Tinta Office"
       Version="$(var.Version)"
       UpgradeCode="BC63A8EA-E37D-49E0-A5DB-01E098F8B423"
       Scope="perMachine"
       Compressed="yes"
       Language="1033">
-    <SummaryInformation Description="Iber Texto word processor" Manufacturer="IberOffice" />
+    <SummaryInformation Description="Tinta Texto word processor" Manufacturer="Tinta Office" />
     <!-- Same-version upgrades let successive pre-releases of one X.Y.Z replace each other
          (MSI versions are numeric, so 1.2.3-rc.1 and 1.2.3-rc.2 are both 1.2.3). -->
     <MajorUpgrade AllowSameVersionUpgrades="yes"
-        DowngradeErrorMessage="A newer version of Iber Texto is already installed." />
+        DowngradeErrorMessage="A newer version of Tinta Texto is already installed." />
     <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
-    <Icon Id="IberTextoIcon.ico" SourceFile="$(var.IconPath)" />
-    <Property Id="ARPPRODUCTICON" Value="IberTextoIcon.ico" />
+    <Icon Id="TintaTextoIcon.ico" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="TintaTextoIcon.ico" />
     <Property Id="ARPURLINFOABOUT" Value="https://github.com/StDenis1980/wordcraft" />
     <Property Id="ARPURLUPDATEINFO" Value="https://github.com/StDenis1980/wordcraft/releases" />
     <Property Id="ARPHELPLINK" Value="https://github.com/StDenis1980/wordcraft/issues" />
@@ -48,10 +48,10 @@
     <!-- Installer UI (#198): WixUI_Minimal is welcome + license, progress, then a finish page so
          people can see the install worked. Its dialogs and bitmaps are WiX's own
          (WixToolset.UI.wixext); package.ps1 builds the license RTF from LICENSE-MIT and
-         LICENSE-APACHE. The finish page offers to launch Iber Texto (ticked by default) through
+         LICENSE-APACHE. The finish page offers to launch Tinta Texto (ticked by default) through
          WixShellExec (WixToolset.Util.wixext); silent installs (/qn) never show it. -->
     <WixVariable Id="WixUILicenseRtf" Value="$(var.LicenseRtf)" />
-    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Iber Texto" />
+    <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOXTEXT" Value="Launch Tinta Texto" />
     <Property Id="WIXUI_EXITDIALOGOPTIONALCHECKBOX" Value="1" />
     <Property Id="WixShellExecTarget" Value="[#WordcraftExe]" />
     <CustomAction Id="LaunchWordcraft" BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)" DllEntry="WixShellExec"
@@ -63,13 +63,13 @@
     </UI>
 
     <StandardDirectory Id="ProgramFiles6432Folder">
-      <Directory Id="MANUFACTURERFOLDER" Name="IberOffice">
-        <Directory Id="INSTALLFOLDER" Name="Iber Texto" />
+      <Directory Id="MANUFACTURERFOLDER" Name="Tinta Office">
+        <Directory Id="INSTALLFOLDER" Name="Tinta Texto" />
       </Directory>
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
 
-    <Feature Id="Main" Title="Iber Texto" Level="1">
+    <Feature Id="Main" Title="Tinta Texto" Level="1">
       <ComponentGroupRef Id="WordcraftFiles" />
     </Feature>
   </Package>
@@ -78,85 +78,85 @@
     <ComponentGroup Id="WordcraftFiles" Directory="INSTALLFOLDER">
       <Component Id="WordcraftApp" Guid="A8F373E8-D582-4AFE-B96B-B0E724605378">
         <File Id="WordcraftExe" Source="$(var.BinDir)\wordcraft.exe" KeyPath="yes">
-          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Iber Texto"
-              Description="Iber Texto word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
-              Icon="IberTextoIcon.ico" IconIndex="0" />
+          <Shortcut Id="StartMenuShortcut" Directory="ProgramMenuFolder" Name="Tinta Texto"
+              Description="Tinta Texto word processor" WorkingDirectory="INSTALLFOLDER" Advertise="yes"
+              Icon="TintaTextoIcon.ico" IconIndex="0" />
         </File>
 
         <RegistryValue Root="HKLM" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\wordcraft.exe" Value="[#WordcraftExe]" Type="string" />
       </Component>
 
-      <!-- File associations (#295). Each document type gets an IberTexto.* ProgId (name, icon, open
-           command) and is listed under the extension's OpenWithProgids, so Iber Texto shows in
-           Explorer's "Open with". The Word, RTF and ODT types are also Iber Texto's Capabilities
+      <!-- File associations (#295). Each document type gets a TintaTexto.* ProgId (name, icon, open
+           command) and is listed under the extension's OpenWithProgids, so Tinta Texto shows in
+           Explorer's "Open with". The Word, RTF and ODT types are also Tinta Texto's Capabilities
            (RegisteredApplications), so it appears in Settings › Default apps, where the user
            makes it the default (File › Options › General opens that page). Nothing here sets an
            extension's default: the installer never takes over .docx from another app. Markdown and
            plain text are only "Open with" candidates. Removed again on uninstall. -->
       <Component Id="WordcraftFileTypes" Guid="BD5A4E02-AAFA-422E-AD98-7DD069B557D5">
-        <RegistryValue Root="HKLM" Key="Software\RegisteredApplications" Name="IberTexto" Value="Software\IberOffice\Iber Texto\Capabilities" Type="string" KeyPath="yes" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities" Name="ApplicationName" Value="Iber Texto" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities" Name="ApplicationDescription" Value="Write and design documents; open and save Word files." Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities" Name="ApplicationIcon" Value="&quot;[#WordcraftExe]&quot;,0" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe" Name="FriendlyAppName" Value="Iber Texto" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\RegisteredApplications" Name="TintaTexto" Value="Software\Tinta Office\Tinta Texto\Capabilities" Type="string" KeyPath="yes" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities" Name="ApplicationName" Value="Tinta Texto" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities" Name="ApplicationDescription" Value="Write and design documents; open and save Word files." Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities" Name="ApplicationIcon" Value="&quot;[#WordcraftExe]&quot;,0" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe" Name="FriendlyAppName" Value="Tinta Texto" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
 
-        <ProgId Id="IberTexto.Document" Description="Word Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.Document\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.docx\OpenWithProgids" Name="IberTexto.Document" Value="" Type="string" />
+        <ProgId Id="TintaTexto.Document" Description="Word Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.Document\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.docx\OpenWithProgids" Name="TintaTexto.Document" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".docx" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".docx" Value="IberTexto.Document" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".docx" Value="TintaTexto.Document" Type="string" />
 
-        <ProgId Id="IberTexto.DocumentMacroEnabled" Description="Word Macro-Enabled Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.DocumentMacroEnabled\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.docm\OpenWithProgids" Name="IberTexto.DocumentMacroEnabled" Value="" Type="string" />
+        <ProgId Id="TintaTexto.DocumentMacroEnabled" Description="Word Macro-Enabled Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.DocumentMacroEnabled\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.docm\OpenWithProgids" Name="TintaTexto.DocumentMacroEnabled" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".docm" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".docm" Value="IberTexto.DocumentMacroEnabled" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".docm" Value="TintaTexto.DocumentMacroEnabled" Type="string" />
 
-        <ProgId Id="IberTexto.Template" Description="Word Template" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.Template\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.dotx\OpenWithProgids" Name="IberTexto.Template" Value="" Type="string" />
+        <ProgId Id="TintaTexto.Template" Description="Word Template" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.Template\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.dotx\OpenWithProgids" Name="TintaTexto.Template" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".dotx" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".dotx" Value="IberTexto.Template" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".dotx" Value="TintaTexto.Template" Type="string" />
 
-        <ProgId Id="IberTexto.TemplateMacroEnabled" Description="Word Macro-Enabled Template" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.TemplateMacroEnabled\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.dotm\OpenWithProgids" Name="IberTexto.TemplateMacroEnabled" Value="" Type="string" />
+        <ProgId Id="TintaTexto.TemplateMacroEnabled" Description="Word Macro-Enabled Template" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.TemplateMacroEnabled\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.dotm\OpenWithProgids" Name="TintaTexto.TemplateMacroEnabled" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".dotm" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".dotm" Value="IberTexto.TemplateMacroEnabled" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".dotm" Value="TintaTexto.TemplateMacroEnabled" Type="string" />
 
-        <ProgId Id="IberTexto.LegacyDocument" Description="Legacy Word Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.LegacyDocument\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.doc\OpenWithProgids" Name="IberTexto.LegacyDocument" Value="" Type="string" />
+        <ProgId Id="TintaTexto.LegacyDocument" Description="Legacy Word Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.LegacyDocument\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.doc\OpenWithProgids" Name="TintaTexto.LegacyDocument" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".doc" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".doc" Value="IberTexto.LegacyDocument" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".doc" Value="TintaTexto.LegacyDocument" Type="string" />
 
-        <ProgId Id="IberTexto.LegacyTemplate" Description="Legacy Word Template" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.LegacyTemplate\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.dot\OpenWithProgids" Name="IberTexto.LegacyTemplate" Value="" Type="string" />
+        <ProgId Id="TintaTexto.LegacyTemplate" Description="Legacy Word Template" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.LegacyTemplate\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.dot\OpenWithProgids" Name="TintaTexto.LegacyTemplate" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".dot" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".dot" Value="IberTexto.LegacyTemplate" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".dot" Value="TintaTexto.LegacyTemplate" Type="string" />
 
-        <ProgId Id="IberTexto.RichText" Description="Rich Text Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.RichText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.rtf\OpenWithProgids" Name="IberTexto.RichText" Value="" Type="string" />
+        <ProgId Id="TintaTexto.RichText" Description="Rich Text Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.RichText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.rtf\OpenWithProgids" Name="TintaTexto.RichText" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".rtf" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".rtf" Value="IberTexto.RichText" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".rtf" Value="TintaTexto.RichText" Type="string" />
 
-        <ProgId Id="IberTexto.OpenDocumentText" Description="OpenDocument Text" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.OpenDocumentText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.odt\OpenWithProgids" Name="IberTexto.OpenDocumentText" Value="" Type="string" />
+        <ProgId Id="TintaTexto.OpenDocumentText" Description="OpenDocument Text" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.OpenDocumentText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.odt\OpenWithProgids" Name="TintaTexto.OpenDocumentText" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".odt" Value="" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\IberOffice\Iber Texto\Capabilities\FileAssociations" Name=".odt" Value="IberTexto.OpenDocumentText" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Tinta Office\Tinta Texto\Capabilities\FileAssociations" Name=".odt" Value="TintaTexto.OpenDocumentText" Type="string" />
 
-        <ProgId Id="IberTexto.Markdown" Description="Markdown Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.Markdown\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.md\OpenWithProgids" Name="IberTexto.Markdown" Value="" Type="string" />
+        <ProgId Id="TintaTexto.Markdown" Description="Markdown Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.Markdown\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.md\OpenWithProgids" Name="TintaTexto.Markdown" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".md" Value="" Type="string" />
 
-        <ProgId Id="IberTexto.PlainText" Description="Text Document" Icon="WordcraftExe" IconIndex="0" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\IberTexto.PlainText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
-        <RegistryValue Root="HKLM" Key="Software\Classes\.txt\OpenWithProgids" Name="IberTexto.PlainText" Value="" Type="string" />
+        <ProgId Id="TintaTexto.PlainText" Description="Text Document" Icon="WordcraftExe" IconIndex="0" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\TintaTexto.PlainText\shell\open\command" Value="&quot;[#WordcraftExe]&quot; &quot;%1&quot;" Type="string" />
+        <RegistryValue Root="HKLM" Key="Software\Classes\.txt\OpenWithProgids" Name="TintaTexto.PlainText" Value="" Type="string" />
         <RegistryValue Root="HKLM" Key="Software\Classes\Applications\wordcraft.exe\SupportedTypes" Name=".txt" Value="" Type="string" />
       </Component>
 

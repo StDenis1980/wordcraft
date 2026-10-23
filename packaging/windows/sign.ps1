@@ -15,7 +15,7 @@
   timestamp server, ...). Optional overrides: WINDOWS_TIMESTAMP_URL, SIGNTOOL (path to signtool.exe).
 
 .EXAMPLE
-  pwsh packaging/windows/sign.ps1 dist/wordcraft.exe dist/iber-texto-1.2.3-windows-x64.msi
+  pwsh packaging/windows/sign.ps1 dist/wordcraft.exe dist/tinta-texto-1.2.3-windows-x64.msi
 #>
 param(
   [Parameter(Mandatory = $true, ValueFromRemainingArguments = $true)]
@@ -55,9 +55,9 @@ if (-not $haveCert -and -not $haveAzure) {
 }
 
 $script:SignTool = Find-SignTool
-# Product identity of this IberOffice build (keep in sync with wordcraft.wxs and the brand values in
+# Product identity of this Tinta Office build (keep in sync with wordcraft.wxs and the brand values in
 # .cargo/config.toml).
-$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Iber Texto', '/du', 'https://github.com/StDenis1980/wordcraft')
+$common = @('sign', '/v', '/fd', 'SHA256', '/td', 'SHA256', '/d', 'Tinta Texto', '/du', 'https://github.com/StDenis1980/wordcraft')
 $tmp = Join-Path ([IO.Path]::GetTempPath()) "wordcraft-sign-$PID"
 New-Item -ItemType Directory -Force -Path $tmp | Out-Null
 

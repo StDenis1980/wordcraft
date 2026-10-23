@@ -1,18 +1,18 @@
 <#
 .SYNOPSIS
-  Build, sign and package Iber Texto (the IberOffice build of WordCraft) for Windows.
+  Build, sign and package Tinta Texto (the Tinta Office build of WordCraft) for Windows.
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    iber-texto-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    iber-texto-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe
+    tinta-texto-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
+    tinta-texto-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
   warning when no signing secrets are set).
 
   Needs: Rust (MSVC toolchain + the target), the Windows SDK (rc.exe, signtool.exe),
-  and WiX v5 with its UI and Util extensions (installer dialogs, "Launch Iber Texto" on finish):
+  and WiX v5 with its UI and Util extensions (installer dialogs, "Launch Tinta Texto" on finish):
     dotnet tool install --global wix --version 5.0.2
     wix extension add -g WixToolset.UI.wixext/5.0.2
     wix extension add -g WixToolset.Util.wixext/5.0.2
@@ -28,10 +28,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
-# Product identity of this IberOffice build (keep in sync with wordcraft.wxs, sign.ps1 and the brand
+# Product identity of this Tinta Office build (keep in sync with wordcraft.wxs, sign.ps1 and the brand
 # values in .cargo/config.toml). The executables keep their upstream names.
-$AppTitle = 'Iber Texto'
-$AppSlug = 'iber-texto'
+$AppTitle = 'Tinta Texto'
+$AppSlug = 'tinta-texto'
 
 function Invoke-Native([string] $What, [scriptblock] $Block) {
   Write-Output "==> $What"
@@ -113,7 +113,7 @@ function ConvertTo-RtfText([string] $Text) {
 }
 $paragraphs = [System.Collections.Generic.List[string]]::new()
 $paragraphs.Add("\b $(ConvertTo-RtfText $AppTitle)\b0")
-$paragraphs.Add((ConvertTo-RtfText "$AppTitle is the IberOffice build of WordCraft (https://github.com/storytold/wordcraft), from the source at https://github.com/StDenis1980/wordcraft. It is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md in the source."))
+$paragraphs.Add((ConvertTo-RtfText "$AppTitle is the Tinta Office build of WordCraft (https://github.com/storytold/wordcraft), from the source at https://github.com/StDenis1980/wordcraft. It is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md in the source."))
 foreach ($file in 'LICENSE-MIT', 'LICENSE-APACHE') {
   $title = $true  # each file opens with its license's name: show it bold
   foreach ($para in ((Get-Content -Raw (Join-Path $Root $file)) -split '\r?\n\s*\r?\n')) {

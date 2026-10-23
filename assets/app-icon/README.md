@@ -1,10 +1,10 @@
-# Iber Texto app icon
+# Tinta Texto app icon
 
-<img src="wordcraft.svg" alt="Iber Texto app icon: an ivory azulejo tile with blue corners and a page of text lines" width="128">
+<img src="wordcraft.svg" alt="Tinta Texto app icon: an ivory azulejo tile with blue corners and a page of text lines" width="128">
 
-**Design:** the IberOffice "azulejo" tile. An ivory rounded square with a quarter circle in each
-corner, like a glazed wall tile, and the app's glyph in the middle: for Iber Texto, a page of text lines. The four
-IberOffice apps (Iber PDF, Iber Texto, Iber Calculo, Iber Presenta) share the tile and differ by
+**Design:** the Tinta Office "azulejo" tile. An ivory rounded square with a quarter circle in each
+corner, like a glazed wall tile, and the app's glyph in the middle: for Tinta Texto, a page of text lines. The four
+Tinta Office apps (Tinta PDF, Tinta Texto, Tinta Calculo, Tinta Presenta) share the tile and differ by
 colour and glyph.
 
 ## Palette
@@ -13,7 +13,7 @@ colour and glyph.
 |---|---|---|
 | Ivory | `#F3EDE1` | The tile |
 | Edge | `#D8CBB2` | The tile outline |
-| Iber Texto (app colour) | `#2D4BA0` | The corners and the glyph |
+| Tinta Texto (app colour) | `#2D4BA0` | The corners and the glyph |
 
 ## Geometry
 
@@ -39,6 +39,6 @@ The app ID is `ai.storyteller.wordcraft`. It's used for the hicolor icon names, 
 
 ## Provenance and regenerating
 
-Original artwork for IberOffice, drawn in code by
-[`packaging/iberoffice-icons.py`](../../packaging/iberoffice-icons.py); no third-party material.
+Original artwork for Tinta Office, drawn in code by
+[`packaging/tinta-icons.py`](../../packaging/tinta-icons.py); no third-party material.
 Run `packaging/icons.sh` (python3 with cairosvg and Pillow) to rewrite every file here.
