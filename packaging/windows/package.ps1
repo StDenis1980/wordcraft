@@ -1,18 +1,18 @@
 <#
 .SYNOPSIS
-  Build, sign and package WordCraft for Windows.
+  Build, sign and package Iber Texto (the IberOffice build of WordCraft) for Windows.
 
 .DESCRIPTION
   Produces, in $env:DIST (default: dist/release):
-    wordcraft-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
-    wordcraft-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe
+    iber-texto-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
+    iber-texto-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
   warning when no signing secrets are set).
 
   Needs: Rust (MSVC toolchain + the target), the Windows SDK (rc.exe, signtool.exe),
-  and WiX v5 with its UI and Util extensions (installer dialogs, "Launch WordCraft" on finish):
+  and WiX v5 with its UI and Util extensions (installer dialogs, "Launch Iber Texto" on finish):
     dotnet tool install --global wix --version 5.0.2
     wix extension add -g WixToolset.UI.wixext/5.0.2
     wix extension add -g WixToolset.Util.wixext/5.0.2
@@ -28,6 +28,10 @@ param(
 )
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
+# Product identity of this IberOffice build (keep in sync with wordcraft.wxs, sign.ps1 and the brand
+# values in .cargo/config.toml). The executables keep their upstream names.
+$AppTitle = 'Iber Texto'
+$AppSlug = 'iber-texto'
 
 function Invoke-Native([string] $What, [scriptblock] $Block) {
   Write-Output "==> $What"
@@ -56,7 +60,7 @@ New-Item -ItemType Directory -Force -Path $Dist | Out-Null
 if (-not $env:WORDCRAFT_BUILD_SHA) { $env:WORDCRAFT_BUILD_SHA = (git -C $Root rev-parse HEAD 2>$null) }
 if (-not $env:WORDCRAFT_BUILD_DATE) { $env:WORDCRAFT_BUILD_DATE = (Get-Date).ToUniversalTime().ToString('yyyy-MM-dd') }
 
-Write-Output "WordCraft $Version for Windows $Arch ($Target)"
+Write-Output "$AppTitle $Version for Windows $Arch ($Target)"
 
 if (-not $SkipBuild) {
   # Static CRT: no VC++ redistributable needed. Scoped to the target so host build scripts and
@@ -108,8 +112,8 @@ function ConvertTo-RtfText([string] $Text) {
   return $sb.ToString()
 }
 $paragraphs = [System.Collections.Generic.List[string]]::new()
-$paragraphs.Add('\b WordCraft\b0')
-$paragraphs.Add((ConvertTo-RtfText 'WordCraft is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md at https://github.com/storytold/wordcraft.'))
+$paragraphs.Add("\b $(ConvertTo-RtfText $AppTitle)\b0")
+$paragraphs.Add((ConvertTo-RtfText "$AppTitle is the IberOffice build of WordCraft (https://github.com/storytold/wordcraft), from the source at https://github.com/StDenis1980/wordcraft. It is dual-licensed under the MIT License or the Apache License, Version 2.0, at your option. Both license texts follow. Bundled fonts and other third-party material keep their own open licenses, listed in NOTICE and ATTRIBUTION.md in the source."))
 foreach ($file in 'LICENSE-MIT', 'LICENSE-APACHE') {
   $title = $true  # each file opens with its license's name: show it bold
   foreach ($para in ((Get-Content -Raw (Join-Path $Root $file)) -split '\r?\n\s*\r?\n')) {
@@ -124,7 +128,7 @@ $rtf = '{\rtf1\ansi\ansicpg1252\deff0{\fonttbl{\f0\fswiss\fcharset0 Tahoma;}}\vi
   ($paragraphs -join "\par`r`n") + "\par`r`n}`r`n"
 [System.IO.File]::WriteAllText($LicenseRtf, $rtf, [System.Text.Encoding]::ASCII)
 
-$Msi = Join-Path $Dist "wordcraft-$Version-windows-$Arch.msi"
+$Msi = Join-Path $Dist "$AppSlug-$Version-windows-$Arch.msi"
 Invoke-Native 'wix build' {
   wix build (Join-Path $PSScriptRoot 'wordcraft.wxs') -arch $Arch `
     -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext `
@@ -137,7 +141,7 @@ Remove-Item -Force -ErrorAction SilentlyContinue ([IO.Path]::ChangeExtension($Ms
 & (Join-Path $PSScriptRoot 'sign.ps1') $Msi
 
 # ---- portable zip ------------------------------------------------------------------------------
-$Portable = Join-Path $TargetDir "windows-package\wordcraft-$Version-windows-$Arch-portable"
+$Portable = Join-Path $TargetDir "windows-package\$AppSlug-$Version-windows-$Arch-portable"
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
@@ -151,7 +155,7 @@ if ($env:CRAFT_FONTS_DIR) {
     Copy-Item $ofl.FullName (Join-Path $Portable "OFL-$($ofl.Directory.Name).txt")
   }
 }
-$Zip = Join-Path $Dist "wordcraft-$Version-windows-$Arch-portable.zip"
+$Zip = Join-Path $Dist "$AppSlug-$Version-windows-$Arch-portable.zip"
 Remove-Item -Force $Zip -ErrorAction SilentlyContinue
 Compress-Archive -Path $Portable -DestinationPath $Zip
 

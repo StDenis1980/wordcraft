@@ -1,0 +1,60 @@
+# IberOffice: build the Iber Texto Windows installer (.msi) and portable .zip for x64 on demand.
+#
+# Unsigned for now: packaging/windows/sign.ps1 leaves the files unsigned without the
+# WINDOWS_CERTIFICATE / AZURE_* secrets, so Windows SmartScreen warns on first run ("Windows
+# protected your PC": More info > Run anyway). Signing needs a code-signing certificate; release.yml
+# (the upstream release pipeline) does that. Download the .msi and .zip from the run's artifacts.
+name: Windows installer
+
+on:
+  workflow_dispatch:
+  # A test build on PRs that change the Windows packaging.
+  pull_request:
+    paths: ["packaging/windows/**", "assets/app-icon/**", ".github/workflows/windows-msi.yml"]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-msi-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  msi:
+    name: Windows x64 .msi and portable .zip
+    runs-on: windows-latest
+    timeout-minutes: 120
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check out craft-fonts
+        uses: storytold/craft-common-actions/actions/checkout-craft-fonts@main
+        with:
+          ref: 8dcdacd5153e64560d109541a47d806f26f048c0
+      - uses: dtolnay/rust-toolchain@683b588c487a69d01f6c6ddf40f036ff682cc2c8 # v1
+        with:
+          toolchain: stable
+          targets: x86_64-pc-windows-msvc
+      - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
+        with:
+          key: iber-windows-x64
+      # The WiX version and extensions packaging/windows/package.ps1 documents.
+      - name: Install WiX
+        shell: pwsh
+        run: |
+          dotnet tool install --global wix --version 5.0.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          wix extension add -g WixToolset.UI.wixext/5.0.2 WixToolset.Util.wixext/5.0.2
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Build the .msi and portable .zip (unsigned)
+        shell: pwsh
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+        run: pwsh packaging/windows/package.ps1 -Arch x64
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: iber-texto-windows
+          path: dist/release/*
+          if-no-files-found: error
