@@ -1,4 +1,4 @@
-# IberOffice: build the Iber Texto Windows installer (.msi) and portable .zip for x64 on demand.
+# Tinta Office: build the Tinta Texto Windows installer (.msi) and portable .zip for x64 on demand.
 #
 # Unsigned for now: packaging/windows/sign.ps1 leaves the files unsigned without the
 # WINDOWS_CERTIFICATE / AZURE_* secrets, so Windows SmartScreen warns on first run ("Windows
@@ -39,7 +39,7 @@ jobs:
           targets: x86_64-pc-windows-msvc
       - uses: Swatinem/rust-cache@6323deb102c322ba6fcbdcafc7e3dddab59af2b6 # v2.9.2
         with:
-          key: iber-windows-x64
+          key: tinta-windows-x64
       # The WiX version and extensions packaging/windows/package.ps1 documents.
       - name: Install WiX
         shell: pwsh
@@ -55,6 +55,6 @@ jobs:
         run: pwsh packaging/windows/package.ps1 -Arch x64
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
-          name: iber-texto-windows
+          name: tinta-texto-windows
           path: dist/release/*
           if-no-files-found: error
