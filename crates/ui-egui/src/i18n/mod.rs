@@ -5,7 +5,8 @@
 //! one entry at a time, and a missing translation never fails a build, a test or a release.
 //!
 //! The catalogs live in [storytold/craft-i18n](https://github.com/storytold/craft-i18n)
-//! (`locales/<locale>/common.tsv` and `wordcraft.tsv`), not in this repository. `build.rs` embeds
+//! (`locales/<locale>/common.tsv` and `wordcraft.tsv`), not in this repository. Tinta Office builds
+//! from the fork StDenis1980/craft-i18n, which adds Catalan, Galician and Basque. `build.rs` embeds
 //! them from `CRAFT_I18N_DIR` (CI and releases check out the SHA in `craft-i18n.rev`); without it
 //! the build is English only. Lookup, fallback (`pt-br` → `pt` → English, app rows over shared
 //! ones), plurals, language names and locale matching are the `craft-i18n` crate's (craft-libs).
@@ -70,7 +71,7 @@ pub struct LangInfo {
 
 /// The languages WordCraft offers, when their catalogs are embedded. English first: it is the
 /// fallback and the source language.
-pub static LANGUAGES: [LangInfo; 27] = [
+pub static LANGUAGES: [LangInfo; 30] = [
     LangInfo { code: "en", prefer_hans: false, editing_lang: None },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` resolve here (the crate's matching).
     LangInfo { code: "zh-hans", prefer_hans: true, editing_lang: None },
@@ -126,6 +127,12 @@ pub static LANGUAGES: [LangInfo; 27] = [
     LangInfo { code: "ro", prefer_hans: false, editing_lang: None },
     // Slovenian; `sl`, `sl-SI` and `sl_SI.UTF-8` resolve here.
     LangInfo { code: "sl", prefer_hans: false, editing_lang: None },
+    // Tinta Office: Spain's other official languages. Their catalogs are in this fork's craft-i18n
+    // (StDenis1980/craft-i18n, offered upstream too). `ca-ES`, `ca-AD`, `ca-ES-valencia`, `gl-ES`,
+    // `eu-ES` … resolve here.
+    LangInfo { code: "ca", prefer_hans: false, editing_lang: None },
+    LangInfo { code: "gl", prefer_hans: false, editing_lang: None },
+    LangInfo { code: "eu", prefer_hans: false, editing_lang: None },
 ];
 
 /// A language the UI can be shown in: English, or an offered language whose catalogs are embedded.

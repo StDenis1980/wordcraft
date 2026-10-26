@@ -1094,6 +1094,28 @@ fn slovenian_locales_and_saved_preference_work_without_changing_the_document() {
     assert_eq!(Lang::from_pref(&restored.language), sl);
 }
 
+/// Tinta Office: Spain's co-official languages are offered, follow their system locales (Valencian
+/// included) and name themselves in the language picker.
+#[test]
+fn catalan_galician_and_basque_locales_pick_their_interface() {
+    needs_catalogs!();
+    for (code, tags, name) in [
+        ("ca", &["ca", "ca-ES", "ca_ES.UTF-8", "ca-AD", "ca-ES-valencia"][..], "Català"),
+        ("gl", &["gl", "gl-ES", "gl_ES.UTF-8"][..], "Galego"),
+        ("eu", &["eu", "eu-ES", "eu_ES.UTF-8"][..], "Euskara"),
+    ] {
+        let l = lang(code);
+        for tag in tags {
+            assert_eq!(lang_from_tag(tag), Some(l), "{tag}");
+        }
+        assert_eq!(l.name(), name);
+        assert_ne!(tr(l, "File"), "File", "{code} translates the File tab");
+        assert!(!tr(l, "Get help and support").is_empty());
+        assert_ne!(tr(l, "Get help and support"), "Get help and support", "{code} has the fork's rows");
+    }
+    assert_eq!(first_supported([UNSUPPORTED, "eu-ES", "es-ES"]), Some(lang("eu")));
+}
+
 #[test]
 fn bundled_interface_fonts_cover_slovenian_letters() {
     needs_catalogs!();
@@ -1148,7 +1170,7 @@ fn the_flatpak_manifest_pins_the_craft_i18n_rev() {
     let rev = rev.trim();
     assert!(rev.len() == 40 && rev.bytes().all(|b| b.is_ascii_hexdigit()), "craft-i18n.rev holds one full SHA: {rev:?}");
     let manifest = std::fs::read_to_string(root.join("packaging/linux/flatpak/ai.storyteller.wordcraft.yml")).unwrap();
-    let source = manifest.split("url: https://github.com/storytold/craft-i18n").nth(1).expect("a craft-i18n git source");
+    let source = manifest.split("url: https://github.com/StDenis1980/craft-i18n").nth(1).expect("a craft-i18n git source");
     let source = source.split("- type:").next().unwrap_or(source);
     let commit = source.lines().find_map(|l| l.trim().strip_prefix("commit:")).expect("the craft-i18n source pins a commit");
     assert_eq!(commit.trim().trim_matches(['\'', '"']), rev);
