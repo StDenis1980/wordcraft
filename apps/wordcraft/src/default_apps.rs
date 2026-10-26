@@ -30,9 +30,12 @@ pub fn hook() -> Option<Hook> {
     hook
 }
 
-/// The desktop entry the Linux packages install, and the Flatpak's app id.
+/// The desktop entry the Linux packages install: `brand::APP_ID` plus `.desktop`
+/// (packaging/linux/tinta-brand.sh renames the release's entry to it).
 #[cfg(any(all(unix, not(target_os = "macos")), test))]
-const DESKTOP_ID: &str = "ai.storyteller.wordcraft.desktop";
+fn desktop_id() -> String {
+    format!("{}.desktop", wordcraft_engine::brand::APP_ID)
+}
 
 /// The types the button makes WordCraft the default for on Linux and BSD: Word documents and
 /// templates (also macro-enabled and legacy), RTF and ODT. The same set the Windows installer
@@ -100,7 +103,7 @@ mod xdg {
 
     use wordcraft_ui_egui::DefaultApp;
 
-    use super::{DESKTOP_ID, application_dirs, xdg_mime_args};
+    use super::{application_dirs, desktop_id, xdg_mime_args};
 
     /// The longest error text from `xdg-mime` shown in the status bar.
     const MAX_ERROR: usize = 200;
@@ -113,10 +116,11 @@ mod xdg {
         }
         let var = |k: &str| std::env::var(k).ok();
         let dirs = application_dirs(var("XDG_DATA_HOME").as_deref(), var("XDG_DATA_DIRS").as_deref(), var("HOME").as_deref());
-        if !dirs.iter().any(|d| d.join(DESKTOP_ID).is_file()) {
-            return Err(format!("{DESKTOP_ID} isn't installed (an AppImage needs desktop integration first)"));
+        let desktop_id = desktop_id();
+        if !dirs.iter().any(|d| d.join(&desktop_id).is_file()) {
+            return Err(format!("{desktop_id} isn't installed (an AppImage needs desktop integration first)"));
         }
-        let out = Command::new("xdg-mime").args(xdg_mime_args(DESKTOP_ID)).output().map_err(|e| match e.kind() {
+        let out = Command::new("xdg-mime").args(xdg_mime_args(&desktop_id)).output().map_err(|e| match e.kind() {
             std::io::ErrorKind::NotFound => "xdg-mime isn't installed (it comes with xdg-utils)".to_string(),
             _ => format!("couldn't run xdg-mime: {e}"),
         })?;
@@ -139,9 +143,9 @@ mod tests {
 
     #[test]
     fn xdg_mime_sets_every_word_type_in_one_call() {
-        let args = xdg_mime_args(DESKTOP_ID);
+        let args = xdg_mime_args(&desktop_id());
         assert_eq!(args.first().map(String::as_str), Some("default"));
-        assert_eq!(args.get(1).map(String::as_str), Some("ai.storyteller.wordcraft.desktop"));
+        assert_eq!(args.get(1).map(String::as_str), Some(format!("{}.desktop", wordcraft_engine::brand::APP_ID).as_str()));
         assert_eq!(&args[2..], WORD_MIME_TYPES);
         for t in [
             "application/vnd.openxmlformats-officedocument.wordprocessingml.document",

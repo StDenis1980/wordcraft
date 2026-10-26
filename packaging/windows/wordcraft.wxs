@@ -7,7 +7,8 @@
     wix build wordcraft.wxs -arch x64 -ext WixToolset.UI.wixext -ext WixToolset.Util.wixext
       -d Version=1.2.3 -d BinDir=... -d IconPath=... -d LicenseRtf=... [-d Scope=perUserOrMachine] -o out.msi
 
-  Per-machine install into Program Files\Tinta Office\Tinta Texto with a Start Menu shortcut. The
+  Per-machine install into Program Files\Tinta Office\Tinta Texto with Start Menu and desktop
+  shortcuts. The
   installer shows the standard WiX dialogs: welcome + license, progress, and a finish page.
 
   Product identity (keep in sync with the brand values in .cargo/config.toml): name "Tinta Texto",
@@ -81,6 +82,7 @@
       </Directory>
     </StandardDirectory>
     <StandardDirectory Id="ProgramMenuFolder" />
+    <StandardDirectory Id="DesktopFolder" />
 
     <Feature Id="Main" Title="Tinta Texto" Level="1">
       <ComponentGroupRef Id="AppNotices" />
@@ -109,6 +111,15 @@
         </File>
 
         <RegistryValue Root="HKMU" Key="Software\Microsoft\Windows\CurrentVersion\App Paths\wordcraft.exe" Value="[#WordcraftExe]" Type="string" />
+      </Component>
+
+      <!-- Desktop shortcut, like the other Tinta Office apps. Not advertised, so it targets the
+           exe's path and shows the exe's own icon, which survives major upgrades. The HKMU key path
+           lets uninstall remove it in both the per-machine and the per-user package. -->
+      <Component Id="WordcraftDesktopShortcut" Directory="DesktopFolder" Guid="200732B4-305A-4AA0-8CD9-9587E06C4BA8">
+        <Shortcut Id="DesktopShortcut" Name="Tinta Texto" Description="Tinta Texto word processor"
+            Target="[#WordcraftExe]" WorkingDirectory="INSTALLFOLDER" />
+        <RegistryValue Root="HKMU" Key="Software\Tinta Office\Tinta Texto\Shortcuts" Name="Desktop" Type="integer" Value="1" KeyPath="yes" />
       </Component>
 
       <!-- File associations (#295). Each document type gets a TintaTexto.* ProgId (name, icon, open
