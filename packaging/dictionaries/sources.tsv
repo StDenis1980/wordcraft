@@ -1,0 +1,25 @@
+# Tinta Office spelling dictionaries: the files package.sh/package.ps1 put in the app's
+# dictionaries folder (fetch.sh, fetch.ps1). Columns, separated by a TAB: the file's path in the
+# folder, its source (pinned to a commit), its SHA-256, the languages it serves, and the licence
+# of a dictionary file (- for a licence or readme text). See README.md.
+es_ES.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/es_ES.aff	e73a9bf8e1383f4986a5dc9e2fbed49371c0c61f511c626d15586bd433c1cad9	es	GPL-3.0-or-later OR LGPL-3.0-or-later OR MPL-1.1+
+es_ES.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/es_ES.dic	6975dddec3d5d2c676069537bc67b4b5f786c65c5d4cf6703a82acf779ac9ec1	es	GPL-3.0-or-later OR LGPL-3.0-or-later OR MPL-1.1+
+licences/es-LICENSE.md	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/LICENSE.md	2b70fd5cb8d3b34cc6ae322c969557a2270b99017594addb2531ef5ffd9e1b17	es	-
+licences/es-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/README_hunspell_es.txt	0b5c39a863ecb61f5c5631ec1cd977667ef9bda6da6f90e80e9fc0edcbfadd97	es	-
+licences/MPL-1.1.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/MPL-1.1.txt	53692a2ed6c6a2c6ec9b32dd0b820dfae91e0a1fcdf625ca9ed0bdf8705fcc4f	es uk	-
+licences/GPL-3.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/GPLv3.txt	8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903	es gl	-
+licences/LGPL-3.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/LGPLv3.txt	a853c2ffec17057872340eee242ae4d96cbf2b520ae27d903e1b2fef1a5f9d1c	es	-
+ca.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/ca/dictionaries/ca.aff	abcca353b16af2d91be51d68899f47e5076a47489d08f696717fbac44074ddb8	ca	LGPL-2.1-or-later OR GPL-2.0-or-later
+ca.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/ca/dictionaries/ca.dic	4838bb46776f5d82a3823aa7abb17cd00b9dc0c301d1b6d002e1ab6558fa07ca	ca	LGPL-2.1-or-later OR GPL-2.0-or-later
+licences/ca-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/ca/README_ca.txt	ebdec61a0083bf2435879e236d6de44bab2959ad03bcce2a0d8ad4190097810c	ca	-
+licences/LGPL-2.1.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/es/LGPLv2.1.txt	dc626520dcd53a22f727af3ee42c770e56c97a64fe3adb063799d8ab032fe551	ca	-
+gl_ES.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/gl/gl_ES.aff	76c848fc7704be8ea035926fb524b6379d572212f10eb8cb8e847e98442b2f3a	gl	GPL-3.0
+gl_ES.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/gl/gl_ES.dic	9c0b9128a73473fde3199e807a78252c39a3885db1d0db161a2b0fcd286c7a4b	gl	GPL-3.0
+licences/gl-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/gl/README	1cf732806d5e30c414c72034cc9ab07a56e4525fb76a31adefc7a3aa22bd05f8	gl	-
+uk_UA.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/uk_UA/uk_UA.aff	2219dd15e9802adebc45722c60943b1472640260491af38dd3e43b07e75585e6	uk	MPL-1.1
+uk_UA.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/uk_UA/uk_UA.dic	2e5a9e67be63bdb089b3459addb5d71113319d13768e277bcae20f3cc1ad5a93	uk	MPL-1.1
+licences/uk-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/uk_UA/README_uk_UA.txt	664436fee625b4a3e712483947d1711a2f467670f4c389bcf10abca2a564e1dc	uk	-
+eu.aff	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/eu/index.aff	ba68948c642828c80e5b5fc7ea19876bd38ce6f874f4453c662395adca8fef2a	eu	GPL-2.0
+eu.dic	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/eu/index.dic	2f046ed070c11f9dc6f502577462bdc11a0966be50e0d9750823922a22d9e948	eu	GPL-2.0
+licences/eu-README.md	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/eu/readme.md	f2fb6de196e25ae7ce894d8d989263dae3718e9736c7ebd165cea5c4f7b7d762	eu	-
+licences/GPL-2.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/COPYING_GPLv2	e7431ac20e815b6797369e802f9e4bb1b0082485060d8b096235f035d741bd89	eu ca	-
