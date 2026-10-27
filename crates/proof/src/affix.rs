@@ -71,6 +71,20 @@ impl Mask {
         self.0.iter().zip(o.0).all(|(a, b)| a & b == b)
     }
 
+    /// The flags of both sets.
+    fn and(self, o: Mask) -> Mask {
+        let mut m = self;
+        m.0.iter_mut().zip(o.0).for_each(|(a, b)| *a &= b);
+        m
+    }
+
+    /// The flags of this set that `o` doesn't hold.
+    fn minus(self, o: Mask) -> Mask {
+        let mut m = self;
+        m.0.iter_mut().zip(o.0).for_each(|(a, b)| *a &= !b);
+        m
+    }
+
     /// The lowest flag in the set.
     fn first(self) -> Option<usize> {
         self.0.iter().enumerate().find(|(_, w)| **w != 0).map(|(k, w)| k * 64 + w.trailing_zeros() as usize)
@@ -688,17 +702,24 @@ impl AffixDict {
         };
         d.offs.push(0);
         let mut set_ids: HashMap<Mask, u32> = HashMap::new();
+        // Flags about the stem itself hold for a merged homonym only when every entry has them:
+        // Galician lists `por` plainly and again with NEEDAFFIX, and `por` alone is a word.
+        let stem_only = d.need_affix | d.keep_case | d.only_in_compound;
         let mut i = 0;
         while i < stems.len() {
             let Some((word, _)) = stems.get(i) else { break };
             let mut mask = Mask::default();
+            let mut common = stem_only;
             let mut j = i;
             while let Some((w, f)) = stems.get(j)
                 && w == word
             {
-                mask |= f.chars().map(bit_of).fold(Mask::default(), |a, b| a | b);
+                let m = f.chars().map(bit_of).fold(Mask::default(), |a, b| a | b);
+                mask |= m;
+                common = common.and(m);
                 j += 1;
             }
+            let mask = mask.minus(stem_only) | common;
             let next_id = u32::try_from(d.sets.len()).map_err(|_| "too many distinct flag sets".to_string())?;
             let id = *set_ids.entry(mask).or_insert(next_id);
             if id as usize == d.sets.len() {
@@ -1517,6 +1538,9 @@ pub(crate) mod tests {
         assert!(d.check("kot") && d.check("kotk"));
         let back = AffixDict::from_bytes(&d.to_bytes()).unwrap();
         assert!(!back.check("bound") && back.check("bounds") && !back.check("kota"), "NEEDAFFIX survives the compact format");
+        // A homonym listed plainly and again with NEEDAFFIX (Galician `por`) is a word alone.
+        let d = AffixDict::from_hunspell(aff, "3\npor\npor/101,7\nsó/7\n", &[]).unwrap();
+        assert!(d.check("por") && d.check("pors") && !d.check("só"));
     }
 
     #[test]

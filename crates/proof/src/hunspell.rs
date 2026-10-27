@@ -6,8 +6,10 @@
 //! installed the language has no spelling check (no marks, no errors), like Word without the
 //! language's proofing tools.
 //!
-//! Search order: the directory in `WORDCRAFT_DICTIONARIES` (or one set with
-//! [`set_dictionary_dir`]), then the usual system locations. On the web there are none.
+//! Search order: the directory set with [`set_dictionary_dir`], the one in
+//! `WORDCRAFT_DICTIONARIES`, the user's own dictionary folders, the dictionaries shipped with the
+//! app ([`bundled_dirs`]: a `dictionaries` folder next to the executable, as an installer or a
+//! portable zip may lay them out), then the usual system locations. On the web there are none.
 
 use std::path::{Path, PathBuf};
 use std::sync::RwLock;
@@ -63,6 +65,25 @@ fn lo_ext_dirs(name: &str) -> Vec<String> {
     if full == first { vec![first] } else { vec![first, full] }
 }
 
+/// Where an installed copy of the app keeps the dictionaries it ships with, relative to the
+/// executable `exe`: `dictionaries` beside it (Windows installers and portable zips), the
+/// `share/wordcraft/dictionaries` of its prefix (`/usr/bin` → `/usr/share`, and AppImages), and a
+/// macOS bundle's `Contents/Resources/dictionaries`.
+pub fn bundled_dirs(exe: &Path) -> Vec<PathBuf> {
+    let Some(bin) = exe.parent() else { return Vec::new() };
+    let mut dirs = vec![bin.join("dictionaries")];
+    if let Some(prefix) = bin.parent() {
+        dirs.push(prefix.join("share").join("wordcraft").join("dictionaries"));
+        dirs.push(prefix.join("Resources").join("dictionaries"));
+    }
+    dirs
+}
+
+/// [`bundled_dirs`] of the running executable.
+fn shipped_dirs() -> Vec<PathBuf> {
+    std::env::current_exe().map(|exe| bundled_dirs(&exe)).unwrap_or_default()
+}
+
 /// Directories that may hold Hunspell dictionaries, most specific first. `lo_exts`, when a
 /// language is being searched for, adds LibreOffice's extension folders for it (`dict-pt-BR`).
 pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
@@ -87,6 +108,7 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
                 dirs.push(base.join("hunspell"));
             }
         }
+        dirs.extend(shipped_dirs());
         for var in ["ProgramFiles", "ProgramFiles(x86)"] {
             if let Some(base) = std::env::var_os(var).filter(|v| !v.is_empty()).map(PathBuf::from) {
                 dirs.extend(lo_dirs(&base.join("LibreOffice").join("share").join("extensions").to_string_lossy()));
@@ -106,6 +128,7 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
         if let Some(h) = &home {
             dirs.push(h.join("Library/Spelling"));
         }
+        dirs.extend(shipped_dirs());
         dirs.push(PathBuf::from("/Library/Spelling"));
         dirs.push(PathBuf::from("/opt/homebrew/share/hunspell"));
         dirs.push(PathBuf::from("/usr/local/share/hunspell"));
@@ -114,6 +137,7 @@ pub fn search_dirs(lo_exts: Option<&[String]>) -> Vec<PathBuf> {
         if let Some(h) = &home {
             dirs.push(h.join(".local/share/hunspell"));
         }
+        dirs.extend(shipped_dirs());
         for d in ["/usr/share/hunspell", "/usr/share/myspell", "/usr/share/myspell/dicts", "/usr/local/share/hunspell", "/usr/local/share/myspell"] {
             dirs.push(PathBuf::from(d));
         }
@@ -303,6 +327,28 @@ mod tests {
         let dirs = search_dirs(Some(&super::lo_ext_dirs("pt_BR")));
         assert!(dirs.iter().any(|d| d.ends_with("dict-pt-BR")), "{dirs:?}");
         assert!(search_dirs(None).iter().all(|d| !d.to_string_lossy().contains("dict-")), "no language: no LibreOffice guess");
+    }
+
+    #[test]
+    fn shipped_dictionaries_are_searched_after_the_users_own() {
+        let exe = Path::new("/opt/tinta/bin/wordcraft");
+        assert_eq!(
+            bundled_dirs(exe),
+            [
+                PathBuf::from("/opt/tinta/bin/dictionaries"),
+                PathBuf::from("/opt/tinta/share/wordcraft/dictionaries"),
+                PathBuf::from("/opt/tinta/Resources/dictionaries"),
+            ]
+        );
+        assert!(bundled_dirs(Path::new("")).is_empty());
+        let shipped = shipped_dirs();
+        let dirs = search_dirs(None);
+        let at = |d: &PathBuf| dirs.iter().position(|x| x == d);
+        let first = shipped.first().and_then(at);
+        assert!(first.is_some(), "the running executable's dictionaries folder is searched");
+        if let Some(env) = std::env::var_os("WORDCRAFT_DICTIONARIES").filter(|v| !v.is_empty()) {
+            assert!(at(&PathBuf::from(env)) < first, "an explicit folder wins over the shipped ones");
+        }
     }
 
     #[test]

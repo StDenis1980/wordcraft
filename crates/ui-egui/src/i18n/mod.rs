@@ -79,7 +79,7 @@ pub static LANGUAGES: [LangInfo; 30] = [
     LangInfo { code: "zh-hant", prefer_hans: true, editing_lang: None },
     LangInfo { code: "ja", prefer_hans: false, editing_lang: None },
     LangInfo { code: "ko", prefer_hans: false, editing_lang: None },
-    LangInfo { code: "uk", prefer_hans: false, editing_lang: None },
+    LangInfo { code: "uk", prefer_hans: false, editing_lang: Some("uk-UA") },
     // Spanish, neutral across Spain and Latin America; `es-ES`, `es-MX`, `es-419` … resolve here.
     // No fixed editing language: new documents are written in the region's Spanish
     // (`Session::region_spanish`), like English.
@@ -130,9 +130,9 @@ pub static LANGUAGES: [LangInfo; 30] = [
     // Tinta Office: Spain's other official languages. Their catalogs are in this fork's craft-i18n
     // (StDenis1980/craft-i18n, offered upstream too). `ca-ES`, `ca-AD`, `ca-ES-valencia`, `gl-ES`,
     // `eu-ES` … resolve here.
-    LangInfo { code: "ca", prefer_hans: false, editing_lang: None },
-    LangInfo { code: "gl", prefer_hans: false, editing_lang: None },
-    LangInfo { code: "eu", prefer_hans: false, editing_lang: None },
+    LangInfo { code: "ca", prefer_hans: false, editing_lang: Some("ca-ES") },
+    LangInfo { code: "gl", prefer_hans: false, editing_lang: Some("gl-ES") },
+    LangInfo { code: "eu", prefer_hans: false, editing_lang: Some("eu-ES") },
 ];
 
 /// A language the UI can be shown in: English, or an offered language whose catalogs are embedded.
@@ -397,7 +397,8 @@ pub fn tr(lang: Lang, s: &str) -> &str {
     branded(lang.i18n().t(lang.lang, s))
 }
 
-/// Tinta Office: the interface strings this fork adds (its help and support links), translated
+/// Tinta Office: the interface strings this fork adds (its help and support links, and the names
+/// of the proofing languages it adds: Catalan, Galician, Basque), translated
 /// per language as `code<TAB>English<TAB>translation`. The craft-i18n catalogs are upstream's and
 /// don't have them; these rows are looked up first.
 static FORK_ROWS: LazyLock<std::collections::HashMap<(&'static str, &'static str), &'static str>> = LazyLock::new(|| {

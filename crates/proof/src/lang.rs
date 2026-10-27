@@ -66,6 +66,20 @@ pub enum ProofLang {
     /// dictionary (else the neighbouring Rioplatense `es_AR`, a Latin American or a generic one),
     /// and the `vos` forms of verbs (`tenés`, `vení`, `decime`) accepted ([`crate::es::voseo`]).
     EsUy,
+    /// Ukrainian (`uk`, `uk-UA`; also ISO 639-2 `ukr`): the installed Hunspell `uk_UA`
+    /// dictionary, dictionary-driven suggestions and generic checks with Ukrainian messages
+    /// ([`crate::plain`]).
+    Uk,
+    /// Catalan and Valencian (`ca`, `ca-ES`, `ca-ES-valencia`, `ca-AD`; also `cat`): the
+    /// installed Hunspell `ca` dictionary and generic checks with Catalan messages
+    /// ([`crate::plain`]).
+    Ca,
+    /// Galician (`gl`, `gl-ES`; also `glg`): the installed Hunspell `gl_ES` dictionary and generic
+    /// checks with Galician messages ([`crate::plain`]).
+    Gl,
+    /// Basque (`eu`, `eu-ES`; also `eus`, `baq`): the installed Hunspell `eu` dictionary and
+    /// generic checks with Basque messages ([`crate::plain`]).
+    Eu,
     /// German (`de`, `de-DE`, `de-AT`, `de-CH`…): hyphenation by the German patterns (reformed
     /// spelling). There is no German dictionary or grammar yet, so, as for [`ProofLang::Other`],
     /// no spelling or grammar marks.
@@ -79,7 +93,7 @@ pub enum ProofLang {
 
 impl ProofLang {
     /// Every language with a spelling dictionary, in display order.
-    pub const PROOFED: [ProofLang; 15] = [
+    pub const PROOFED: [ProofLang; 19] = [
         ProofLang::En,
         ProofLang::EnGb,
         ProofLang::EnCa,
@@ -95,6 +109,10 @@ impl ProofLang {
         ProofLang::EsMx,
         ProofLang::Es419,
         ProofLang::EsUy,
+        ProofLang::Uk,
+        ProofLang::Ca,
+        ProofLang::Gl,
+        ProofLang::Eu,
     ];
 
     /// The proofing language of a BCP 47 tag (`pl-PL`, `en_GB`, `PL`…). The primary subtag
@@ -126,6 +144,14 @@ impl ProofLang {
             ProofLang::Id
         } else if primary.eq_ignore_ascii_case("es") || primary.eq_ignore_ascii_case("spa") {
             ProofLang::spanish(tag)
+        } else if ["uk", "ukr"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Uk
+        } else if ["ca", "cat"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Ca
+        } else if ["gl", "glg"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Gl
+        } else if ["eu", "eus", "baq"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Eu
         } else if ["de", "deu", "ger"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::De
         } else {
@@ -181,6 +207,10 @@ impl ProofLang {
             ProofLang::Cs => "cs",
             ProofLang::Id => "id",
             ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => "es",
+            ProofLang::Uk => "uk",
+            ProofLang::Ca => "ca",
+            ProofLang::Gl => "gl",
+            ProofLang::Eu => "eu",
             ProofLang::De => "de",
             ProofLang::Other => "",
         }
@@ -297,6 +327,18 @@ mod tests {
         }
         assert_eq!(ProofLang::Id.code(), "id");
         assert!(ProofLang::Id.is_proofed() && ProofLang::PROOFED.contains(&ProofLang::Id));
+        for (lang, code, tags) in [
+            (ProofLang::Uk, "uk", &["uk", "uk-UA", "UK_ua", "uk_UA.UTF-8", " ukr "][..]),
+            (ProofLang::Ca, "ca", &["ca", "ca-ES", "ca-ES-valencia", "ca-AD", "CAT", "ca_ES@valencia"][..]),
+            (ProofLang::Gl, "gl", &["gl", "gl-ES", "GL_es", "glg"][..]),
+            (ProofLang::Eu, "eu", &["eu", "eu-ES", "eus", "baq", "eu-FR"][..]),
+        ] {
+            for t in tags {
+                assert_eq!(ProofLang::from_tag(Some(t)), lang, "{t}");
+            }
+            assert_eq!(lang.code(), code);
+            assert!(lang.is_proofed());
+        }
         for t in ["en", "en-US", "EN_us", "en-Latn-US", "en-PH", "en-001", "eng", "en_US.UTF-8", "en-x-gb"] {
             assert_eq!(ProofLang::from_tag(Some(t)), ProofLang::En, "{t}");
         }
