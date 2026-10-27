@@ -720,6 +720,27 @@ fn a_polish_interface_writes_new_documents_in_polish() {
     assert_eq!(app.session.doc.styles.default_chr.lang.as_deref(), Some("pl-PL"));
 }
 
+/// Tinta Office: a Ukrainian, Catalan, Galician or Basque interface writes new documents in its
+/// language, which the bundled dictionaries proof, and the status bar names it.
+#[test]
+fn spain_and_ukraine_interfaces_write_new_documents_in_their_language() {
+    needs_catalogs!();
+    let ctx = egui::Context::default();
+    let frame = |app: &mut crate::WordApp| ctx.run_ui(egui::RawInput::default(), |ui| app.logic(ui.ctx())).drop_without_applying_deltas();
+    for (code, tag, name) in [("uk", "uk-UA", "Ukrainian"), ("ca", "ca-ES", "Catalan"), ("gl", "gl-ES", "Galician"), ("eu", "eu-ES", "Basque")] {
+        let mut app = crate::WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Default::default());
+        frame(&mut app);
+        app.run("ui.language", serde_json::json!({"value": code})).unwrap();
+        frame(&mut app);
+        assert_eq!(app.session.editing_lang.as_deref(), Some(tag), "{code}");
+        app.run("file.new", serde_json::json!({})).unwrap();
+        assert_eq!(app.session.doc.styles.default_chr.lang.as_deref(), Some(tag), "{code}");
+        set_current(Lang::EN);
+        assert_eq!(crate::ribbon::caret_language(&app), name);
+        assert_ne!(tr(lang(code), name), name, "{code} names {name} in its own words");
+    }
+}
+
 #[test]
 fn a_czech_interface_writes_new_documents_and_plain_text_in_czech() {
     needs_catalogs!();
@@ -776,7 +797,23 @@ fn an_italian_interface_writes_new_documents_in_italian() {
 #[test]
 fn the_editing_languages_are_the_ones_wordcraft_can_proof() {
     let with: Vec<(&str, &str)> = LANGUAGES.iter().filter_map(|l| l.editing_lang.map(|e| (l.code, e))).collect();
-    assert_eq!(with, [("pt-br", "pt-BR"), ("pl", "pl-PL"), ("cs", "cs-CZ"), ("tr", "tr-TR"), ("it", "it-IT")]);
+    assert_eq!(
+        with,
+        [
+            ("uk", "uk-UA"),
+            ("pt-br", "pt-BR"),
+            ("pl", "pl-PL"),
+            ("cs", "cs-CZ"),
+            ("tr", "tr-TR"),
+            ("it", "it-IT"),
+            ("ca", "ca-ES"),
+            ("gl", "gl-ES"),
+            ("eu", "eu-ES")
+        ]
+    );
+    for (_, tag) in with {
+        assert!(wordcraft_engine::proof::ProofLang::from_tag(Some(tag)).is_proofed(), "{tag}");
+    }
 }
 
 #[test]

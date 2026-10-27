@@ -72,6 +72,8 @@ cp -R "$ROOT/assets/app-icon/hicolor" "$STAGE/usr/share/icons/"
 mkdir -p "$STAGE/usr/share/doc/wordcraft"
 copy_docs "$STAGE/usr/share/doc/wordcraft"
 tinta_stage "$STAGE"
+# Tinta Office: the spelling dictionaries, where the app finds them (share/wordcraft/dictionaries).
+"$ROOT/packaging/dictionaries/fetch.sh" "$STAGE/usr/share/wordcraft/dictionaries"
 
 if command -v desktop-file-validate >/dev/null; then
   desktop-file-validate "$STAGE/usr/share/applications/$BRAND_ID.desktop"

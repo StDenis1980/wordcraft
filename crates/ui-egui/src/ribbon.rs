@@ -800,7 +800,7 @@ fn mi_text(ui: &mut Ui, app: &mut WordApp, text: &str, id: &str, params: Value) 
 }
 
 /// The proofing languages the Language menu offers: tag and English name (translated when drawn).
-pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 16] = [
+pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 20] = [
     ("en-US", "English (United States)"),
     ("en-GB", "English (United Kingdom)"),
     ("en-AU", "English (Australia)"),
@@ -817,6 +817,10 @@ pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 16] = [
     ("es-MX", "Spanish (Mexico)"),
     ("es-419", "Spanish (Latin America)"),
     ("es-UY", "Spanish (Uruguay)"),
+    ("uk-UA", "Ukrainian"),
+    ("ca-ES", "Catalan"),
+    ("gl-ES", "Galician"),
+    ("eu-ES", "Basque"),
 ];
 
 /// The English name of a proofing language tag, as the status bar shows it (no tag: WordCraft's
@@ -858,6 +862,10 @@ pub(crate) fn language_name(tag: Option<&str>) -> String {
             wordcraft_engine::proof::ProofLang::Cs => "Czech".into(),
             wordcraft_engine::proof::ProofLang::Id => "Indonesian".into(),
             wordcraft_engine::proof::ProofLang::Es => "Spanish (Spain)".into(),
+            wordcraft_engine::proof::ProofLang::Uk => "Ukrainian".into(),
+            wordcraft_engine::proof::ProofLang::Ca => "Catalan".into(),
+            wordcraft_engine::proof::ProofLang::Gl => "Galician".into(),
+            wordcraft_engine::proof::ProofLang::Eu => "Basque".into(),
             wordcraft_engine::proof::ProofLang::De => "German (Germany)".into(),
             wordcraft_engine::proof::ProofLang::En if tag.eq_ignore_ascii_case("en") => "English (United States)".into(),
             _ => tag.to_string(),
@@ -998,6 +1006,10 @@ pub(crate) fn language_menu(ui: &mut Ui, app: &mut WordApp) {
             || (tag == "cs-CZ" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Cs)
             || (tag == "id-ID" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Id)
             || (tag == "es-ES" && current.eq_ignore_ascii_case("es"))
+            || (tag == "uk-UA" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Uk)
+            || (tag == "ca-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Ca)
+            || (tag == "gl-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Gl)
+            || (tag == "eu-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Eu)
             || (tag == "en-US" && current.eq_ignore_ascii_case("en"))
     };
     let checks = language_checks(&current, listed);
@@ -3411,6 +3423,22 @@ mod tests {
         let c = language_checks("es-AR", |t| t.eq_ignore_ascii_case("es-AR"));
         assert_eq!(c.extra.as_deref(), Some("Spanish (Argentina)"));
         assert!(!c.listed.contains(&true));
+    }
+
+    #[test]
+    fn ukrainian_catalan_galician_and_basque_are_in_the_language_menu() {
+        for (tag, name, aliases) in [
+            ("uk-UA", "Ukrainian", &["uk", "UK-ua", "ukr"][..]),
+            ("ca-ES", "Catalan", &["ca", "cat"][..]),
+            ("gl-ES", "Galician", &["gl", "glg"][..]),
+            ("eu-ES", "Basque", &["eu", "eus"][..]),
+        ] {
+            assert!(PROOFING_LANGUAGES.contains(&(tag, name)), "{tag}");
+            assert_eq!(language_name(Some(tag)), name);
+            for alias in aliases {
+                assert_eq!(language_name(Some(alias)), name, "{alias}");
+            }
+        }
     }
 
     #[test]

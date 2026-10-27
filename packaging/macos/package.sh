@@ -109,6 +109,8 @@ cp "$WORK/bin/wordcraft" "$APP/Contents/MacOS/$APP_TITLE"
 cp "$ROOT/assets/app-icon/wordcraft.icns" "$APP/Contents/Resources/$APP_TITLE.icns"
 # Licences of the embedded craft-fonts fonts (only when built with CRAFT_FONTS_DIR).
 copy_docs "$APP/Contents/Resources"
+# Tinta Office: the spelling dictionaries, where the app finds them (Contents/Resources/dictionaries).
+"$ROOT/packaging/dictionaries/fetch.sh" "$APP/Contents/Resources/dictionaries"
 sed -e "s/@VERSION@/$VERSION/g" -e "s/@SHORT_VERSION@/$SHORT_VERSION/g" \
   -e "s/@BUILD_SHA@/${WORDCRAFT_BUILD_SHA:-unknown}/g" \
   "$HERE/Info.plist.in" >"$APP/Contents/Info.plist"

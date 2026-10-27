@@ -1,6 +1,7 @@
 # Tinta Texto — Tinta Office roadmap
 
-> **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created.
+> **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
+> 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -11,15 +12,15 @@ for users in Spain and Ukraine. It is a fork-only file, so upstream syncs never 
 
 Ready for real work ≈ 60% (essentials user ≈ 63%, upstream estimate); 157 commits behind
 upstream. Styles, lists, tables, review and mail merge work; the main risk is other people's
-.docx: never tested on real files, and charts and SmartArt are dropped silently. Spanish spelling
-on Windows needs a Hunspell dictionary the user installs (none bundled), and there is no Ukrainian
-spelling.
+.docx: never tested on real files, and charts and SmartArt are dropped silently. Spelling in
+Spanish, Catalan, Galician, Basque and Ukrainian works out of the box (dictionaries ship with the
+app since Preview 3).
 
 ## Priorities
 
 | # | Task | Where | Stage |
 |---|---|---|---|
-| 1 | Tinta dictionary pack: es_ES, ca, gl, eu, uk as a separate download or installer option, after a licence check (several are GPL/LGPL/MPL); Ukrainian spelling support upstream | fork (pack) + upstream (code) | 1 |
+| 1 | ✅ Tinta dictionary pack: es_ES, ca, gl_ES, eu, uk_UA ship in every package ([packaging/dictionaries](../packaging/dictionaries/README.md): pinned sources, SHA-256, licences); spelling in Ukrainian, Catalan, Galician and Basque (crate `proof`, module `plain`; the affix engine reads long and numeric flags, up to 512 flags, IGNORE, ICONV, NEEDAFFIX, KEEPCASE). Offer the code upstream. Next: the Valencian `ca-valencia` dictionary, hyphenation patterns for these languages | fork (pack) + upstream (code) | 1 |
 | 2 | Our .docx test set: typical self-employed documents (invoice, contract, CV, letter) written from scratch; an "open → save → nothing lost" test | fork (tests) → fixes upstream | 1 |
 | 3 | Keep charts, SmartArt and OLE through open and save (upstream item 3) | upstream | 1–2 |
 | 4 | Templates for Spain: factura, presupuesto, carta formal, currículum — our own text and colours, no Microsoft assets | fork or upstream | 2 |

@@ -6,7 +6,7 @@
   Produces, in $env:DIST (default: dist/release):
     tinta-texto-<version>-windows-<arch>.msi            per-machine installer (WiX v5)
     tinta-texto-<version>-windows-user-<arch>.msi       per-user installer, no admin rights (#39)
-    tinta-texto-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe
+    tinta-texto-<version>-windows-<arch>-portable.zip   wordcraft.exe + wordcraft-cli.exe + dictionaries
 
   The binaries link the C runtime statically (+crt-static), so neither the MSI nor the portable
   zip needs the Visual C++ redistributable. Signing is delegated to sign.ps1 (skipped with a
@@ -103,6 +103,11 @@ $AppNotices = Join-Path $Stage 'app-notices'
 New-Item -ItemType Directory -Force -Path $AppNotices | Out-Null
 Copy-Item -LiteralPath (Join-Path $Root 'NOTICE'), (Join-Path $Root 'ATTRIBUTION.md') -Destination $AppNotices
 
+# Tinta Office: the spelling dictionaries (packaging/dictionaries) ship in a dictionaries folder
+# next to wordcraft.exe, where the app finds them, with their licences.
+$Dictionaries = Join-Path $Stage 'dictionaries'
+& (Join-Path $Root 'packaging\dictionaries\fetch.ps1') -Dest $Dictionaries
+
 # ---- font notices for the MSI ------------------------------------------------------------------
 # The portable ZIP already carries these notices; stage the complete files before MSI creation too.
 $Docs = Join-Path $Stage 'font-licences'
@@ -161,6 +166,7 @@ foreach ($build in @(@($Msi, 'perMachine'), @($UserMsi, 'perUserOrMachine'))) {
       -d "Version=$MsiVersion" -d "BinDir=$Stage" -d "IconPath=$(Join-Path $Root 'assets\app-icon\wordcraft.ico')" `
       -d "LicenseRtf=$LicenseRtf" `
       -d "AppNoticesDir=$AppNotices" -d "DocsDir=$Docs" -d "HasCraftFontLicences=$HasCraftFontLicences" -d "Scope=$($build[1])" `
+      -d "DictionariesDir=$Dictionaries" `
       -o $out
   }
   # wix writes its debug symbols (.wixpdb) next to the MSI; keep them out of the release assets.
@@ -173,6 +179,7 @@ $Portable = Join-Path $TargetDir "windows-package\$AppSlug-$Version-windows-$Arc
 Remove-Item -Recurse -Force $Portable -ErrorAction SilentlyContinue
 New-Item -ItemType Directory -Force -Path $Portable | Out-Null
 Copy-Item (Join-Path $Stage '*.exe') $Portable
+Copy-Item -Recurse $Dictionaries (Join-Path $Portable 'dictionaries')
 foreach ($f in 'README.md', 'LICENSE', 'LICENSE-MIT', 'LICENSE-APACHE', 'NOTICE', 'ATTRIBUTION.md') {
   $p = Join-Path $Root $f
   if (Test-Path $p) { Copy-Item $p $Portable }
