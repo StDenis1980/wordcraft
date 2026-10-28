@@ -73,7 +73,7 @@ impl TableB {
     fn finish(self) -> FTable {
         // A column without a width leaves the whole grid to the equal split.
         let widths = if self.widths.iter().all(|w| *w > 0.0) { self.widths } else { Vec::new() };
-        FTable { rows: self.rows, widths, borderless: false }
+        FTable { rows: self.rows, widths, borderless: false, align: None }
     }
 }
 
@@ -821,6 +821,12 @@ impl Body<'_> {
                 }
                 self.fmt.push(fmt);
             }
+            // Page number and page count (§7.3.4, §7.5.18): their text is the field's result.
+            "page-number" | "page-count" if q.starts_with("text:") => {
+                let field = if local(q) == "page-count" { model::PageField::Pages } else { model::PageField::Page };
+                let fmt = model::Fmt { field: Some(field), ..self.cur_fmt() };
+                self.fmt.push(fmt);
+            }
             "s" => {
                 let count = get(a, "text:c").and_then(|v| v.trim().parse::<usize>().ok()).unwrap_or(1).clamp(1, 1000);
                 self.push_text(&" ".repeat(count));
@@ -899,7 +905,7 @@ impl Body<'_> {
         }
         match local(q) {
             "p" | "h" if !self.in_desc => self.end_para(),
-            "span" | "a" if self.fmt.len() > usize::from(self.para.is_some()) => {
+            "span" | "a" | "page-number" | "page-count" if self.fmt.len() > usize::from(self.para.is_some()) => {
                 self.fmt.pop();
             }
             "list" => {

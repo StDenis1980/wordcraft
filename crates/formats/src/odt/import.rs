@@ -184,7 +184,10 @@ pub(super) struct Pages {
 
 fn read_pages(xml: &[u8]) -> Pages {
     let mut layouts: HashMap<String, (Attrs, Option<Columns>)> = HashMap::new();
+    // The header and footer areas of each layout (`style:header-style`, `style:footer-style`).
+    let mut areas: HashMap<String, [Option<Attrs>; 2]> = HashMap::new();
     let mut cur: Option<String> = None;
+    let mut area: Option<usize> = None;
     let mut masters: Vec<(String, String)> = Vec::new();
     events(xml, |ev| match ev {
         Ev::Start(q, a) => match local(&q) {
@@ -201,6 +204,16 @@ fn read_pages(xml: &[u8]) -> Pages {
                     l.1 = Some(columns_of(&a));
                 }
             }
+            "header-style" => area = Some(0),
+            "footer-style" => area = Some(1),
+            "header-footer-properties" => {
+                if let (Some(n), Some(k)) = (&cur, area)
+                    && areas.len() < MAX_SECTIONS
+                    && let Some(slot) = areas.entry(n.clone()).or_default().get_mut(k)
+                {
+                    *slot = Some(a);
+                }
+            }
             "column-sep" => {
                 if let Some(c) = cur.as_ref().and_then(|n| layouts.get_mut(n)).and_then(|l| l.1.as_mut()) {
                     c.separator = column_sep(&a);
@@ -213,11 +226,11 @@ fn read_pages(xml: &[u8]) -> Pages {
             }
             _ => {}
         },
-        Ev::End(q) => {
-            if local(&q) == "page-layout" {
-                cur = None;
-            }
-        }
+        Ev::End(q) => match local(&q) {
+            "page-layout" => cur = None,
+            "header-style" | "footer-style" => area = None,
+            _ => {}
+        },
         Ev::Text(_) => {}
     });
     let mut pages = Pages::default();
@@ -225,6 +238,9 @@ fn read_pages(xml: &[u8]) -> Pages {
         let Some((a, cols)) = layouts.get(&layout) else { continue };
         let mut sec = SectionProps::default();
         apply_layout(a, &mut sec);
+        if let Some([header, footer]) = areas.get(&layout) {
+            apply_areas(header.as_ref(), footer.as_ref(), &mut sec);
+        }
         // A one-column layout keeps the default columns (and their gap).
         if let Some(c) = cols.as_ref().filter(|c| c.count > 1) {
             sec.columns = c.clone();
@@ -243,6 +259,24 @@ fn read_pages(xml: &[u8]) -> Pages {
 pub(super) fn apply_page_layout(xml: &[u8], sec: &mut SectionProps) {
     if let Some(first) = read_pages(xml).first {
         *sec = first;
+    }
+}
+
+/// A page's header and footer areas into Word's terms: ODF's page margin is where the header
+/// (footer) starts, and the body follows the header area, so the page margin is the header's
+/// distance from the edge and the body's margin adds the area's height and spacing.
+fn apply_areas(header: Option<&Attrs>, footer: Option<&Attrs>, sec: &mut SectionProps) {
+    let len = |a: &Attrs, k: &str| get(a, k).and_then(length).filter(|v| *v >= 0.0).unwrap_or(0.0);
+    let limit = sec.page_w.max(sec.page_h);
+    if let Some(a) = header {
+        let height = len(a, "fo:min-height").max(len(a, "svg:height"));
+        sec.header = sec.margin_top;
+        sec.margin_top = (sec.margin_top + height + len(a, "fo:margin-bottom")).min(limit);
+    }
+    if let Some(a) = footer {
+        let height = len(a, "fo:min-height").max(len(a, "svg:height"));
+        sec.footer = sec.margin_bottom;
+        sec.margin_bottom = (sec.margin_bottom + height + len(a, "fo:margin-top")).min(limit);
     }
 }
 

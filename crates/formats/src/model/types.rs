@@ -109,6 +109,35 @@ pub struct Fmt {
     /// Tracked formatting change of this text: who made it and the formatting before it (only
     /// [`from_doc_tracked`] and formats that keep revisions set it).
     pub fmt_change: Option<Box<FmtChange<Fmt>>>,
+    /// The text is a page-number field's result (formats with fields write the field; the rest
+    /// write the text).
+    pub field: Option<PageField>,
+}
+
+/// A page-number field: the page's number (`PAGE`) or the document's page count (`NUMPAGES`).
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum PageField {
+    Page,
+    Pages,
+}
+
+impl PageField {
+    /// The field a field instruction (`PAGE`, ` NUMPAGES \* MERGEFORMAT `) is, if one of these.
+    pub fn of_instr(instr: &str) -> Option<PageField> {
+        match instr.split_whitespace().next().map(str::to_ascii_uppercase).as_deref() {
+            Some("PAGE") => Some(PageField::Page),
+            Some("NUMPAGES") => Some(PageField::Pages),
+            _ => None,
+        }
+    }
+
+    /// Its field instruction.
+    pub fn instr(self) -> &'static str {
+        match self {
+            PageField::Page => "PAGE",
+            PageField::Pages => "NUMPAGES",
+        }
+    }
 }
 
 /// A tracked formatting change in a flow: who made it, and the formatting before it.
@@ -234,6 +263,8 @@ pub struct Para {
     pub spacing: Spacing,
     /// Borders the source puts on the paragraph itself (RTF `\brdrb`…).
     pub borders: Option<wordcraft_doc::props::Borders>,
+    /// Tab stops the paragraph sets itself.
+    pub tabs: Vec<wordcraft_doc::props::TabStop>,
     /// The section this paragraph ends (RTF `\sect`), as the document's last paragraph of it.
     pub section: Option<Box<wordcraft_doc::SectionProps>>,
     /// Tracked insertion of the paragraph mark.
@@ -366,6 +397,8 @@ pub struct FTable {
     pub widths: Vec<f32>,
     /// The source table had no borders (HTML default); the document table gets no grid style.
     pub borderless: bool,
+    /// The table's alignment between the margins (`None`: as wide as its columns, at the left).
+    pub align: Option<Align>,
 }
 
 impl FTable {
