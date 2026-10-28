@@ -3,7 +3,7 @@
 > **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
-> (priority 2) done.
+> (priority 2) done; 2026-10-28 priority 9: automatic validation of users' words.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -50,10 +50,23 @@ them with the next update. To analyse in stage 2, before any code:
   that prepares the list for the user to review and send (email to hola@tintaoffice.com or a
   form on the site). An automatic channel needs a small server (for example a Cloudflare Worker
   next to the site) and counts each word once per install.
-- **Validation.** Accept a word only when several different users added it, then check it against
-  public sources (RAE's DLE for Spanish, VESUM/dict_uk for Ukrainian, Softcatalà's DIEC lookups
-  for Catalan, the RAG for Galician, Euskaltzaindia for Basque); a native speaker approves each
-  batch. AI may pre-sort, never approve.
+- **Validation: automatic, no person in the loop** (owner's decision, 2026-10-28). The server,
+  never the app, checks each candidate, so no user's words reach a third party. A word is
+  added when all of these hold:
+  1. at least 5 different installs added it in that language (more for Spanish);
+  2. it passes the filters: letters of the language only, 2–40 characters, all lower case
+     (names and brands stay out);
+  3. a public dictionary source has an entry for it in that language, used within its terms
+     and licence. Candidates: Wiktionary in every language (dumps or API, CC BY-SA); for
+     Ukrainian, VESUM, the open source of dict_uk; for Catalan, Softcatalà's and LanguageTool's
+     public data; a LanguageTool server we run ourselves (LGPL) as an external checker for
+     all five languages. Not RAE's DLE: its terms forbid automated queries;
+  4. it is not a one-letter change of a word the dictionary already knows, unless the source
+     in step 3 lists it (catches common typos such as `recivir`).
+
+  Words that pass 1–2 but not 3 wait in a queue and are re-checked monthly. Each added word
+  carries where it was found; a word reported as wrong ("this is a typo") is removed from the
+  next release. The user's own custom dictionary is never touched.
 - **Where the words go.** Best: as contributions to the dictionary projects themselves (RLA-ES,
   Softcatalà, Proxecto Trasno, dict_uk, Xuxen), so every app gains them and our pack stays
   unchanged upstream text. Faster: our own small supplementary word list per language, shipped
@@ -61,8 +74,8 @@ them with the next update. To analyse in stage 2, before any code:
   list next to each Hunspell dictionary (not supported today).
 - **Updates.** Words arrive with each monthly release; a separate dictionary update without
   reinstalling comes later.
-- **Owner decisions.** Whether to collect at all, manual or automatic channel, server and cost,
-  who validates each language.
+- **Owner decisions.** Decided: automatic validation without a person (2026-10-28). Still open:
+  whether to collect at all, manual or automatic channel, server and its cost.
 
 ## Suite-wide work (all five Tinta Office apps)
 
