@@ -9,18 +9,24 @@
 pub use wordcraft_brand as brand;
 pub mod catalog;
 pub mod cmd;
+pub(crate) mod doc_state;
 pub mod file_access;
+pub(crate) mod ime;
 pub mod io;
 mod io_ext;
 pub mod keymap;
+pub(crate) mod locale;
 pub mod math_gallery;
+pub(crate) mod prefs;
 pub mod print;
 pub mod recovery;
 pub mod ribbon;
 pub mod sample;
 mod session;
+pub(crate) mod snapshot;
 pub mod speech;
 pub mod tinta_templates;
+pub(crate) mod view;
 
 use std::collections::HashMap;
 
@@ -199,17 +205,3 @@ pub mod p {
 
 #[cfg(test)]
 mod tests;
-#[cfg(test)]
-mod tests_bidi;
-#[cfg(test)]
-mod tests_documents;
-#[cfg(test)]
-mod tests_fonts;
-#[cfg(test)]
-mod tests_ime_noop;
-#[cfg(test)]
-mod tests_revision_checks;
-#[cfg(test)]
-mod tests_typing;
-#[cfg(test)]
-mod tests_wordart;
