@@ -4,7 +4,7 @@
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
 > (priority 2) done; 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
-> automatic sending.
+> automatic sending; the option is off by default with a GDPR notice beside it.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -40,10 +40,13 @@ them, check that they really exist, and add the right ones to our dictionaries, 
 them with the next update. To analyse in stage 2, before any code:
 
 - **Privacy first.** Added words are often names, surnames, company names, street names, DNI/NIE
-  or account numbers: personal data under the GDPR. Sending must be opt-in (off by default),
-  show exactly which words go out, send no document text and no user id, and skip anything with
-  digits, `@` or a capital inside the word. Publish what is collected in the privacy policy on
-  tintaoffice.com.
+  or account numbers: personal data under the GDPR. Owner's decision (2026-10-28): the
+  "Suggest my words" option lives in File › Options › Proofing and is **off by default**; next to
+  it, a short GDPR notice says what is sent (only the added words and their language, never
+  document text or a user id), why (to improve Tinta's dictionaries), where it goes, how long it
+  is kept and how to withdraw (turn the option off; ask hola@tintaoffice.com to delete). Turning
+  it on is the consent, so no separate pop-up warning. The app still skips anything with digits,
+  `@` or a capital inside the word, and the privacy policy on tintaoffice.com repeats the notice.
 - **What we have today.** The custom dictionary is one list for every language (File › Options ›
   Proofing, `ui.json`, at most 10,000 words) and does not record the language a word was added
   in. Collecting needs the language with each word.
