@@ -188,11 +188,14 @@ fn options(s: &mut Session, v: &Value) -> CmdResult {
         s.view.proofing = b;
         s.prefs.check_spelling = b;
     }
+    let lang = crate::tinta_suggest::caret_lang(s);
     for w in &add {
         wordcraft_proof::add_word(w);
+        crate::tinta_suggest::record(s, w, &lang);
     }
     for w in &remove {
         wordcraft_proof::remove_word(w);
+        crate::tinta_suggest::forget(s, w);
     }
     if !add.is_empty() || !remove.is_empty() {
         s.persist_user_dictionary(&remove);

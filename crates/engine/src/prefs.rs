@@ -56,6 +56,10 @@ pub struct Prefs {
     /// in Word). A damaged saved value reads as the defaults.
     #[serde(deserialize_with = "crate::cmd::tools::lenient_autocorrect")]
     pub autocorrect: crate::cmd::tools::AutoCorrectPrefs,
+    /// Tinta Office: Suggest my words for Tinta's dictionaries (off by default) and the words
+    /// listed while it is on ([`crate::tinta_suggest`]).
+    #[serde(deserialize_with = "crate::tinta_suggest::lenient")]
+    pub tinta_suggest: crate::tinta_suggest::SuggestPrefs,
 }
 
 impl Default for Prefs {
@@ -80,6 +84,7 @@ impl Default for Prefs {
             detect_language: true,
             default_language: None,
             autocorrect: Default::default(),
+            tinta_suggest: Default::default(),
         }
     }
 }

@@ -1,12 +1,13 @@
 # Tinta Texto — Tinta Office roadmap
 
-> **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
+> **Status:** 2026-10-28 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
 > (priority 2) done; 2026-10-28 charts, SmartArt and OLE kept on save confirmed (priority 3); 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
 > automatic sending; the option is off by default with a GDPR notice beside it; 2026-10-28 templates
 > for Spain (priority 4) done; .odt export checked (priority 7); 2026-10-28 synced with upstream;
-> .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7).
+> .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7);
+> 2026-10-28 Suggest my words option and list (priority 9, stage 2) done.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -33,7 +34,7 @@ app since Preview 3).
 | 6 | Formatting revisions and content controls | upstream | 2 |
 | 7 | ✅ .odt export for Spanish administrations that use ODF. Checked 2026-10-28 with the Spain templates, then fixed: the export now writes headers and footers on the master pages (default, even and first page) with page-number and page-count fields, Word's top/bottom margins and header/footer distances, paragraph spacing, indents and line spacing, tab stops with leaders, paragraph borders, cell borders, layout tables without a grid and table alignment; the importer reads the page fields and the margins back. Checked by opening the exported templates in LibreOffice: they look as in Texto. Tests: `crates/formats/src/odt/tinta_tests.rs` and the templates' .odt round trip. Next: offer it upstream; the importer still ignores paragraph spacing, indents and tab stops, and the cell margins are Word's defaults | fork → upstream | 2 |
 | 8 | Charts, SmartArt, ink (≈ 3% today) | upstream | 3 |
-| 9 | A shared Tinta dictionary built from the words users add (see [below](#analysis-a-shared-dictionary-from-users-words)): the "Suggest these words" button and automatic validation, then automatic sending | fork | 2 (button), 3 (automatic) |
+| 9 | A shared Tinta dictionary built from the words users add (see [below](#analysis-a-shared-dictionary-from-users-words)). Stage 2 ✅ (2026-10-28, [`crates/engine/src/tinta_suggest.rs`](../crates/engine/src/tinta_suggest.rs), `review.suggestWords`, `review.suggestedWords`): File › Options › Proofing › "Suggest my words for Tinta's dictionaries", off by default, the GDPR notice beside it in all 29 interface languages; while on, each word added to the dictionary is listed with its language on this computer only, words with digits, `@`, other non-letters or a capital inside are never listed, and the user removes words, then sends the list by email to hola@tintaoffice.com (Send by email opens a mailto link; Copy the list for webmail) or clears it; turning it off deletes the list. Still to do: automatic validation and sending (the server, stage 3) and the privacy policy on tintaoffice.com | fork | 2 (button ✅), 3 (automatic) |
 
 ## Analysis: a shared dictionary from users' words
 

@@ -288,3 +288,264 @@ eu	Invoice (Spain)	Faktura (Espainia)
 eu	Quote (Spain)	Aurrekontua (Espainia)
 eu	Formal letter (Spain)	Gutun formala (Espainia)
 eu	CV (Spain)	Curriculuma (Espainia)
+bg	Suggest my words	Предлагай моите думи
+bg	Suggest my words for Tinta's dictionaries	Предлагай моите думи за речниците на Tinta
+bg	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Изключено по подразбиране. Докато опцията е включена, думите, които добавяте в речника, се събират тук заедно с езика си, само на този компютър. Нищо не се изпраща само: вие преглеждате списъка и го изпращате по имейл на hola@tintaoffice.com.
+bg	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Изпращат се само тези думи и езикът им, никога вашите документи; думи с цифри, @ или главна буква в средата се пропускат. Tinta Office ги използва само за подобряване на речниците си и ги изтрива до 12 месеца; имейл адресът ви се използва само за отговор. За да оттеглите съгласието си, изключете опцията (списъкът се изтрива) и помолете hola@tintaoffice.com да изтрие изпратеното.
+bg	No words listed yet.	Все още няма думи.
+bg	Send by email	Изпрати по имейл
+bg	Copy the list	Копирай списъка
+bg	Clear the list	Изчисти списъка
+bg	The email holds {n} of {total} words; send the rest next time, or copy the list.	Имейлът съдържа {n} от {total} думи; изпратете останалите следващия път или копирайте списъка.
+ca	Suggest my words	Suggerir les meves paraules
+ca	Suggest my words for Tinta's dictionaries	Suggerir les meves paraules per als diccionaris de Tinta
+ca	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Desactivat per defecte. Mentre estigui activat, les paraules que afegiu al diccionari es recullen aquí amb la seva llengua, només en aquest ordinador. No s'envia res per si sol: reviseu la llista i l'envieu per correu a hola@tintaoffice.com.
+ca	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Només s'envien aquestes paraules i la seva llengua, mai els vostres documents; les paraules amb xifres, @ o una majúscula al mig no es recullen. Tinta Office les fa servir només per millorar els seus diccionaris i les elimina en un termini de 12 mesos; la vostra adreça de correu només s'utilitza per respondre-us. Per retirar el consentiment, desactiveu l'opció (la llista s'elimina) i demaneu a hola@tintaoffice.com que esborri el que heu enviat.
+ca	No words listed yet.	Encara no hi ha paraules.
+ca	Send by email	Envia per correu
+ca	Copy the list	Copia la llista
+ca	Clear the list	Buida la llista
+ca	The email holds {n} of {total} words; send the rest next time, or copy the list.	El correu conté {n} de {total} paraules; envieu la resta la propera vegada o copieu la llista.
+cs	Suggest my words	Navrhovat moje slova
+cs	Suggest my words for Tinta's dictionaries	Navrhovat moje slova do slovníků Tinta
+cs	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Ve výchozím stavu vypnuto. Dokud je volba zapnutá, slova, která přidáte do slovníku, se zde shromažďují i s jazykem, pouze v tomto počítači. Nic se neodesílá samo: seznam si projdete a pošlete e-mailem na hola@tintaoffice.com.
+cs	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Odesílají se jen tato slova a jejich jazyk, nikdy vaše dokumenty; slova s číslicemi, @ nebo velkým písmenem uvnitř se vynechávají. Tinta Office je používá jen ke zlepšení svých slovníků a do 12 měsíců je smaže; vaši e-mailovou adresu používá jen k odpovědi. Souhlas odvoláte vypnutím volby (seznam se smaže) a žádostí na hola@tintaoffice.com o smazání toho, co jste poslali.
+cs	No words listed yet.	Zatím žádná slova.
+cs	Send by email	Poslat e-mailem
+cs	Copy the list	Kopírovat seznam
+cs	Clear the list	Vymazat seznam
+cs	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-mail obsahuje {n} z {total} slov; zbytek pošlete příště, nebo seznam zkopírujte.
+da	Suggest my words	Foreslå mine ord
+da	Suggest my words for Tinta's dictionaries	Foreslå mine ord til Tintas ordbøger
+da	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Slået fra som standard. Mens indstillingen er slået til, samles de ord, du føjer til ordbogen, her med deres sprog, kun på denne computer. Intet sendes af sig selv: du gennemser listen og sender den med e-mail til hola@tintaoffice.com.
+da	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Kun disse ord og deres sprog sendes, aldrig dine dokumenter; ord med tal, @ eller et stort bogstav inde i ordet udelades. Tinta Office bruger dem kun til at forbedre sine ordbøger og sletter dem inden for 12 måneder; din e-mailadresse bruges kun til at svare dig. For at trække samtykket tilbage skal du slå indstillingen fra (listen slettes) og bede hola@tintaoffice.com om at slette det, du har sendt.
+da	No words listed yet.	Ingen ord endnu.
+da	Send by email	Send med e-mail
+da	Copy the list	Kopiér listen
+da	Clear the list	Ryd listen
+da	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-mailen indeholder {n} af {total} ord; send resten næste gang, eller kopiér listen.
+de	Suggest my words	Meine Wörter vorschlagen
+de	Suggest my words for Tinta's dictionaries	Meine Wörter für die Wörterbücher von Tinta vorschlagen
+de	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Standardmäßig aus. Solange die Option an ist, werden die Wörter, die Sie dem Wörterbuch hinzufügen, hier mit ihrer Sprache gesammelt, nur auf diesem Computer. Nichts wird von selbst gesendet: Sie prüfen die Liste und schicken sie per E-Mail an hola@tintaoffice.com.
+de	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Gesendet werden nur diese Wörter und ihre Sprache, nie Ihre Dokumente; Wörter mit Ziffern, @ oder einem Großbuchstaben im Wort werden nicht gesammelt. Tinta Office verwendet sie nur, um seine Wörterbücher zu verbessern, und löscht sie innerhalb von 12 Monaten; Ihre E-Mail-Adresse wird nur für die Antwort verwendet. Zum Widerruf schalten Sie die Option aus (die Liste wird gelöscht) und bitten hola@tintaoffice.com, das Gesendete zu löschen.
+de	No words listed yet.	Noch keine Wörter.
+de	Send by email	Per E-Mail senden
+de	Copy the list	Liste kopieren
+de	Clear the list	Liste leeren
+de	The email holds {n} of {total} words; send the rest next time, or copy the list.	Die E-Mail enthält {n} von {total} Wörtern; senden Sie den Rest beim nächsten Mal oder kopieren Sie die Liste.
+es	Suggest my words	Sugerir mis palabras
+es	Suggest my words for Tinta's dictionaries	Sugerir mis palabras para los diccionarios de Tinta
+es	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Desactivado de forma predeterminada. Mientras esté activado, las palabras que añada al diccionario se recogen aquí con su idioma, solo en este equipo. No se envía nada por sí solo: usted revisa la lista y la envía por correo a hola@tintaoffice.com.
+es	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Solo se envían estas palabras y su idioma, nunca sus documentos; las palabras con cifras, @ o una mayúscula en medio no se recogen. Tinta Office las usa solo para mejorar sus diccionarios y las elimina en un plazo de 12 meses; su dirección de correo se usa solo para responderle. Para retirar el consentimiento, desactive esta opción (la lista se elimina) y pida a hola@tintaoffice.com que borre lo que envió.
+es	No words listed yet.	Todavía no hay palabras.
+es	Send by email	Enviar por correo
+es	Copy the list	Copiar la lista
+es	Clear the list	Vaciar la lista
+es	The email holds {n} of {total} words; send the rest next time, or copy the list.	El correo contiene {n} de {total} palabras; envíe el resto la próxima vez o copie la lista.
+et	Suggest my words	Soovita minu sõnu
+et	Suggest my words for Tinta's dictionaries	Soovita minu sõnu Tinta sõnastikesse
+et	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Vaikimisi väljas. Kuni see on sees, kogutakse sõnastikku lisatud sõnad siia koos nende keelega, ainult selles arvutis. Midagi ei saadeta iseenesest: vaatate loendi üle ja saadate selle e-kirjaga aadressile hola@tintaoffice.com.
+et	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Saadetakse ainult need sõnad ja nende keel, mitte kunagi teie dokumente; numbrite, @-märgi või sõna sees oleva suurtähega sõnu ei koguta. Tinta Office kasutab neid ainult oma sõnastike parandamiseks ja kustutab need 12 kuu jooksul; teie e-posti aadressi kasutatakse ainult vastamiseks. Nõusoleku tagasivõtmiseks lülitage see välja (loend kustutatakse) ja paluge aadressil hola@tintaoffice.com saadetu kustutada.
+et	No words listed yet.	Sõnu veel pole.
+et	Send by email	Saada e-kirjaga
+et	Copy the list	Kopeeri loend
+et	Clear the list	Tühjenda loend
+et	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-kirjas on {n} sõna {total}-st; saatke ülejäänud järgmisel korral või kopeerige loend.
+eu	Suggest my words	Iradoki nire hitzak
+eu	Suggest my words for Tinta's dictionaries	Iradoki nire hitzak Tintaren hiztegietarako
+eu	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Desaktibatuta dago lehenespenez. Aktibatuta dagoen bitartean, hiztegira gehitzen dituzun hitzak hemen biltzen dira beren hizkuntzarekin, ordenagailu honetan soilik. Ez da ezer berez bidaltzen: zuk zerrenda berrikusi eta hola@tintaoffice.com helbidera bidaltzen duzu posta elektronikoz.
+eu	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Hitz hauek eta beren hizkuntza soilik bidaltzen dira, inoiz ez zure dokumentuak; zenbakiak, @ edo barruan letra larria duten hitzak ez dira biltzen. Tinta Officek hiztegiak hobetzeko soilik erabiltzen ditu eta 12 hilabeteko epean ezabatzen ditu; zure helbide elektronikoa erantzuteko soilik erabiltzen da. Baimena kentzeko, desaktibatu aukera hau (zerrenda ezabatu egiten da) eta eskatu hola@tintaoffice.com helbideari bidali duzuna ezabatzeko.
+eu	No words listed yet.	Oraindik ez dago hitzik.
+eu	Send by email	Bidali posta elektronikoz
+eu	Copy the list	Kopiatu zerrenda
+eu	Clear the list	Hustu zerrenda
+eu	The email holds {n} of {total} words; send the rest next time, or copy the list.	Mezuak {total} hitzetatik {n} ditu; bidali gainerakoak hurrengoan, edo kopiatu zerrenda.
+fr	Suggest my words	Suggérer mes mots
+fr	Suggest my words for Tinta's dictionaries	Suggérer mes mots pour les dictionnaires de Tinta
+fr	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Désactivé par défaut. Tant que l'option est active, les mots que vous ajoutez au dictionnaire sont listés ici avec leur langue, sur cet ordinateur uniquement. Rien n'est envoyé automatiquement : vous relisez la liste et l'envoyez par e-mail à hola@tintaoffice.com.
+fr	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Seuls ces mots et leur langue sont envoyés, jamais vos documents ; les mots contenant des chiffres, un @ ou une majuscule à l'intérieur sont exclus. Tinta Office les utilise uniquement pour améliorer ses dictionnaires et les supprime dans un délai de 12 mois ; votre adresse e-mail ne sert qu'à vous répondre. Pour retirer votre consentement, désactivez l'option (la liste est supprimée) et demandez à hola@tintaoffice.com d'effacer ce que vous avez envoyé.
+fr	No words listed yet.	Aucun mot pour l'instant.
+fr	Send by email	Envoyer par e-mail
+fr	Copy the list	Copier la liste
+fr	Clear the list	Vider la liste
+fr	The email holds {n} of {total} words; send the rest next time, or copy the list.	L'e-mail contient {n} mots sur {total} ; envoyez le reste la prochaine fois ou copiez la liste.
+gl	Suggest my words	Suxerir as miñas palabras
+gl	Suggest my words for Tinta's dictionaries	Suxerir as miñas palabras para os dicionarios de Tinta
+gl	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Desactivado de xeito predeterminado. Mentres estea activado, as palabras que engada ao dicionario recóllense aquí co seu idioma, só neste ordenador. Non se envía nada por si só: vostede revisa a lista e envíaa por correo a hola@tintaoffice.com.
+gl	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Só se envían estas palabras e o seu idioma, nunca os seus documentos; as palabras con cifras, @ ou unha maiúscula no medio non se recollen. Tinta Office úsaas só para mellorar os seus dicionarios e elimínaas nun prazo de 12 meses; o seu enderezo de correo úsase só para responderlle. Para retirar o consentimento, desactive esta opción (a lista elimínase) e pida a hola@tintaoffice.com que borre o que enviou.
+gl	No words listed yet.	Aínda non hai palabras.
+gl	Send by email	Enviar por correo
+gl	Copy the list	Copiar a lista
+gl	Clear the list	Baleirar a lista
+gl	The email holds {n} of {total} words; send the rest next time, or copy the list.	O correo contén {n} de {total} palabras; envíe o resto a próxima vez ou copie a lista.
+hr	Suggest my words	Predloži moje riječi
+hr	Suggest my words for Tinta's dictionaries	Predloži moje riječi za Tintine rječnike
+hr	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Zadano isključeno. Dok je opcija uključena, riječi koje dodate u rječnik prikupljaju se ovdje zajedno s jezikom, samo na ovom računalu. Ništa se ne šalje samo od sebe: pregledate popis i pošaljete ga e-poštom na hola@tintaoffice.com.
+hr	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Šalju se samo te riječi i njihov jezik, nikada vaši dokumenti; riječi sa znamenkama, @ ili velikim slovom u sredini izostavljaju se. Tinta Office koristi ih samo za poboljšanje svojih rječnika i briše ih u roku od 12 mjeseci; vaša adresa e-pošte koristi se samo za odgovor. Za povlačenje privole isključite opciju (popis se briše) i zamolite hola@tintaoffice.com da izbriše ono što ste poslali.
+hr	No words listed yet.	Još nema riječi.
+hr	Send by email	Pošalji e-poštom
+hr	Copy the list	Kopiraj popis
+hr	Clear the list	Očisti popis
+hr	The email holds {n} of {total} words; send the rest next time, or copy the list.	Poruka sadrži {n} od {total} riječi; ostatak pošaljite sljedeći put ili kopirajte popis.
+hu	Suggest my words	Szavaim javaslása
+hu	Suggest my words for Tinta's dictionaries	Szavaim javaslása a Tinta szótáraihoz
+hu	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Alapértelmezés szerint ki van kapcsolva. Amíg be van kapcsolva, a szótárhoz adott szavak itt gyűlnek a nyelvükkel együtt, csak ezen a számítógépen. Semmi sem megy el magától: átnézi a listát, és e-mailben elküldi a hola@tintaoffice.com címre.
+hu	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Csak ezek a szavak és a nyelvük kerülnek elküldésre, a dokumentumai soha; a számjegyet, @ jelet vagy a szó belsejében nagybetűt tartalmazó szavak kimaradnak. A Tinta Office csak a szótárai javítására használja őket, és 12 hónapon belül törli; az e-mail-címét csak a válaszhoz használja. A hozzájárulás visszavonásához kapcsolja ki ezt a beállítást (a lista törlődik), és kérje a hola@tintaoffice.com címen az elküldöttek törlését.
+hu	No words listed yet.	Még nincsenek szavak.
+hu	Send by email	Küldés e-mailben
+hu	Copy the list	Lista másolása
+hu	Clear the list	Lista törlése
+hu	The email holds {n} of {total} words; send the rest next time, or copy the list.	Az e-mail {total} szóból {n} szót tartalmaz; a többit küldje el legközelebb, vagy másolja a listát.
+it	Suggest my words	Suggerisci le mie parole
+it	Suggest my words for Tinta's dictionaries	Suggerisci le mie parole per i dizionari di Tinta
+it	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Disattivata per impostazione predefinita. Finché è attiva, le parole che aggiungi al dizionario vengono elencate qui con la loro lingua, solo su questo computer. Nulla viene inviato da solo: controlli l'elenco e lo invii per e-mail a hola@tintaoffice.com.
+it	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Vengono inviate solo queste parole e la loro lingua, mai i tuoi documenti; le parole con cifre, @ o una maiuscola all'interno sono escluse. Tinta Office le usa solo per migliorare i suoi dizionari e le elimina entro 12 mesi; il tuo indirizzo e-mail serve solo per risponderti. Per revocare il consenso, disattiva l'opzione (l'elenco viene eliminato) e chiedi a hola@tintaoffice.com di cancellare ciò che hai inviato.
+it	No words listed yet.	Ancora nessuna parola.
+it	Send by email	Invia per e-mail
+it	Copy the list	Copia l'elenco
+it	Clear the list	Svuota l'elenco
+it	The email holds {n} of {total} words; send the rest next time, or copy the list.	L'e-mail contiene {n} parole su {total}; invia le altre la prossima volta o copia l'elenco.
+ja	Suggest my words	自分の単語を提案
+ja	Suggest my words for Tinta's dictionaries	自分の単語を Tinta の辞書に提案する
+ja	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	既定ではオフです。オンの間、辞書に追加した単語がその言語とともにここに一覧表示されます (このコンピューター上のみ)。自動では何も送信されません。一覧を確認して、メールで hola@tintaoffice.com に送ってください。
+ja	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	送信されるのはこれらの単語とその言語だけで、文書は送信されません。数字、@、または語中に大文字を含む単語は除外されます。Tinta Office はこれらを辞書の改善にのみ使用し、12 か月以内に削除します。メール アドレスは返信にのみ使用します。同意を撤回するには、このオプションをオフにし (一覧は削除されます)、送信した内容の削除を hola@tintaoffice.com に依頼してください。
+ja	No words listed yet.	単語はまだありません。
+ja	Send by email	メールで送信
+ja	Copy the list	一覧をコピー
+ja	Clear the list	一覧をクリア
+ja	The email holds {n} of {total} words; send the rest next time, or copy the list.	メールには {total} 語のうち {n} 語が含まれます。残りは次回送信するか、一覧をコピーしてください。
+ko	Suggest my words	내 단어 제안
+ko	Suggest my words for Tinta's dictionaries	Tinta 사전에 내 단어 제안
+ko	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	기본적으로 꺼져 있습니다. 켜 두는 동안 사전에 추가한 단어가 언어와 함께 여기에 표시되며, 이 컴퓨터에만 저장됩니다. 자동으로 전송되는 것은 없습니다. 목록을 검토한 후 hola@tintaoffice.com으로 이메일을 보내세요.
+ko	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	이 단어와 언어만 전송되며 문서는 절대 전송되지 않습니다. 숫자, @ 또는 단어 중간에 대문자가 있는 단어는 제외됩니다. Tinta Office는 이 단어를 사전 개선에만 사용하며 12개월 이내에 삭제합니다. 이메일 주소는 회신에만 사용됩니다. 동의를 철회하려면 이 옵션을 끄고(목록이 삭제됨) hola@tintaoffice.com에 보낸 내용의 삭제를 요청하세요.
+ko	No words listed yet.	아직 단어가 없습니다.
+ko	Send by email	이메일로 보내기
+ko	Copy the list	목록 복사
+ko	Clear the list	목록 지우기
+ko	The email holds {n} of {total} words; send the rest next time, or copy the list.	이메일에 {total}개 중 {n}개 단어가 들어 있습니다. 나머지는 다음에 보내거나 목록을 복사하세요.
+nl	Suggest my words	Mijn woorden voorstellen
+nl	Suggest my words for Tinta's dictionaries	Mijn woorden voorstellen voor de woordenboeken van Tinta
+nl	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Standaard uit. Zolang deze optie aan staat, worden de woorden die u aan het woordenboek toevoegt hier met hun taal verzameld, alleen op deze computer. Er wordt niets vanzelf verzonden: u bekijkt de lijst en stuurt hem per e-mail naar hola@tintaoffice.com.
+nl	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Alleen deze woorden en hun taal worden verzonden, nooit uw documenten; woorden met cijfers, @ of een hoofdletter in het woord worden overgeslagen. Tinta Office gebruikt ze alleen om zijn woordenboeken te verbeteren en verwijdert ze binnen 12 maanden; uw e-mailadres wordt alleen gebruikt om te antwoorden. Om uw toestemming in te trekken, zet u deze optie uit (de lijst wordt verwijderd) en vraagt u hola@tintaoffice.com te verwijderen wat u hebt gestuurd.
+nl	No words listed yet.	Nog geen woorden.
+nl	Send by email	Per e-mail versturen
+nl	Copy the list	Lijst kopiëren
+nl	Clear the list	Lijst leegmaken
+nl	The email holds {n} of {total} words; send the rest next time, or copy the list.	De e-mail bevat {n} van {total} woorden; stuur de rest de volgende keer, of kopieer de lijst.
+pl	Suggest my words	Proponuj moje słowa
+pl	Suggest my words for Tinta's dictionaries	Proponuj moje słowa do słowników Tinta
+pl	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Domyślnie wyłączone. Gdy opcja jest włączona, słowa dodawane do słownika są zbierane tutaj wraz z językiem, tylko na tym komputerze. Nic nie jest wysyłane samo: przeglądasz listę i wysyłasz ją e-mailem na hola@tintaoffice.com.
+pl	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Wysyłane są tylko te słowa i ich język, nigdy Twoje dokumenty; słowa z cyframi, @ lub wielką literą w środku są pomijane. Tinta Office używa ich wyłącznie do ulepszania swoich słowników i usuwa je w ciągu 12 miesięcy; Twój adres e-mail służy tylko do odpowiedzi. Aby wycofać zgodę, wyłącz tę opcję (lista zostanie usunięta) i poproś hola@tintaoffice.com o usunięcie tego, co wysłano.
+pl	No words listed yet.	Nie ma jeszcze słów.
+pl	Send by email	Wyślij e-mailem
+pl	Copy the list	Kopiuj listę
+pl	Clear the list	Wyczyść listę
+pl	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-mail zawiera {n} z {total} słów; resztę wyślij następnym razem lub skopiuj listę.
+pt-br	Suggest my words	Sugerir minhas palavras
+pt-br	Suggest my words for Tinta's dictionaries	Sugerir minhas palavras para os dicionários do Tinta
+pt-br	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Desativado por padrão. Enquanto estiver ativado, as palavras que você adicionar ao dicionário ficam listadas aqui com o idioma, somente neste computador. Nada é enviado sozinho: você revisa a lista e a envia por e-mail para hola@tintaoffice.com.
+pt-br	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Somente essas palavras e o idioma delas são enviados, nunca seus documentos; palavras com algarismos, @ ou maiúscula no meio ficam de fora. O Tinta Office as usa apenas para melhorar seus dicionários e as exclui em até 12 meses; seu endereço de e-mail é usado só para responder. Para retirar o consentimento, desative esta opção (a lista é excluída) e peça a hola@tintaoffice.com que apague o que você enviou.
+pt-br	No words listed yet.	Nenhuma palavra ainda.
+pt-br	Send by email	Enviar por e-mail
+pt-br	Copy the list	Copiar a lista
+pt-br	Clear the list	Limpar a lista
+pt-br	The email holds {n} of {total} words; send the rest next time, or copy the list.	O e-mail contém {n} de {total} palavras; envie o restante na próxima vez ou copie a lista.
+ro	Suggest my words	Sugerează cuvintele mele
+ro	Suggest my words for Tinta's dictionaries	Sugerează cuvintele mele pentru dicționarele Tinta
+ro	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Dezactivat implicit. Cât timp opțiunea este activă, cuvintele pe care le adăugați în dicționar sunt listate aici împreună cu limba lor, doar pe acest computer. Nimic nu se trimite de la sine: verificați lista și o trimiteți prin e-mail la hola@tintaoffice.com.
+ro	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Se trimit doar aceste cuvinte și limba lor, niciodată documentele dvs.; cuvintele cu cifre, @ sau cu o majusculă în interior sunt excluse. Tinta Office le folosește doar pentru a-și îmbunătăți dicționarele și le șterge în cel mult 12 luni; adresa dvs. de e-mail este folosită doar pentru răspuns. Pentru a vă retrage consimțământul, dezactivați opțiunea (lista este ștearsă) și cereți la hola@tintaoffice.com să șteargă ce ați trimis.
+ro	No words listed yet.	Încă nu există cuvinte.
+ro	Send by email	Trimite prin e-mail
+ro	Copy the list	Copiază lista
+ro	Clear the list	Golește lista
+ro	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-mailul conține {n} din {total} cuvinte; trimiteți restul data viitoare sau copiați lista.
+ru	Suggest my words	Предлагать мои слова
+ru	Suggest my words for Tinta's dictionaries	Предлагать мои слова для словарей Tinta
+ru	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	По умолчанию выключено. Пока параметр включён, слова, которые вы добавляете в словарь, собираются здесь вместе с языком, только на этом компьютере. Ничего не отправляется само: вы просматриваете список и отправляете его письмом на hola@tintaoffice.com.
+ru	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Отправляются только эти слова и их язык, никогда ваши документы; слова с цифрами, @ или заглавной буквой внутри не собираются. Tinta Office использует их только для улучшения своих словарей и удаляет в течение 12 месяцев; ваш адрес электронной почты используется только для ответа. Чтобы отозвать согласие, выключите параметр (список удаляется) и попросите hola@tintaoffice.com удалить то, что вы отправили.
+ru	No words listed yet.	Слов пока нет.
+ru	Send by email	Отправить письмом
+ru	Copy the list	Копировать список
+ru	Clear the list	Очистить список
+ru	The email holds {n} of {total} words; send the rest next time, or copy the list.	Письмо содержит {n} из {total} слов; остальные отправьте в следующий раз или скопируйте список.
+sl	Suggest my words	Predlagaj moje besede
+sl	Suggest my words for Tinta's dictionaries	Predlagaj moje besede za slovarje Tinta
+sl	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Privzeto izklopljeno. Dokler je možnost vklopljena, se besede, ki jih dodate v slovar, zbirajo tukaj skupaj z jezikom, samo na tem računalniku. Nič se ne pošlje samo: seznam pregledate in ga pošljete po e-pošti na hola@tintaoffice.com.
+sl	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Pošljejo se samo te besede in njihov jezik, nikoli vaši dokumenti; besede s številkami, @ ali veliko črko v sredini se izpustijo. Tinta Office jih uporablja samo za izboljšanje svojih slovarjev in jih izbriše v 12 mesecih; vaš e-poštni naslov se uporablja samo za odgovor. Za preklic soglasja izklopite možnost (seznam se izbriše) in prosite hola@tintaoffice.com, naj izbriše, kar ste poslali.
+sl	No words listed yet.	Besed še ni.
+sl	Send by email	Pošlji po e-pošti
+sl	Copy the list	Kopiraj seznam
+sl	Clear the list	Počisti seznam
+sl	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-poštno sporočilo vsebuje {n} od {total} besed; ostale pošljite naslednjič ali kopirajte seznam.
+sr	Suggest my words	Предложи моје речи
+sr	Suggest my words for Tinta's dictionaries	Предлажи моје речи за Тинтине речнике
+sr	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Подразумевано искључено. Док је опција укључена, речи које додате у речник прикупљају се овде заједно са језиком, само на овом рачунару. Ништа се не шаље само од себе: прегледате списак и пошаљете га е-поштом на hola@tintaoffice.com.
+sr	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Шаљу се само ове речи и њихов језик, никада ваши документи; речи са цифрама, @ или великим словом у средини се изостављају. Tinta Office их користи само за побољшање својих речника и брише их у року од 12 месеци; ваша адреса е-поште користи се само за одговор. Да бисте повукли сагласност, искључите опцију (списак се брише) и замолите hola@tintaoffice.com да избрише оно што сте послали.
+sr	No words listed yet.	Још нема речи.
+sr	Send by email	Пошаљи е-поштом
+sr	Copy the list	Копирај списак
+sr	Clear the list	Очисти списак
+sr	The email holds {n} of {total} words; send the rest next time, or copy the list.	Порука садржи {n} од {total} речи; остатак пошаљите следећи пут или копирајте списак.
+sr-latn	Suggest my words	Predloži moje reči
+sr-latn	Suggest my words for Tinta's dictionaries	Predlaži moje reči za Tintine rečnike
+sr-latn	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Podrazumevano isključeno. Dok je opcija uključena, reči koje dodate u rečnik prikupljaju se ovde zajedno sa jezikom, samo na ovom računaru. Ništa se ne šalje samo od sebe: pregledate spisak i pošaljete ga e-poštom na hola@tintaoffice.com.
+sr-latn	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Šalju se samo ove reči i njihov jezik, nikada vaši dokumenti; reči sa ciframa, @ ili velikim slovom u sredini se izostavljaju. Tinta Office ih koristi samo za poboljšanje svojih rečnika i briše ih u roku od 12 meseci; vaša adresa e-pošte koristi se samo za odgovor. Da biste povukli saglasnost, isključite opciju (spisak se briše) i zamolite hola@tintaoffice.com da izbriše ono što ste poslali.
+sr-latn	No words listed yet.	Još nema reči.
+sr-latn	Send by email	Pošalji e-poštom
+sr-latn	Copy the list	Kopiraj spisak
+sr-latn	Clear the list	Očisti spisak
+sr-latn	The email holds {n} of {total} words; send the rest next time, or copy the list.	Poruka sadrži {n} od {total} reči; ostatak pošaljite sledeći put ili kopirajte spisak.
+sv	Suggest my words	Föreslå mina ord
+sv	Suggest my words for Tinta's dictionaries	Föreslå mina ord till Tintas ordlistor
+sv	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Avstängt som standard. Medan alternativet är på samlas orden du lägger till i ordlistan här med sitt språk, bara på den här datorn. Inget skickas av sig självt: du går igenom listan och skickar den med e-post till hola@tintaoffice.com.
+sv	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Bara dessa ord och deras språk skickas, aldrig dina dokument; ord med siffror, @ eller en versal inne i ordet utelämnas. Tinta Office använder dem bara för att förbättra sina ordlistor och raderar dem inom 12 månader; din e-postadress används bara för att svara dig. För att återkalla samtycket stänger du av alternativet (listan raderas) och ber hola@tintaoffice.com att radera det du har skickat.
+sv	No words listed yet.	Inga ord ännu.
+sv	Send by email	Skicka med e-post
+sv	Copy the list	Kopiera listan
+sv	Clear the list	Töm listan
+sv	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-postmeddelandet innehåller {n} av {total} ord; skicka resten nästa gång eller kopiera listan.
+tr	Suggest my words	Kelimelerimi öner
+tr	Suggest my words for Tinta's dictionaries	Kelimelerimi Tinta sözlükleri için öner
+tr	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Varsayılan olarak kapalıdır. Açık olduğu sürece sözlüğe eklediğiniz kelimeler dilleriyle birlikte burada, yalnızca bu bilgisayarda listelenir. Hiçbir şey kendiliğinden gönderilmez: listeyi gözden geçirir ve e-postayla hola@tintaoffice.com adresine gönderirsiniz.
+tr	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Yalnızca bu kelimeler ve dilleri gönderilir, belgeleriniz asla gönderilmez; rakam, @ veya içinde büyük harf olan kelimeler dışarıda bırakılır. Tinta Office bunları yalnızca sözlüklerini geliştirmek için kullanır ve 12 ay içinde siler; e-posta adresiniz yalnızca yanıt vermek için kullanılır. Onayınızı geri çekmek için bu seçeneği kapatın (liste silinir) ve gönderdiklerinizi silmesini hola@tintaoffice.com adresinden isteyin.
+tr	No words listed yet.	Henüz kelime yok.
+tr	Send by email	E-postayla gönder
+tr	Copy the list	Listeyi kopyala
+tr	Clear the list	Listeyi temizle
+tr	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-posta {total} kelimeden {n} tanesini içeriyor; kalanını bir dahaki sefere gönderin veya listeyi kopyalayın.
+uk	Suggest my words	Запропонувати мої слова
+uk	Suggest my words for Tinta's dictionaries	Пропонувати мої слова для словників Tinta
+uk	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Типово вимкнено. Поки опцію ввімкнено, слова, які ви додаєте до словника, збираються тут разом із мовою, лише на цьому комп'ютері. Нічого не надсилається само: ви переглядаєте список і надсилаєте його листом на hola@tintaoffice.com.
+uk	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Надсилаються лише ці слова та їхня мова, ніколи не ваші документи; слова з цифрами, @ або великою літерою всередині не збираються. Tinta Office використовує їх лише для поліпшення своїх словників і видаляє протягом 12 місяців; вашу адресу електронної пошти використовують лише для відповіді. Щоб відкликати згоду, вимкніть опцію (список буде видалено) і попросіть hola@tintaoffice.com видалити те, що ви надіслали.
+uk	No words listed yet.	Слів поки немає.
+uk	Send by email	Надіслати листом
+uk	Copy the list	Копіювати список
+uk	Clear the list	Очистити список
+uk	The email holds {n} of {total} words; send the rest next time, or copy the list.	Лист містить {n} з {total} слів; решту надішліть наступного разу або скопіюйте список.
+vi	Suggest my words	Đề xuất từ của tôi
+vi	Suggest my words for Tinta's dictionaries	Đề xuất từ của tôi cho từ điển của Tinta
+vi	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Mặc định tắt. Khi bật, các từ bạn thêm vào từ điển được liệt kê tại đây cùng ngôn ngữ của chúng, chỉ trên máy tính này. Không có gì tự động được gửi đi: bạn xem lại danh sách và gửi qua email tới hola@tintaoffice.com.
+vi	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Chỉ những từ này và ngôn ngữ của chúng được gửi, không bao giờ gửi tài liệu của bạn; các từ có chữ số, @ hoặc chữ hoa ở giữa sẽ bị bỏ qua. Tinta Office chỉ dùng chúng để cải thiện từ điển và xóa chúng trong vòng 12 tháng; địa chỉ email của bạn chỉ được dùng để trả lời. Để rút lại sự đồng ý, hãy tắt tùy chọn này (danh sách sẽ bị xóa) và yêu cầu hola@tintaoffice.com xóa những gì bạn đã gửi.
+vi	No words listed yet.	Chưa có từ nào.
+vi	Send by email	Gửi qua email
+vi	Copy the list	Sao chép danh sách
+vi	Clear the list	Xóa danh sách
+vi	The email holds {n} of {total} words; send the rest next time, or copy the list.	Email chứa {n} trên {total} từ; hãy gửi phần còn lại lần sau, hoặc sao chép danh sách.
+zh-hans	Suggest my words	建议我的词语
+zh-hans	Suggest my words for Tinta's dictionaries	向 Tinta 词典建议我的词语
+zh-hans	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	默认关闭。开启期间，您添加到词典中的词语会连同其语言列在这里，仅保存在这台电脑上。不会自动发送任何内容：您检查列表后，通过电子邮件发送到 hola@tintaoffice.com。
+zh-hans	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	只发送这些词语及其语言，绝不发送您的文档；含有数字、@ 或词中大写字母的词语不会被收集。Tinta Office 仅用它们改进词典，并在 12 个月内删除；您的电子邮件地址仅用于回复。如要撤回同意，请关闭此选项（列表将被删除），并请 hola@tintaoffice.com 删除您发送的内容。
+zh-hans	No words listed yet.	尚无词语。
+zh-hans	Send by email	通过电子邮件发送
+zh-hans	Copy the list	复制列表
+zh-hans	Clear the list	清空列表
+zh-hans	The email holds {n} of {total} words; send the rest next time, or copy the list.	邮件包含 {total} 个词语中的 {n} 个；其余的请下次发送，或复制列表。
+zh-hant	Suggest my words	建議我的字詞
+zh-hant	Suggest my words for Tinta's dictionaries	向 Tinta 字典建議我的字詞
+zh-hant	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	預設為關閉。開啟期間，您新增到字典的字詞會連同其語言列在這裡，僅儲存在這台電腦上。不會自動傳送任何內容：您檢查清單後，以電子郵件寄到 hola@tintaoffice.com。
+zh-hant	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	只會傳送這些字詞及其語言，絕不傳送您的文件；含有數字、@ 或字中大寫字母的字詞不會被收集。Tinta Office 僅用它們改進字典，並在 12 個月內刪除；您的電子郵件地址僅用於回覆。如要撤回同意，請關閉此選項（清單將被刪除），並請 hola@tintaoffice.com 刪除您寄出的內容。
+zh-hant	No words listed yet.	尚無字詞。
+zh-hant	Send by email	以電子郵件傳送
+zh-hant	Copy the list	複製清單
+zh-hant	Clear the list	清除清單
+zh-hant	The email holds {n} of {total} words; send the rest next time, or copy the list.	郵件包含 {total} 個字詞中的 {n} 個；其餘的請下次傳送，或複製清單。

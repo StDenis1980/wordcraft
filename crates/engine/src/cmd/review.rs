@@ -84,10 +84,12 @@ pub fn specs() -> Vec<CommandSpec> {
         CommandSpec::new("review.issues", "Proofing Issues", "Review › Proofing", all_issues).pure(),
         CommandSpec::new("review.suggestions", "Spelling Suggestions", "Review › Proofing", suggestions).params(r#"{"pos"?: Pos}"#).pure(),
         CommandSpec::new("review.addToDictionary", "Add to Dictionary", "Review › Proofing", |s, v| {
+            let issue = issue_at(s, &s.sel.focus.clone());
             let w = match p::str(v, "word") {
                 Some(w) => w.to_string(),
-                None => issue_at(s, &s.sel.focus.clone())
-                    .map(|(a, b, _)| s.doc.para_at(&a).and_then(|p| p.text.get(a.off..b.off).map(str::to_string)).unwrap_or_default())
+                None => issue
+                    .as_ref()
+                    .map(|(a, b, _)| s.doc.para_at(a).and_then(|p| p.text.get(a.off..b.off).map(str::to_string)).unwrap_or_default())
                     .unwrap_or_default(),
             };
             if w.is_empty() {
@@ -99,6 +101,9 @@ pub fn specs() -> Vec<CommandSpec> {
                 return Err(CmdError::Params(format!("{w:?} isn't a single word of at most {max} characters")));
             }
             wordcraft_proof::add_word(w.trim());
+            // Tinta Office: listed for Suggest my words, in the language it was checked in.
+            let lang = issue.map(|(.., i)| i.lang.code().to_string()).filter(|c| !c.is_empty()).unwrap_or_else(|| crate::tinta_suggest::caret_lang(s));
+            crate::tinta_suggest::record(s, w.trim(), &lang);
             s.persist_user_dictionary(&[]);
             s.relayout();
             Ok(json!({"added": w}))
