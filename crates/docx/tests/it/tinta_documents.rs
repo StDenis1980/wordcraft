@@ -1,12 +1,15 @@
 //! Tinta Office's .docx test set: the documents a self-employed person in Spain or Ukraine
-//! exchanges every week (an invoice, a service contract, a CV, a formal letter), written for these
-//! tests from ECMA-376 in the shape Word saves them (styles, numbering, settings, headers and
-//! footers, notes, fields, an image, document properties), with no file produced by Word.
+//! exchanges every week (an invoice, a service contract, a CV, a formal letter, a quarterly report
+//! with a chart, SmartArt and an embedded spreadsheet), written for these tests from ECMA-376 in
+//! the shape Word saves them (styles, numbering, settings, headers and footers, notes, fields,
+//! pictures, document properties), with no file produced by Word.
 //!
 //! Each one goes through "open → save → open" and nothing may be lost:
-//! - the model reads back equal, and a second save writes the same parts;
+//! - the model reads back equal (after the first save, for the report, whose relationship ids a
+//!   save renumbers), and a second save writes the same parts;
 //! - every WordprocessingML element and attribute name the original used is still written, and
-//!   all of its text survives;
+//!   all of its text survives; every relationship and document property survives; every other
+//!   part (pictures, charts, workbooks, SmartArt, embedded objects) comes back unchanged;
 //! - the facts a person would check by eye (amounts, clause numbers, accents, Cyrillic, the
 //!   header logo, the page number field, the footnote, the link) are still there.
 
@@ -16,7 +19,7 @@ use std::io::{Read, Write};
 use wordcraft_doc::Document;
 
 const REL: &str = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
-const NS: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture""#;
+const NS: &str = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" xmlns:wp="http://schemas.openxmlformats.org/drawingml/2006/wordprocessingDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office""#;
 
 // ---------------------------------------------------------------------------------------------
 // The package around each document.
@@ -96,11 +99,39 @@ struct Pkg {
     header_logo: bool,
     /// Document relationships beyond the standard ones (id, type suffix, target, external).
     links: Vec<(&'static str, &'static str, bool)>,
+    /// Parts the body points at (charts, diagrams, embedded objects).
+    objects: Vec<Object>,
+}
+
+/// A part the document relates to, with its own relationships.
+struct Object {
+    /// The document's relationship id for it (none for a part only another part relates to).
+    id: Option<&'static str>,
+    /// The relationship type: a suffix of the officeDocument relationships, or a whole URI.
+    rel: &'static str,
+    /// The part's name under `word/`.
+    name: &'static str,
+    content_type: &'static str,
+    bytes: Vec<u8>,
+    /// The part's own relationships (id, whole type URI, target relative to the part).
+    rels: Vec<(&'static str, String, &'static str)>,
 }
 
 impl Pkg {
     fn new(body: String, lang: &'static str, title: &'static str, creator: &'static str) -> Self {
-        Pkg { body, lang, title, creator, numbering: None, header: None, footer: None, footnotes: None, header_logo: false, links: Vec::new() }
+        Pkg {
+            body,
+            lang,
+            title,
+            creator,
+            numbering: None,
+            header: None,
+            footer: None,
+            footnotes: None,
+            header_logo: false,
+            links: Vec::new(),
+            objects: Vec::new(),
+        }
     }
 
     fn bytes(&self) -> Vec<u8> {
@@ -154,10 +185,33 @@ impl Pkg {
         for (id, target, external) in &self.links {
             rels.push((id, "hyperlink", target.to_string(), *external));
         }
+        let mut object_types = Vec::new();
+        for o in &self.objects {
+            if let Some(id) = o.id {
+                rels.push((id, o.rel, o.name.to_string(), false));
+            }
+            object_types.push((format!("/word/{}", o.name), o.content_type));
+            parts.push((format!("word/{}", o.name), o.bytes.clone()));
+            if !o.rels.is_empty() {
+                let (dir, file) = o.name.rsplit_once('/').unwrap_or(("", o.name));
+                let mut x = String::from(
+                    r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">"#,
+                );
+                for (id, ty, target) in &o.rels {
+                    x.push_str(&format!(r#"<Relationship Id="{id}" Type="{ty}" Target="{target}"/>"#));
+                }
+                x.push_str("</Relationships>");
+                let rels_name = if dir.is_empty() { format!("word/_rels/{file}.rels") } else { format!("word/{dir}/_rels/{file}.rels") };
+                parts.push((rels_name, x.into_bytes()));
+            }
+        }
         let mut ct = String::from(
             r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/>"#,
         );
         for (name, ty) in &over {
+            ct.push_str(&format!(r#"<Override PartName="{name}" ContentType="{ty}"/>"#));
+        }
+        for (name, ty) in &object_types {
             ct.push_str(&format!(r#"<Override PartName="{name}" ContentType="{ty}"/>"#));
         }
         ct.push_str("</Types>");
@@ -166,7 +220,8 @@ impl Pkg {
         );
         for (id, ty, target, external) in &rels {
             let mode = if *external { r#" TargetMode="External""# } else { "" };
-            doc_rels.push_str(&format!(r#"<Relationship Id="{id}" Type="{REL}/{ty}" Target="{target}"{mode}/>"#));
+            let ty = if ty.starts_with("http") { ty.to_string() } else { format!("{REL}/{ty}") };
+            doc_rels.push_str(&format!(r#"<Relationship Id="{id}" Type="{ty}" Target="{target}"{mode}/>"#));
         }
         doc_rels.push_str("</Relationships>");
         let root = format!(
@@ -517,8 +572,139 @@ fn carta() -> Pkg {
     pkg
 }
 
+/// Stands in for an embedded workbook: opaque bytes the save must carry unchanged.
+fn workbook(name: &str) -> Vec<u8> {
+    format!("PK\u{3}\u{4} stand-in workbook: {name}").into_bytes()
+}
+
+const C_NS: &str = "http://schemas.openxmlformats.org/drawingml/2006/chart";
+const DGM_NS: &str = "http://schemas.openxmlformats.org/drawingml/2006/diagram";
+const DSP_NS: &str = "http://schemas.microsoft.com/office/drawing/2008/diagram";
+
+/// Informe trimestral: a quarterly report with a bar chart of income per quarter (its workbook
+/// embedded), a three-step SmartArt process and a spreadsheet embedded as an OLE object.
+fn informe() -> Pkg {
+    let (cx, cy) = (5486400, 2743200);
+    let inline = |id: u32, name: &str, uri: &str, data: &str| {
+        format!(
+            r#"<w:r><w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="{cx}" cy="{cy}"/><wp:effectExtent l="0" t="0" r="0" b="0"/><wp:docPr id="{id}" name="{name}"/><wp:cNvGraphicFramePr/><a:graphic><a:graphicData uri="{uri}">{data}</a:graphicData></a:graphic></wp:inline></w:drawing></w:r>"#
+        )
+    };
+    let body = [
+        p(r#"<w:pStyle w:val="Title"/>"#, &r("", "Informe del tercer trimestre de 2026")),
+        p(r#"<w:pStyle w:val="Heading1"/>"#, &r("", "Ingresos por trimestre")),
+        p(r#"<w:jc w:val="center"/>"#, &inline(1, "Gráfico 1", C_NS, &format!(r#"<c:chart xmlns:c="{C_NS}" r:id="rIdChart"/>"#))),
+        p(r#"<w:pStyle w:val="Heading1"/>"#, &r("", "Del presupuesto al cobro")),
+        p(
+            r#"<w:jc w:val="center"/>"#,
+            &inline(2, "Diagrama 2", DGM_NS, &format!(r#"<dgm:relIds xmlns:dgm="{DGM_NS}" r:dm="rIdDgmData" r:lo="rIdDgmLayout" r:qs="rIdDgmStyle" r:cs="rIdDgmColors"/>"#)),
+        ),
+        p(r#"<w:pStyle w:val="Heading1"/>"#, &r("", "Detalle de gastos")),
+        p(
+            "",
+            r##"<w:r><w:object w:dxaOrig="5760" w:dyaOrig="2160"><v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:288pt;height:108pt" o:ole=""><v:imagedata r:id="rIdOlePreview" o:title=""/></v:shape><o:OLEObject Type="Embed" ProgID="Excel.Sheet.12" ShapeID="_x0000_i1025" DrawAspect="Content" ObjectID="_1790000001" r:id="rIdOle"/></w:object></w:r>"##,
+        ),
+        pt(r#"<w:jc w:val="both"/>"#, "Los gastos del trimestre (alquiler, cuota de autónomos, software) suman 1.912,40 €."),
+        sect("", ""),
+    ]
+    .concat();
+    let mut pkg = Pkg::new(body, "es-ES", "Informe 3T 2026", "María Núñez Ibáñez");
+    let chart = format!(
+        r##"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<c:chartSpace xmlns:c="{C_NS}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" xmlns:r="{REL}"><c:date1904 val="0"/><c:lang val="es-ES"/><c:roundedCorners val="0"/><c:chart><c:title><c:tx><c:rich><a:bodyPr/><a:p><a:r><a:t>Ingresos 2026 (€)</a:t></a:r></a:p></c:rich></c:tx><c:overlay val="0"/></c:title><c:autoTitleDeleted val="0"/><c:plotArea><c:layout/><c:barChart><c:barDir val="col"/><c:grouping val="clustered"/><c:varyColors val="0"/><c:ser><c:idx val="0"/><c:order val="0"/><c:tx><c:strRef><c:f>Hoja1!$B$1</c:f><c:strCache><c:ptCount val="1"/><c:pt idx="0"><c:v>Ingresos</c:v></c:pt></c:strCache></c:strRef></c:tx><c:cat><c:strRef><c:f>Hoja1!$A$2:$A$4</c:f><c:strCache><c:ptCount val="3"/><c:pt idx="0"><c:v>1T</c:v></c:pt><c:pt idx="1"><c:v>2T</c:v></c:pt><c:pt idx="2"><c:v>3T</c:v></c:pt></c:strCache></c:strRef></c:cat><c:val><c:numRef><c:f>Hoja1!$B$2:$B$4</c:f><c:numCache><c:formatCode>#,##0.00</c:formatCode><c:ptCount val="3"/><c:pt idx="0"><c:v>4210.5</c:v></c:pt><c:pt idx="1"><c:v>5120</c:v></c:pt><c:pt idx="2"><c:v>4890.75</c:v></c:pt></c:numCache></c:numRef></c:val></c:ser><c:gapWidth val="150"/><c:axId val="111"/><c:axId val="222"/></c:barChart><c:catAx><c:axId val="111"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="b"/><c:crossAx val="222"/></c:catAx><c:valAx><c:axId val="222"/><c:scaling><c:orientation val="minMax"/></c:scaling><c:delete val="0"/><c:axPos val="l"/><c:numFmt formatCode="#,##0" sourceLinked="0"/><c:crossAx val="111"/></c:valAx></c:plotArea><c:plotVisOnly val="1"/></c:chart><c:externalData r:id="rId1"><c:autoUpdate val="0"/></c:externalData></c:chartSpace>"##
+    );
+    let point = |id: &str, kind: &str, text: &str| {
+        let t = if text.is_empty() {
+            "<dgm:t><a:bodyPr/><a:p><a:endParaRPr/></a:p></dgm:t>".to_string()
+        } else {
+            format!("<dgm:t><a:bodyPr/><a:p><a:r><a:t>{text}</a:t></a:r></a:p></dgm:t>")
+        };
+        format!(r#"<dgm:pt modelId="{id}" type="{kind}"><dgm:prSet/><dgm:spPr/>{t}</dgm:pt>"#)
+    };
+    let data = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dgm:dataModel xmlns:dgm="{DGM_NS}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><dgm:ptLst>{}{}{}{}</dgm:ptLst><dgm:cxnLst><dgm:cxn modelId="{{10}}" srcId="{{0}}" destId="{{1}}" srcOrd="0" destOrd="0"/><dgm:cxn modelId="{{11}}" srcId="{{0}}" destId="{{2}}" srcOrd="1" destOrd="0"/><dgm:cxn modelId="{{12}}" srcId="{{0}}" destId="{{3}}" srcOrd="2" destOrd="0"/></dgm:cxnLst><dgm:bg/><dgm:whole/><dgm:extLst><a:ext uri="http://schemas.microsoft.com/office/drawing/2008/diagram"><dsp:dataModelExt xmlns:dsp="{DSP_NS}" relId="rIdDgmDrawing" minVer="http://schemas.openxmlformats.org/drawingml/2006/diagram"/></a:ext></dgm:extLst></dgm:dataModel>"#,
+        point("{0}", "doc", ""),
+        point("{1}", "node", "Presupuesto"),
+        point("{2}", "node", "Factura"),
+        point("{3}", "node", "Cobro")
+    );
+    let layout = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dgm:layoutDef xmlns:dgm="{DGM_NS}" uniqueId="urn:tintaoffice.com/test/layout/steps"><dgm:title val="Pasos"/><dgm:layoutNode name="steps"><dgm:alg type="lin"/><dgm:forEach name="each" axis="ch" ptType="node"><dgm:layoutNode name="step"><dgm:alg type="tx"/><dgm:shape type="roundRect"/></dgm:layoutNode></dgm:forEach></dgm:layoutNode></dgm:layoutDef>"#
+    );
+    let style = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><dgm:styleDef xmlns:dgm="{DGM_NS}" uniqueId="urn:tintaoffice.com/test/style/plain"><dgm:title val="Simple"/></dgm:styleDef>"#
+    );
+    let colors = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?><dgm:colorsDef xmlns:dgm="{DGM_NS}" uniqueId="urn:tintaoffice.com/test/colors/ink"><dgm:title val="Tinta"/></dgm:colorsDef>"#
+    );
+    let shape = |id: &str, x: i64, text: &str| {
+        format!(
+            r#"<dsp:sp modelId="{id}"><dsp:nvSpPr><dsp:cNvPr id="0" name=""/><dsp:cNvSpPr/></dsp:nvSpPr><dsp:spPr><a:xfrm><a:off x="{x}" y="914400"/><a:ext cx="1554480" cy="914400"/></a:xfrm><a:prstGeom prst="roundRect"><a:avLst/></a:prstGeom><a:solidFill><a:srgbClr val="1F3864"/></a:solidFill></dsp:spPr><dsp:txBody><a:bodyPr anchor="ctr"/><a:lstStyle/><a:p><a:pPr algn="ctr"/><a:r><a:rPr lang="es-ES"><a:solidFill><a:srgbClr val="FFFFFF"/></a:solidFill></a:rPr><a:t>{text}</a:t></a:r></a:p></dsp:txBody></dsp:sp>"#
+        )
+    };
+    let drawing = format!(
+        r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<dsp:drawing xmlns:dsp="{DSP_NS}" xmlns:dgm="{DGM_NS}" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><dsp:spTree><dsp:nvGrpSpPr><dsp:cNvPr id="0" name=""/><dsp:cNvGrpSpPr/></dsp:nvGrpSpPr><dsp:grpSpPr/>{}{}{}</dsp:spTree></dsp:drawing>"#,
+        shape("{1}", 0, "Presupuesto"),
+        shape("{2}", 1965960, "Factura"),
+        shape("{3}", 3931920, "Cobro")
+    );
+    let ct_dgm = |k: &str| match k {
+        "data" => "application/vnd.openxmlformats-officedocument.drawingml.diagramData+xml",
+        "layout" => "application/vnd.openxmlformats-officedocument.drawingml.diagramLayout+xml",
+        "style" => "application/vnd.openxmlformats-officedocument.drawingml.diagramStyle+xml",
+        "colors" => "application/vnd.openxmlformats-officedocument.drawingml.diagramColors+xml",
+        _ => "application/vnd.ms-office.drawingml.diagramDrawing+xml",
+    };
+    let object = |id, rel, name, content_type, bytes: Vec<u8>| Object { id: Some(id), rel, name, content_type, bytes, rels: Vec::new() };
+    pkg.objects = vec![
+        Object {
+            rels: vec![("rId1", format!("{REL}/package"), "../embeddings/Microsoft_Excel_Worksheet.xlsx")],
+            ..object(
+                "rIdChart",
+                "chart",
+                "charts/chart1.xml",
+                "application/vnd.openxmlformats-officedocument.drawingml.chart+xml",
+                chart.into_bytes(),
+            )
+        },
+        Object {
+            id: None,
+            ..object(
+                "",
+                "package",
+                "embeddings/Microsoft_Excel_Worksheet.xlsx",
+                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                workbook("chart"),
+            )
+        },
+        object("rIdDgmData", "diagramData", "diagrams/data1.xml", ct_dgm("data"), data.into_bytes()),
+        object("rIdDgmLayout", "diagramLayout", "diagrams/layout1.xml", ct_dgm("layout"), layout.into_bytes()),
+        object("rIdDgmStyle", "diagramQuickStyle", "diagrams/quickStyle1.xml", ct_dgm("style"), style.into_bytes()),
+        object("rIdDgmColors", "diagramColors", "diagrams/colors1.xml", ct_dgm("colors"), colors.into_bytes()),
+        object(
+            "rIdDgmDrawing",
+            "http://schemas.microsoft.com/office/2007/relationships/diagramDrawing",
+            "diagrams/drawing1.xml",
+            ct_dgm("drawing"),
+            drawing.into_bytes(),
+        ),
+        object("rIdOlePreview", "image", "media/image2.png", "image/png", logo_png()),
+        object(
+            "rIdOle",
+            "package",
+            "embeddings/Microsoft_Excel_Worksheet1.xlsx",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            workbook("gastos"),
+        ),
+    ];
+    pkg
+}
+
 fn all() -> Vec<(&'static str, Pkg)> {
-    vec![("factura", factura()), ("contrato", contrato()), ("rezume", rezume()), ("carta", carta())]
+    vec![("factura", factura()), ("contrato", contrato()), ("rezume", rezume()), ("carta", carta()), ("informe", informe())]
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -595,6 +781,34 @@ fn vocabulary(xml: &[u8]) -> Vocabulary {
     v
 }
 
+/// The parts WordCraft writes itself from its model: the ones `vocabulary` and `relationships`
+/// compare. Any other part must come back unchanged.
+fn rewritten(part: &str) -> bool {
+    part == "[Content_Types].xml"
+        || part.ends_with(".rels")
+        || part.starts_with("docProps/")
+        || ["document", "styles", "settings", "numbering", "header1", "footer1", "footnotes"].iter().any(|p| part == format!("word/{p}.xml"))
+}
+
+/// The content type `[Content_Types].xml` gives a part: its override, else its extension's
+/// default.
+fn content_type(types: &str, part: &str) -> Option<String> {
+    let attr = |entry: &str, name: &str| entry.split(&format!("{name}=\"")).nth(1).and_then(|v| v.split('"').next()).map(str::to_string);
+    let ext = part.rsplit_once('.').map(|(_, e)| e.to_ascii_lowercase()).unwrap_or_default();
+    types
+        .split("<Override ")
+        .skip(1)
+        .find(|o| attr(o, "PartName").as_deref() == Some(&format!("/{part}")))
+        .and_then(|o| attr(o, "ContentType"))
+        .or_else(|| {
+            types
+                .split("<Default ")
+                .skip(1)
+                .find(|d| attr(d, "Extension").map(|e| e.to_ascii_lowercase()) == Some(ext.clone()))
+                .and_then(|d| attr(d, "ContentType"))
+        })
+}
+
 /// The (type, target) of each relationship in a `.rels` part.
 fn relationships(xml: &[u8]) -> Vec<(String, String)> {
     let s = String::from_utf8_lossy(xml);
@@ -647,7 +861,15 @@ fn the_tinta_documents_read_back_equal_after_a_save() {
         for d in [&mut a, &mut b] {
             d.passthrough.remove(SETTINGS_AS_READ);
         }
-        assert!(a == b, "{name}: the document changed after open → save → open");
+        // A document with charts, SmartArt or embedded objects keeps the relationship ids and
+        // media names it was read with, and a save numbers them afresh; after that save it reads
+        // back the same every time (below), and `a_save_keeps_every_…` checks nothing was lost.
+        if pkg.objects.is_empty() {
+            assert!(a == b, "{name}: the document changed after open → save → open");
+        }
+        let mut third = open(&save(&second));
+        third.passthrough.remove(SETTINGS_AS_READ);
+        assert!(b == third, "{name}: the document changed after a second save");
         // A second save of the reopened document writes the same parts, byte for byte.
         let again = unzip(&save(&second));
         let saved = unzip(&saved);
@@ -710,10 +932,30 @@ fn a_save_keeps_every_element_attribute_and_text_of_the_tinta_documents() {
         if !lost.is_empty() {
             losses.push(format!("{name}: docProps/core.xml lost {lost:?}"));
         }
-        if let Some(logo) = original.get("word/media/image1.png")
-            && !saved.values().any(|b| b == logo)
-        {
-            losses.push(format!("{name}: the save dropped the logo"));
+        // Every other part (pictures, charts and their workbooks, SmartArt, embedded objects) is
+        // carried byte for byte, under the same content type, whatever name it gets.
+        let (types_before, types_after) = (
+            String::from_utf8_lossy(&original["[Content_Types].xml"]).into_owned(),
+            saved.get("[Content_Types].xml").map(|b| String::from_utf8_lossy(b).into_owned()).unwrap_or_default(),
+        );
+        for (part, bytes) in original.iter().filter(|(p, _)| !rewritten(p)) {
+            // A SmartArt data part names its drawing by relationship id, which a save renumbers.
+            let unnumbered = |b: &[u8]| {
+                let s = String::from_utf8_lossy(b);
+                match s.split_once(" relId=\"") {
+                    Some((head, tail)) => format!("{head} relId=\"{}", tail.split_once('"').map(|(_, t)| t).unwrap_or("")).into_bytes(),
+                    None => b.to_vec(),
+                }
+            };
+            match saved.iter().find(|(_, b)| *b == bytes || unnumbered(b) == unnumbered(bytes)) {
+                None => losses.push(format!("{name}: the save dropped {part}")),
+                Some((kept, _)) => {
+                    let (before, after) = (content_type(&types_before, part), content_type(&types_after, kept));
+                    if before != after {
+                        losses.push(format!("{name}: {part} (now {kept}) changed content type {before:?} → {after:?}"));
+                    }
+                }
+            }
         }
     }
     assert!(losses.is_empty(), "open → save lost:\n{}", losses.join("\n"));
@@ -788,4 +1030,15 @@ fn the_tinta_documents_still_say_what_they_said() {
         assert!(text.contains(s), "carta lost {s:?}");
     }
     assert!(k.last_section.title_page, "carta: different first page");
+
+    let i = &docs["informe"];
+    let objects: Vec<_> = i.body.iter().filter_map(|b| b.as_para()).flat_map(|p| p.objects.iter()).collect();
+    let kinds: Vec<_> =
+        objects.iter().filter_map(|o| if let wordcraft_doc::InlineObject::Graphic { graphic, .. } = o { Some(graphic.kind) } else { None }).collect();
+    assert_eq!(
+        kinds,
+        [wordcraft_doc::graphic::GraphicKind::Chart, wordcraft_doc::graphic::GraphicKind::Diagram],
+        "informe: the chart and the SmartArt"
+    );
+    assert!(objects.iter().any(|o| matches!(o, wordcraft_doc::InlineObject::Image { ole: Some(_), .. })), "informe: the embedded spreadsheet");
 }

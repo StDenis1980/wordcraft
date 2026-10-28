@@ -1734,6 +1734,29 @@ fn ole_object_round_trips() {
     assert!(matches!(paras(&back)[0].objects.first(), Some(InlineObject::Image { w: 144.0, ole: Some(_), .. })));
 }
 
+/// An OLE object's picture is also the document's media (it's drawn from it). Saving used to
+/// reserve the media name, so the kept picture part was renamed `image1_2.png`, then
+/// `image1_2_2.png` on the next save, and so on.
+#[test]
+fn an_ole_object_s_picture_keeps_its_name_save_after_save() {
+    let body = r##"<w:p><w:r><w:object w:dxaOrig="1440" w:dyaOrig="720"><v:shape id="_x0000_i1025" type="#_x0000_t75" style="width:72pt;height:36pt" o:ole=""><v:imagedata r:id="rId8" o:title=""/></v:shape><o:OLEObject Type="Embed" ProgID="Package" ShapeID="_x0000_i1025" DrawAspect="Content" ObjectID="_1000000001" r:id="rId9"/></w:object></w:r></w:p>"##;
+    let picture = "\u{89}PNG stand-in";
+    let types = r#"<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="png" ContentType="image/png"/><Default Extension="bin" ContentType="application/vnd.openxmlformats-officedocument.oleObject"/></Types>"#;
+    let mut bytes = docx(
+        body,
+        &[("rId8", "image", "media/image1.png"), ("rId9", "oleObject", "embeddings/oleObject1.bin")],
+        &[("[Content_Types].xml", types), ("word/media/image1.png", picture), ("word/embeddings/oleObject1.bin", "\u{d0}\u{cf} OLE")],
+    );
+    for _ in 0..3 {
+        bytes = wordcraft_docx::write(&wordcraft_docx::read(&bytes).unwrap()).unwrap();
+        let files = unzip(&bytes);
+        let pictures: Vec<_> = files.iter().filter(|(_, b)| b.as_slice() == picture.as_bytes()).map(|(n, _)| n.as_str()).collect();
+        assert_eq!(pictures, ["word/media/image1.png"]);
+    }
+    let doc = wordcraft_docx::read(&bytes).unwrap();
+    assert_eq!(doc.media.keys().collect::<Vec<_>>(), ["image1.png"]);
+}
+
 #[test]
 fn an_unqualified_relationship_attribute_round_trips() {
     // A producer that left the relationship prefix out: the VML picture names its image with an
