@@ -189,9 +189,12 @@ to folders. Use both together.
   command, stops the server at startup, so a typo never leaves the agent with less, or more, than
   meant. An empty list is an error too, and so is the flag without a list or given twice: the
   server never starts with every command allowed because the list went missing.
-- An `@FILE` list must be a regular file (or a link to one); a pipe, socket or device stops the
-  server at startup without being opened. It is read up to 256 KiB and no further, whatever the
-  file claims to be; a longer one, or one that keeps growing, stops the server too.
+- An `@FILE` list must be a regular file (or a link to one). A pipe, socket or device found at the
+  first check stops the server at startup without being opened. That check and the open are not
+  atomic: a path swapped to a FIFO in between can make the open wait for a writer, the same
+  check-then-open race described under "Confining file access". It is read up to 256 KiB and no
+  further, whatever the file claims to be; a longer one, or one that keeps growing, stops the
+  server too.
 - Like the roots, the list holds the headless server: `--connect` with it is an error, with or
   without a list after the flag.
 

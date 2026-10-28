@@ -361,10 +361,12 @@ fn read_command_allowlist(spec: &str, registry: &wordcraft_engine::Registry) -> 
 
 /// The text of an `@FILE` command list, at most `max` bytes. Only a regular file (or a link to one)
 /// is read: a pipe, socket or device (`/dev/zero`, a FIFO that sends a short list and stays open)
-/// is refused before it is opened, since opening or reading it could block startup forever. The
-/// read itself stops after `max + 1` bytes, whatever the file's metadata says, so a file that grows
-/// while it is read can't make startup read on; anything longer than `max` is refused, never cut
-/// short.
+/// found at the first check is refused before it is opened, since opening or reading it could block
+/// startup forever. The check and the open are not atomic: another program that swaps a FIFO in
+/// between can still make the open wait for a writer (the same check-then-open race as the
+/// automation roots). The read itself stops after `max + 1` bytes, whatever the file's metadata
+/// says, so a file that grows while it is read can't make startup read on; anything longer than
+/// `max` is refused, never cut short.
 fn read_allowlist_file(path: &str, max: usize) -> Result<String, String> {
     use std::io::Read;
     let not_regular = || format!("mcp: --allow-commands: {path} is not a regular file");
@@ -373,7 +375,8 @@ fn read_allowlist_file(path: &str, max: usize) -> Result<String, String> {
         return Err(not_regular());
     }
     let file = std::fs::File::open(path).map_err(cannot_read)?;
-    // Checked again on the opened file, in case the path was swapped after the first look.
+    // Checked again on the opened file: a path swapped after the first look for a device or other
+    // non-regular file that opened without waiting is refused here, before any read.
     if !file.metadata().map_err(cannot_read)?.is_file() {
         return Err(not_regular());
     }
