@@ -1,4 +1,4 @@
-use super::types::{Cell, FBlock, FTable, Flow, Fmt, FmtChange, Img, Inline, Kind, ListInfo, MAX_DEPTH, Meta, Para, RevMark, Spacing};
+use super::types::{Cell, FBlock, FTable, Flow, Fmt, FmtChange, Img, Inline, Kind, ListInfo, MAX_DEPTH, Meta, PageField, Para, RevMark, Spacing};
 use super::{
     Arc, Block, Blocks, CharProps, Document, InlineObject, NumFormat, OBJ, PAGE_BREAK, ParaProps, Paragraph, StyleKind, Table, TextColor, Underline,
     VMerge, VertAlign,
@@ -68,6 +68,7 @@ fn fmt_of(doc: &Document, cp: &CharProps, in_code: bool) -> Fmt {
         ins: None,
         del: None,
         fmt_change: None,
+        field: None,
     }
 }
 
@@ -129,6 +130,19 @@ pub fn flow_paras(doc: &Document, p: &Paragraph) -> Vec<Para> {
     flow_paras_in(doc, p, false)
 }
 
+/// The spacing and indents `p` sets itself (its style's are the paragraph kind's).
+fn direct_spacing(p: &Paragraph) -> Spacing {
+    let pp = &p.props;
+    Spacing {
+        before: pp.space_before,
+        after: pp.space_after,
+        line: pp.line_spacing,
+        left: pp.indent_left,
+        right: pp.indent_right,
+        first: pp.indent_first,
+    }
+}
+
 /// [`flow_paras`]; `tracked` keeps tracked changes: deleted text stays, and text carries its
 /// insertion and deletion marks.
 fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
@@ -142,8 +156,9 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
         page_break: p.props.page_break_before.unwrap_or(false),
         keep_next: p.props.keep_next.unwrap_or(false),
         inlines: Vec::new(),
-        spacing: Spacing::default(),
+        spacing: direct_spacing(p),
         borders,
+        tabs: p.props.tabs.clone().unwrap_or_default(),
         section: None,
         mark_ins: None,
         mark_del: None,
@@ -173,8 +188,9 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
                         page_break: true,
                         keep_next: p.props.keep_next.unwrap_or(false),
                         inlines: Vec::new(),
-                        spacing: Spacing::default(),
+                        spacing: direct_spacing(p),
                         borders,
+                        tabs: p.props.tabs.clone().unwrap_or_default(),
                         section: None,
                         mark_ins: None,
                         mark_del: None,
@@ -244,6 +260,14 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
                     // The base text and reading, in the run's formatting; the guide's own
                     // attributes (alignment, size, raise) stay in the document model.
                     out.inlines.push(Inline::Ruby { base: base.clone(), ruby: ruby.clone(), fmt: f.clone() });
+                }
+                // A page number or page count: its result, marked as the field. Its own span, so
+                // two fields side by side stay two.
+                Some(InlineObject::Field { instr, result, .. }) if PageField::of_instr(instr).is_some() => {
+                    if !buf.is_empty() {
+                        out.push_text(&std::mem::take(&mut buf), &f);
+                    }
+                    out.inlines.push(Inline::Text(result.clone(), Fmt { field: PageField::of_instr(instr), ..f.clone() }));
                 }
                 Some(InlineObject::BookmarkStart { name }) if name != "_GoBack" => {
                     if !buf.is_empty() {
@@ -326,9 +350,18 @@ fn flow_table(doc: &Document, t: &Table, depth: usize, tracked: bool) -> FTable 
     }
     // Without a table style and without visible table or cell borders the table shows no grid.
     let visible = |b: &Option<wordcraft_doc::props::Borders>| b.as_ref().is_some_and(|b| b.any_visible());
-    let borderless =
-        t.props.style.is_none() && !visible(&t.props.borders) && t.rows.iter().flat_map(|r| &r.cells).all(|c| !visible(&c.props.borders));
-    FTable { rows, widths: t.grid.clone(), borderless }
+    // Borders the table sets on every edge override its style's, so "none" on all of them is no
+    // grid even with a style (as Word draws it).
+    let all_none = t.props.borders.as_ref().is_some_and(|b| [b.top, b.left, b.bottom, b.right, b.between, b.inside_v].iter().all(Option::is_some));
+    let borderless = (t.props.style.is_none() || all_none)
+        && !visible(&t.props.borders)
+        && t.rows.iter().flat_map(|r| &r.cells).all(|c| !visible(&c.props.borders));
+    FTable { rows, widths: t.grid.clone(), borderless, align: t.props.align }
+}
+
+/// A header's or footer's blocks (a [`Document::parts`] story) as flow blocks.
+pub fn part_flow(doc: &Document, blocks: &Blocks) -> Vec<FBlock> {
+    flow_blocks(doc, blocks, 0, false)
 }
 
 /// The document body as a flow.

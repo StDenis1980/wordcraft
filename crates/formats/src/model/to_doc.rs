@@ -100,6 +100,9 @@ fn para_props(p: &Para, list_num: Option<u32>) -> ParaProps {
     out.indent_left = sp.left;
     out.indent_right = sp.right;
     out.indent_first = sp.first;
+    if !p.tabs.is_empty() {
+        out.tabs = Some(p.tabs.clone());
+    }
     if p.page_break {
         out.page_break_before = Some(true);
     }
@@ -205,7 +208,21 @@ impl<'a> Builder<'a> {
                             c.old.font = None;
                         }
                     }
-                    append(&mut out, &t, &cp, None);
+                    match f.field {
+                        // A page-number field keeps its result; it is updated when laid out.
+                        Some(field) => {
+                            let obj = InlineObject::Field {
+                                instr: field.instr().into(),
+                                result: t,
+                                locked: false,
+                                dirty: false,
+                                code: false,
+                                form: String::new(),
+                            };
+                            append(&mut out, "", &cp, Some(obj));
+                        }
+                        None => append(&mut out, &t, &cp, None),
+                    }
                 }
                 Inline::Image(img) => {
                     let key = self.doc.add_media(img.data.to_vec(), &img.ext);

@@ -5,7 +5,8 @@
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
 > (priority 2) done; 2026-10-28 charts, SmartArt and OLE kept on save confirmed (priority 3); 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
 > automatic sending; the option is off by default with a GDPR notice beside it; 2026-10-28 templates
-> for Spain (priority 4) done; .odt export checked (priority 7).
+> for Spain (priority 4) done; .odt export checked (priority 7); 2026-10-28 synced with upstream;
+> .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7).
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -14,8 +15,8 @@ for users in Spain and Ukraine. It is a fork-only file, so upstream syncs never 
 
 ## Where it stands (2026-10-27)
 
-Ready for real work ≈ 60% (essentials user ≈ 63%, upstream estimate); 157 commits behind
-upstream. Styles, lists, tables, review and mail merge work; the main risk is other people's
+Ready for real work ≈ 60% (essentials user ≈ 63%, upstream estimate); in step with
+upstream (synced 2026-10-28). Styles, lists, tables, review and mail merge work; the main risk is other people's
 .docx: our own test set of typical documents, a report with a chart, SmartArt and an embedded spreadsheet included, now passes open → save with nothing lost (charts, SmartArt and OLE objects are kept on save since upstream #319; upstream's ROADMAP still says they are dropped). Charts from Word can't be edited yet. Spelling in
 Spanish, Catalan, Galician, Basque and Ukrainian works out of the box (dictionaries ship with the
 app since Preview 3).
@@ -30,7 +31,7 @@ app since Preview 3).
 | 4 | ✅ Templates for Spain on File › New ([`crates/engine/src/tinta_templates.rs`](../crates/engine/src/tinta_templates.rs), `file.new` ids `es-invoice`, `es-quote`, `es-letter`, `es-cv`): factura with the fields of RD 1619/2012 (number, date, both NIFs, base, IVA, IRPF retention, IBAN), presupuesto with validity, conditions and acceptance, carta formal with Ref. and Asunto, currículum with the RGPD/LOPDGDD consent line. A4, Spanish language, page numbers in the footer, our own text and colours; the gallery labels are translated in all 29 interface languages. Tests: each fits one page, File › New opens it, and it survives .docx and .odt | fork | 2 |
 | 5 | Pagination like Word: column balancing, footnote continuation, Aptos/Calibri substitutes | upstream | 2 |
 | 6 | Formatting revisions and content controls | upstream | 2 |
-| 7 | .odt export for Spanish administrations that use ODF. Checked 2026-10-28 with the Spain templates: text, bold, colour and size, alignment, tables with column widths and cell shading, lists and the A4 page survive; lost are headers and footers (page numbers included), paragraph spacing and first-line indents, tab stops and dot leaders, paragraph borders, table borders (every table gets a thin black grid, layout tables too) and table alignment. The writer goes through the simplified interchange model (`formats::model`), so these need the writer to read more of the document. Next: fix them, headers and footers first, on upstream's new `odt/` modules after a sync, and offer it upstream | our check → upstream fix | 2 |
+| 7 | ✅ .odt export for Spanish administrations that use ODF. Checked 2026-10-28 with the Spain templates, then fixed: the export now writes headers and footers on the master pages (default, even and first page) with page-number and page-count fields, Word's top/bottom margins and header/footer distances, paragraph spacing, indents and line spacing, tab stops with leaders, paragraph borders, cell borders, layout tables without a grid and table alignment; the importer reads the page fields and the margins back. Checked by opening the exported templates in LibreOffice: they look as in Texto. Tests: `crates/formats/src/odt/tinta_tests.rs` and the templates' .odt round trip. Next: offer it upstream; the importer still ignores paragraph spacing, indents and tab stops, and the cell margins are Word's defaults | fork → upstream | 2 |
 | 8 | Charts, SmartArt, ink (≈ 3% today) | upstream | 3 |
 | 9 | A shared Tinta dictionary built from the words users add (see [below](#analysis-a-shared-dictionary-from-users-words)): the "Suggest these words" button and automatic validation, then automatic sending | fork | 2 (button), 3 (automatic) |
 

@@ -1,4 +1,6 @@
 use super::{Align, FBlock, FTable, Fmt, HashMap, Inline, Kind, Para, RevMark, Rgb, VAlign, mime_of, model};
+use crate::model::PageField;
+use wordcraft_doc::props::LineSpacing;
 
 // ---------------------------------------------------------------------------------------------
 // Export
@@ -39,19 +41,86 @@ pub(super) fn pt(v: f32) -> String {
     format!("{}pt", s.trim_end_matches('0').trim_end_matches('.'))
 }
 
+/// A length from a document, as `pt` writes it: a non-finite one is none, and one beyond any
+/// page (22 inches, Word's limit) is clamped so the file stays readable.
+fn len(v: f32) -> Option<String> {
+    v.is_finite().then(|| pt(v.clamp(-1584.0, 1584.0)))
+}
+
+/// An ODF border (`fo:border-*`, §20.183): width, style and colour; `none` for a border that
+/// isn't drawn.
+pub(super) fn border(b: &wordcraft_doc::props::Border) -> String {
+    use wordcraft_doc::props::BorderStyle;
+    if !b.is_visible() {
+        return "none".into();
+    }
+    let style = match b.style {
+        BorderStyle::Double | BorderStyle::Triple => "double",
+        BorderStyle::Dotted => "dotted",
+        BorderStyle::Dashed | BorderStyle::DotDash => "dashed",
+        _ => "solid",
+    };
+    let width = if b.width.is_finite() { b.width.clamp(0.25, 12.0) } else { 0.5 };
+    let color = b.color.map_or_else(|| "000000".to_string(), |c| c.hex().to_ascii_lowercase());
+    format!("{} {style} #{color}", pt(width))
+}
+
+/// `fo:border-*` and `fo:padding-*` for the sides of `b` that are set.
+fn borders_props(b: &wordcraft_doc::props::Borders) -> String {
+    let mut s = String::new();
+    for (side, edge) in [("top", b.top), ("bottom", b.bottom), ("left", b.left), ("right", b.right)] {
+        let Some(e) = edge else { continue };
+        s.push_str(&format!(" fo:border-{side}=\"{}\"", border(&e)));
+        if e.is_visible()
+            && let Some(p) = len(e.space.max(0.0))
+        {
+            s.push_str(&format!(" fo:padding-{side}=\"{p}\""));
+        }
+    }
+    s
+}
+
+/// The `style:tab-stops` element of a paragraph's stops (§17.8), positions from its left indent.
+fn tab_stops(tabs: &[wordcraft_doc::props::TabStop], indent: f32) -> String {
+    use wordcraft_doc::props::{TabAlign, TabLeader};
+    let mut s = String::new();
+    for t in tabs.iter().take(64) {
+        let kind = match t.align {
+            TabAlign::Left | TabAlign::Bar => "left",
+            TabAlign::Center => "center",
+            TabAlign::Right => "right",
+            TabAlign::Decimal => "char",
+            TabAlign::Clear => continue,
+        };
+        let Some(pos) = len((t.pos - indent).max(0.0)) else { continue };
+        let ch = if kind == "char" { " style:char=\",\"" } else { "" };
+        let leader = match t.leader {
+            TabLeader::None => String::new(),
+            TabLeader::Dot | TabLeader::MiddleDot => " style:leader-style=\"dotted\" style:leader-text=\".\"".into(),
+            TabLeader::Hyphen => " style:leader-style=\"dash\" style:leader-text=\"-\"".into(),
+            TabLeader::Underscore => " style:leader-style=\"solid\" style:leader-text=\"_\"".into(),
+        };
+        s.push_str(&format!("<style:tab-stop style:position=\"{pos}\" style:type=\"{kind}\"{ch}{leader}/>"));
+    }
+    if s.is_empty() { s } else { format!("<style:tab-stops>{s}</style:tab-stops>") }
+}
+
 /// A section that starts a page: the master page it uses and where page numbering restarts.
 type SecStart = (String, Option<u32>);
 
 #[derive(Default)]
 pub(super) struct Writer {
+    /// Put before every style, list, table and picture name: the headers and footers in
+    /// `styles.xml` have their own automatic styles, named apart from the body's.
+    pub(super) prefix: &'static str,
     /// Automatic text styles: properties XML → name.
     text_styles: Vec<(String, String)>,
     /// Automatic paragraph styles: (parent, properties XML, master page) → name.
     para_styles: Vec<((String, String, String), String)>,
     /// List styles: level kinds.
     list_styles: Vec<[bool; 9]>,
-    /// Table styles: (name, column widths).
-    tables: Vec<Vec<f32>>,
+    /// Table styles: column widths and alignment.
+    tables: Vec<(Vec<f32>, Option<Align>)>,
     /// The master page (and page-number restart) each table in `tables` starts.
     table_starts: Vec<Option<SecStart>>,
     /// Automatic styles of the columned `text:section`s written.
@@ -64,8 +133,8 @@ pub(super) struct Writer {
     last_list: Option<String>,
     /// The page the block being written starts.
     master: Option<SecStart>,
-    /// Cell styles by (shading, vertical-alignment).
-    cell_styles: Vec<(Option<Rgb>, Option<VAlign>)>,
+    /// Cell styles by (shading, vertical alignment, `fo:border` properties).
+    cell_styles: Vec<(Option<Rgb>, Option<VAlign>, String)>,
     pub(super) pictures: Vec<(String, std::sync::Arc<Vec<u8>>, String)>,
     /// `text:changed-region` elements written so far.
     pub(super) regions: Vec<String>,
@@ -139,7 +208,7 @@ impl Writer {
         if let Some((_, n)) = self.text_styles.iter().find(|(p, _)| *p == props) {
             return Some(n.clone());
         }
-        let n = format!("T{}", self.text_styles.len() + 1);
+        let n = format!("{}T{}", self.prefix, self.text_styles.len() + 1);
         self.text_styles.push((props, n.clone()));
         Some(n)
     }
@@ -174,6 +243,45 @@ impl Writer {
         if p.kind == Kind::Rule {
             props.push_str(" fo:border-bottom=\"0.75pt solid #a0a0a0\" fo:padding-bottom=\"1pt\"");
         }
+        let sp = &p.spacing;
+        for (attr, v) in [
+            ("fo:margin-top", sp.before.map(|v| v.max(0.0))),
+            ("fo:margin-bottom", sp.after.map(|v| v.max(0.0))),
+            ("fo:margin-left", sp.left),
+            ("fo:margin-right", sp.right),
+            ("fo:text-indent", sp.first),
+        ] {
+            if let Some(v) = v.and_then(len) {
+                props.push_str(&format!(" {attr}=\"{v}\""));
+            }
+        }
+        match sp.line {
+            Some(LineSpacing::Multiple(m)) if m.is_finite() && m > 0.0 => {
+                props.push_str(&format!(" fo:line-height=\"{}%\"", (m.clamp(0.25, 10.0) * 100.0).round()));
+            }
+            Some(LineSpacing::AtLeast(v)) => {
+                if let Some(v) = len(v.max(0.0)) {
+                    props.push_str(&format!(" style:line-height-at-least=\"{v}\""));
+                }
+            }
+            Some(LineSpacing::Exactly(v)) => {
+                if let Some(v) = len(v.max(0.0)) {
+                    props.push_str(&format!(" fo:line-height=\"{v}\""));
+                }
+            }
+            _ => {}
+        }
+        if p.kind != Kind::Rule
+            && let Some(b) = &p.borders
+        {
+            props.push_str(&borders_props(b));
+        }
+        let tabs = tab_stops(&p.tabs, sp.left.unwrap_or(0.0));
+        // The tab stops are a child element: kept after the attributes, split off when written.
+        if !tabs.is_empty() {
+            props.push('>');
+            props.push_str(&tabs);
+        }
         let master = start.map(|(m, _)| m.clone()).unwrap_or_default();
         if props.is_empty() && master.is_empty() {
             return parent;
@@ -182,14 +290,14 @@ impl Writer {
         if let Some((_, n)) = self.para_styles.iter().find(|(k, _)| *k == key) {
             return n.clone();
         }
-        let n = format!("P{}", self.para_styles.len() + 1);
+        let n = format!("{}P{}", self.prefix, self.para_styles.len() + 1);
         self.para_styles.push((key, n.clone()));
         n
     }
 
     fn picture(&mut self, img: &model::Img) -> String {
         let ext = if img.ext == "jpeg" { "jpg".to_string() } else { img.ext.clone() };
-        let name = format!("Pictures/image{}.{}", self.pictures.len() + 1, ext);
+        let name = format!("Pictures/{}image{}.{}", self.prefix, self.pictures.len() + 1, ext);
         self.pictures.push((name.clone(), img.data.clone(), mime_of(&img.ext).to_string()));
         name
     }
@@ -363,6 +471,12 @@ impl Writer {
                     if let Some(l) = link {
                         out.push_str(&format!("<text:a xlink:type=\"simple\" xlink:href=\"{}\">", x(l)));
                     }
+                    // A page number or count is the field (§7.3.4, §7.5.18) with its result.
+                    let body = match f.field {
+                        Some(PageField::Page) => format!("<text:page-number text:select-page=\"current\">{body}</text:page-number>"),
+                        Some(PageField::Pages) => format!("<text:page-count>{body}</text:page-count>"),
+                        None => body,
+                    };
                     let fs = Fmt { link: None, ..f.clone() };
                     match self.text_style(&fs) {
                         Some(n) => out.push_str(&format!("<text:span text:style-name=\"{n}\">{body}</text:span>")),
@@ -376,7 +490,8 @@ impl Writer {
                     let href = self.picture(img);
                     let n = self.pictures.len();
                     out.push_str(&format!(
-                        "<draw:frame draw:name=\"Image{n}\" text:anchor-type=\"as-char\" svg:width=\"{}\" svg:height=\"{}\" draw:z-index=\"0\"><draw:image xlink:href=\"{href}\" xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\"/>",
+                        "<draw:frame draw:name=\"{}Image{n}\" text:anchor-type=\"as-char\" svg:width=\"{}\" svg:height=\"{}\" draw:z-index=\"0\"><draw:image xlink:href=\"{href}\" xlink:type=\"simple\" xlink:show=\"embed\" xlink:actuate=\"onLoad\"/>",
+                        self.prefix,
                         pt(img.w),
                         pt(img.h)
                     ));
@@ -477,7 +592,7 @@ impl Writer {
                         i += 1;
                     }
                     self.list_styles.push(kinds);
-                    let lname = format!("L{}", self.list_styles.len());
+                    let lname = format!("{}L{}", self.prefix, self.list_styles.len());
                     // Open lists: per level, whether a list-item is open.
                     let mut stack: Vec<bool> = Vec::new();
                     for (qi, q) in blocks.get(start..i).unwrap_or(&[]).iter().enumerate() {
@@ -497,7 +612,7 @@ impl Writer {
                                 *top = true;
                             }
                             if stack.is_empty() {
-                                let id = format!("lst{}", self.list_styles.len());
+                                let id = format!("{}lst{}", self.prefix, self.list_styles.len());
                                 // A list cut by a section boundary goes on numbering: continue-list names the
                                 // preceding list by its xml:id, whatever its style name (ODF 1.3 §19.743).
                                 let prev = self.last_list.clone();
@@ -542,8 +657,8 @@ impl Writer {
         }
     }
 
-    fn cell_style(&mut self, shading: Option<Rgb>, valign: Option<VAlign>) -> String {
-        let key = (shading, valign);
+    fn cell_style(&mut self, shading: Option<Rgb>, valign: Option<VAlign>, borders: String) -> String {
+        let key = (shading, valign, borders);
         let k = match self.cell_styles.iter().position(|s| *s == key) {
             Some(k) => k,
             None => {
@@ -551,7 +666,7 @@ impl Writer {
                 self.cell_styles.len() - 1
             }
         };
-        format!("Cell{}", k + 1)
+        format!("{}Cell{}", self.prefix, k + 1)
     }
 
     fn table(&mut self, t: &FTable, out: &mut String, depth: usize) {
@@ -562,12 +677,12 @@ impl Writer {
         } else {
             vec![468.0 / cols as f32; cols]
         };
-        self.tables.push(widths);
+        self.tables.push((widths, t.align));
         self.table_starts.push(self.master.take());
-        let tn = self.tables.len();
-        out.push_str(&format!("<table:table table:name=\"Table{tn}\" table:style-name=\"Table{tn}\">"));
+        let tn = format!("{}Table{}", self.prefix, self.tables.len());
+        out.push_str(&format!("<table:table table:name=\"{tn}\" table:style-name=\"{tn}\">"));
         for c in 0..cols {
-            out.push_str(&format!("<table:table-column table:style-name=\"Table{tn}.C{}\"/>", c + 1));
+            out.push_str(&format!("<table:table-column table:style-name=\"{tn}.C{}\"/>", c + 1));
         }
         let header_rows = t.rows.iter().take_while(|r| !r.is_empty() && r.iter().all(|c| c.header)).count();
         for (ri, row) in t.rows.iter().enumerate() {
@@ -585,7 +700,14 @@ impl Writer {
                     }
                     continue;
                 }
-                let st = self.cell_style(c.shading, c.valign);
+                // The cell's own borders over the table's grid: a thin black one, or none for a
+                // table drawn without borders (a layout table).
+                let grid = if t.borderless { "none".to_string() } else { "0.5pt solid #000000".to_string() };
+                let mut b = format!(" fo:border=\"{grid}\"");
+                if let Some(own) = &c.borders {
+                    b.push_str(&borders_props(own));
+                }
+                let st = self.cell_style(c.shading, c.valign, b);
                 let mut attrs = format!(" table:style-name=\"{st}\" office:value-type=\"string\"");
                 if span > 1 {
                     attrs.push_str(&format!(" table:number-columns-spanned=\"{span}\""));
@@ -622,12 +744,17 @@ impl Writer {
         }
         for ((parent, props, master), n) in &self.para_styles {
             let master = if master.is_empty() { String::new() } else { format!(" style:master-page-name=\"{}\"", x(master)) };
+            // Properties with a child element (tab stops) close the element after it.
+            let props = match props.split_once('>') {
+                Some((attrs, children)) => format!("{attrs}>{children}</style:paragraph-properties>"),
+                None => format!("{props}/>"),
+            };
             s.push_str(&format!(
-                "<style:style style:name=\"{n}\" style:family=\"paragraph\" style:parent-style-name=\"{parent}\"{master}><style:paragraph-properties{props}/></style:style>"
+                "<style:style style:name=\"{n}\" style:family=\"paragraph\" style:parent-style-name=\"{parent}\"{master}><style:paragraph-properties{props}</style:style>"
             ));
         }
         for (i, kinds) in self.list_styles.iter().enumerate() {
-            s.push_str(&format!("<text:list-style style:name=\"L{}\">", i + 1));
+            s.push_str(&format!("<text:list-style style:name=\"{}L{}\">", self.prefix, i + 1));
             for (l, ordered) in kinds.iter().enumerate() {
                 let lv = l + 1;
                 let props = format!(
@@ -647,8 +774,8 @@ impl Writer {
             }
             s.push_str("</text:list-style>");
         }
-        for (i, widths) in self.tables.iter().enumerate() {
-            let tn = i + 1;
+        for (i, (widths, align)) in self.tables.iter().enumerate() {
+            let tn = format!("{}Table{}", self.prefix, i + 1);
             let total: f32 = widths.iter().sum();
             let (master, number) = match self.table_starts.get(i).and_then(Option::as_ref) {
                 Some((m, n)) => {
@@ -657,18 +784,25 @@ impl Writer {
                 None => (String::new(), String::new()),
             };
             s.push_str(&format!(
-                "<style:style style:name=\"Table{tn}\" style:family=\"table\"{master}><style:table-properties style:width=\"{}\" table:align=\"margins\"{number}/></style:style>",
-                pt(total)
+                "<style:style style:name=\"{tn}\" style:family=\"table\"{master}><style:table-properties style:width=\"{}\" table:align=\"{}\"{number}/></style:style>",
+                pt(total),
+                // A table aligned in the text column keeps its width there (§19.729).
+                match align {
+                    Some(Align::Center) => "center",
+                    Some(Align::Right) => "right",
+                    Some(Align::Left) | Some(Align::Justify) | Some(Align::Distribute) => "left",
+                    None => "margins",
+                }
             ));
             for (c, w) in widths.iter().enumerate() {
                 s.push_str(&format!(
-                    "<style:style style:name=\"Table{tn}.C{}\" style:family=\"table-column\"><style:table-column-properties style:column-width=\"{}\"/></style:style>",
+                    "<style:style style:name=\"{tn}.C{}\" style:family=\"table-column\"><style:table-column-properties style:column-width=\"{}\"/></style:style>",
                     c + 1,
                     pt(*w)
                 ));
             }
         }
-        for (i, (sh, va)) in self.cell_styles.iter().enumerate() {
+        for (i, (sh, va, borders)) in self.cell_styles.iter().enumerate() {
             let bg = sh.map(|c| format!(" fo:background-color=\"#{}\"", c.hex().to_ascii_lowercase())).unwrap_or_default();
             let va_str = match va {
                 Some(VAlign::Top) => " style:vertical-align=\"top\"",
@@ -677,7 +811,8 @@ impl Writer {
                 None => "",
             };
             s.push_str(&format!(
-                "<style:style style:name=\"Cell{}\" style:family=\"table-cell\"><style:table-cell-properties fo:padding=\"4pt\" fo:border=\"0.5pt solid #000000\"{bg}{va_str}/></style:style>",
+                "<style:style style:name=\"{}Cell{}\" style:family=\"table-cell\"><style:table-cell-properties fo:padding-top=\"0pt\" fo:padding-bottom=\"0pt\" fo:padding-left=\"5.4pt\" fo:padding-right=\"5.4pt\"{borders}{bg}{va_str}/></style:style>",
+                self.prefix,
                 i + 1
             ));
         }

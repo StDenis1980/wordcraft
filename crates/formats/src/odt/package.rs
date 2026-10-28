@@ -7,9 +7,63 @@ fn columns_xml(c: &Columns) -> String {
     format!("<style:columns fo:column-count=\"{}\" fo:column-gap=\"{}\">{sep}</style:columns>", c.count.clamp(1, 45), pt(c.space))
 }
 
-/// One master page per entry of `pages` (name, setup), each with its own page layout `pm1`, `pm2`…
-/// (§16.5, §16.9); the first is the default one, "Standard".
-fn styles_xml(pages: &[(String, wordcraft_doc::SectionProps)], body_font: &str) -> String {
+/// A page's headers and footers as master-page content (§16.10): the default ones, the left
+/// (even) pages' when the document has different odd and even pages, and the first page's when
+/// the section has a different first page (empty when the section has none of that kind, as
+/// Word leaves that page's header blank). Whether the page has a header and a footer.
+struct PageParts {
+    xml: String,
+    header: bool,
+    footer: bool,
+}
+
+fn page_parts(doc: &Document, sec: &SectionProps, w: &mut Writer) -> PageParts {
+    let mut xml = String::new();
+    let mut has = [false, false];
+    for (k, (set, tag)) in [(&sec.headers, "header"), (&sec.footers, "footer")].into_iter().enumerate() {
+        let slots = [
+            (set.default, format!("style:{tag}"), true),
+            (set.even, format!("style:{tag}-left"), doc.settings.even_odd_headers),
+            (set.first, format!("style:{tag}-first"), sec.title_page),
+        ];
+        // No default story: the page has none of this kind, whatever the others say.
+        if set.default.is_none() && set.even.is_none() && set.first.is_none() {
+            continue;
+        }
+        if let Some(h) = has.get_mut(k) {
+            *h = true;
+        }
+        for (id, el, on) in slots {
+            if !on {
+                continue;
+            }
+            let blocks = id.and_then(|id| doc.parts.get(&id)).map(|p| model::part_flow(doc, &p.blocks)).unwrap_or_default();
+            let mut body = String::new();
+            w.blocks(&blocks, &mut body, 0);
+            w.close_ins(&mut body);
+            if body.trim().is_empty() {
+                body.push_str("<text:p text:style-name=\"Standard\"/>");
+            }
+            xml.push_str(&format!("<{el}>{body}</{el}>"));
+        }
+    }
+    PageParts { xml, header: has[0], footer: has[1] }
+}
+
+/// The page margin and header or footer area of a page with a header (footer): Word measures
+/// the header from the page edge (`header`) and the body from the margin; ODF puts the header
+/// inside the page margin and the body below the header, so the margin becomes the header's
+/// distance and the header area at least fills the rest.
+fn header_area(margin: f32, distance: f32) -> (f32, f32) {
+    let margin = if margin.is_finite() { margin.max(0.0) } else { 0.0 };
+    let distance = if distance.is_finite() { distance.clamp(0.0, margin) } else { margin };
+    (distance, margin - distance)
+}
+
+/// One master page per entry of `pages` (name, setup, headers and footers), each with its own
+/// page layout `pm1`, `pm2`… (§16.5, §16.9); the first is the default one, "Standard". `auto`
+/// holds the automatic styles the headers and footers use.
+fn styles_xml(pages: &[(String, wordcraft_doc::SectionProps, PageParts)], body_font: &str, auto: &str) -> String {
     let mut s = format!("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<office:document-styles {NS}><office:styles>");
     s.push_str(&format!(
         "<style:default-style style:family=\"paragraph\"><style:paragraph-properties fo:margin-bottom=\"8pt\"/><style:text-properties fo:font-family=\"'{}'\" fo:font-size=\"12pt\"/></style:default-style>",
@@ -29,24 +83,52 @@ fn styles_xml(pages: &[(String, wordcraft_doc::SectionProps)], body_font: &str) 
     s.push_str("<style:style style:name=\"Quotations\" style:family=\"paragraph\" style:parent-style-name=\"Standard\" style:class=\"html\"><style:paragraph-properties fo:margin-left=\"36pt\" fo:margin-right=\"36pt\"/><style:text-properties fo:font-style=\"italic\" fo:color=\"#404040\"/></style:style>");
     s.push_str(&format!("<style:style style:name=\"Preformatted_20_Text\" style:display-name=\"Preformatted Text\" style:family=\"paragraph\" style:parent-style-name=\"Standard\" style:class=\"html\"><style:paragraph-properties fo:margin-top=\"0pt\" fo:margin-bottom=\"0pt\"/><style:text-properties fo:font-family=\"'{}'\" style:font-family-generic=\"modern\" style:font-pitch=\"fixed\" fo:font-size=\"10pt\"/></style:style>", model::MONO_FONT));
     s.push_str("</office:styles><office:automatic-styles>");
-    for (i, (_, sec)) in pages.iter().enumerate() {
+    s.push_str(auto);
+    for (i, (_, sec, parts)) in pages.iter().enumerate() {
         // A page of several columns carries them in its layout.
         let cols = if sec.columns.count > 1 { columns_xml(&sec.columns) } else { String::new() };
+        let (mut top, mut bottom) = (sec.margin_top, sec.margin_bottom);
+        let mut areas = String::new();
+        if parts.header {
+            let (edge, area) = header_area(sec.margin_top, sec.header);
+            top = edge;
+            areas.push_str(&format!(
+                "<style:header-style><style:header-footer-properties fo:min-height=\"{}\" fo:margin-bottom=\"0pt\"/></style:header-style>",
+                pt(area)
+            ));
+        }
+        if parts.footer {
+            let (edge, area) = header_area(sec.margin_bottom, sec.footer);
+            bottom = edge;
+            areas.push_str(&format!(
+                "<style:footer-style><style:header-footer-properties fo:min-height=\"{}\" fo:margin-top=\"0pt\"/></style:footer-style>",
+                pt(area)
+            ));
+        }
         s.push_str(&format!(
-            "<style:page-layout style:name=\"pm{}\"><style:page-layout-properties fo:page-width=\"{}\" fo:page-height=\"{}\" fo:margin-top=\"{}\" fo:margin-bottom=\"{}\" fo:margin-left=\"{}\" fo:margin-right=\"{}\" style:print-orientation=\"{}\">{cols}</style:page-layout-properties></style:page-layout>",
+            "<style:page-layout style:name=\"pm{}\"><style:page-layout-properties fo:page-width=\"{}\" fo:page-height=\"{}\" fo:margin-top=\"{}\" fo:margin-bottom=\"{}\" fo:margin-left=\"{}\" fo:margin-right=\"{}\" style:print-orientation=\"{}\">{cols}</style:page-layout-properties>{areas}</style:page-layout>",
             i + 1,
             pt(sec.page_w),
             pt(sec.page_h),
-            pt(sec.margin_top),
-            pt(sec.margin_bottom),
+            pt(top),
+            pt(bottom),
             pt(sec.margin_left),
             pt(sec.margin_right),
             if sec.page_w > sec.page_h { "landscape" } else { "portrait" }
         ));
     }
     s.push_str("</office:automatic-styles><office:master-styles>");
-    for (i, (name, _)) in pages.iter().enumerate() {
-        s.push_str(&format!("<style:master-page style:name=\"{}\" style:page-layout-name=\"pm{}\"/>", x(name), i + 1));
+    for (i, (name, _, parts)) in pages.iter().enumerate() {
+        if parts.xml.is_empty() {
+            s.push_str(&format!("<style:master-page style:name=\"{}\" style:page-layout-name=\"pm{}\"/>", x(name), i + 1));
+        } else {
+            s.push_str(&format!(
+                "<style:master-page style:name=\"{}\" style:page-layout-name=\"pm{}\">{}</style:master-page>",
+                x(name),
+                i + 1,
+                parts.xml
+            ));
+        }
     }
     s.push_str("</office:master-styles></office:document-styles>\n");
     s
@@ -157,7 +239,20 @@ pub fn export(doc: &Document) -> Result<Vec<u8>, String> {
         w.automatic_styles()
     );
     let body_font = doc.styles.default_chr.font.clone().unwrap_or_else(|| wordcraft_doc::styles::BODY_FONT.to_string());
-    let styles = styles_xml(&pages, &body_font);
+    // The headers and footers: written by their own writer, whose styles go in styles.xml.
+    let mut hw = Writer::default();
+    hw.prefix = "M";
+    let pages: Vec<_> = pages
+        .into_iter()
+        .map(|(name, sec)| {
+            let parts = page_parts(doc, &sec, &mut hw);
+            (name, sec, parts)
+        })
+        .collect();
+    let auto = hw.automatic_styles();
+    let auto = auto.strip_prefix("<office:automatic-styles>").and_then(|a| a.strip_suffix("</office:automatic-styles>")).unwrap_or("");
+    let styles = styles_xml(&pages, &body_font, auto);
+    w.pictures.append(&mut hw.pictures);
     let meta = meta_xml(&flow.meta);
     let mut manifest = String::from(
         "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<manifest:manifest xmlns:manifest=\"urn:oasis:names:tc:opendocument:xmlns:manifest:1.0\" manifest:version=\"1.3\">\n<manifest:file-entry manifest:full-path=\"/\" manifest:version=\"1.3\" manifest:media-type=\"application/vnd.oasis.opendocument.text\"/>\n<manifest:file-entry manifest:full-path=\"content.xml\" manifest:media-type=\"text/xml\"/>\n<manifest:file-entry manifest:full-path=\"styles.xml\" manifest:media-type=\"text/xml\"/>\n<manifest:file-entry manifest:full-path=\"meta.xml\" manifest:media-type=\"text/xml\"/>\n",

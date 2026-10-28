@@ -452,11 +452,8 @@ mod tests {
                 assert_eq!(words(&back), words(&d), "{id} {name}");
                 assert_eq!(tables(&back), tables(&d), "{id} {name}");
                 assert!((back.last_section.page_w - 595.3).abs() < 0.5 && (back.last_section.page_h - 841.9).abs() < 0.5, "{id} {name}: A4");
-                // The .odt writer leaves headers and footers out (upstream gap); see
-                // docs/tinta-roadmap.md, priority 7.
-                if name.ends_with(".docx") {
-                    assert_eq!(back.last_section.footers.default.is_some(), d.last_section.footers.default.is_some(), "{id} {name}: footer");
-                }
+                assert_eq!(back.last_section.footers.default.is_some(), d.last_section.footers.default.is_some(), "{id} {name}: footer");
+                assert!((back.last_section.margin_top - d.last_section.margin_top).abs() < 0.05, "{id} {name}: top margin");
             }
         }
     }
