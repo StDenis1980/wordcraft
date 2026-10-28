@@ -27,18 +27,21 @@ fn call(server: &mut Server, name: &str, args: Value) -> (bool, String) {
     (result["isError"] == true, result["content"][0]["text"].as_str().unwrap_or("").to_string())
 }
 
+/// `tools/call` that must succeed; returns its text.
 fn ok(server: &mut Server, name: &str, args: Value) -> String {
     let (err, text) = call(server, name, args.clone());
     assert!(!err, "{name} {args}: {text}");
     text
 }
 
+/// `tools/call` that must be refused for naming `command`, which is off the list.
 fn refused(server: &mut Server, name: &str, args: Value, command: &str) {
     let (err, text) = call(server, name, args.clone());
     assert!(err, "{name} {args} should be refused: {text}");
     assert!(text.contains(command) && text.contains("not allowed"), "{name}: {text}");
 }
 
+/// The text of the active document.
 fn body(server: &mut Server) -> String {
     let doc: Value = serde_json::from_str(&ok(server, "inspect_document", json!({}))).unwrap();
     doc["blocks"].as_array().unwrap().iter().filter_map(|b| b["text"].as_str()).collect::<Vec<_>>().join("\n")

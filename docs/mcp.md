@@ -187,8 +187,12 @@ to folders. Use both together.
 - A list names ids (`format.bold`) and groups (`format.*`: every command whose id starts with
   `format.`), separated by commas, spaces or new lines. An unknown id, or a group that matches no
   command, stops the server at startup, so a typo never leaves the agent with less, or more, than
-  meant. An empty list is an error too.
-- Like the roots, the list holds the headless server: `--connect` with it is an error.
+  meant. An empty list is an error too, and so is the flag without a list or given twice: the
+  server never starts with every command allowed because the list went missing.
+- An `@FILE` list is read up to 256 KiB and no further, whatever the file claims to be; a longer
+  one (or one that keeps growing, or a stream that never ends) stops the server at startup.
+- Like the roots, the list holds the headless server: `--connect` with it is an error, with or
+  without a list after the flag.
 
 ## Tools
 

@@ -335,21 +335,44 @@ fn confine_commands(headless: wordcraft_mcp::Headless, spec: Option<&str>) -> Re
     Ok(headless.with_command_allowlist(Some(list)))
 }
 
+/// `--allow-commands LIST|@FILE`, given at most once and always with its list. A flag left without
+/// a value (last on the line, or followed by another option) is an error, so the server never
+/// starts with every command allowed because the list went missing; the check runs before
+/// `--connect` is looked at, so that flag can't slip past it either.
+fn allow_commands_arg(args: &[String]) -> Result<Option<String>, String> {
+    match find_option_arg(args, "--allow-commands") {
+        OptionArg::Absent => Ok(None),
+        OptionArg::Duplicate => Err("mcp: duplicate --allow-commands option".into()),
+        OptionArg::MissingValue => Err("mcp: --allow-commands requires a list of commands (or @FILE)".into()),
+        OptionArg::Value(list) => Ok(Some(list.to_string())),
+    }
+}
+
 /// The `--allow-commands` list: given inline (`format.*,text.insert`) or, after `@`, read from a
 /// file (`@allowed.txt`, one id or `group.*` per line, `#` comments). Any problem is an error at
 /// startup, never a server that runs unrestricted.
 fn read_command_allowlist(spec: &str, registry: &wordcraft_engine::Registry) -> Result<wordcraft_engine::command_access::CommandAllowlist, String> {
     let text = match spec.strip_prefix('@') {
-        Some(path) => {
-            let len = std::fs::metadata(path).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?.len();
-            if len > wordcraft_engine::command_access::MAX_LIST_BYTES as u64 {
-                return Err(format!("mcp: --allow-commands: {path} is too long ({len} bytes)"));
-            }
-            std::fs::read_to_string(path).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?
-        }
+        Some(path) => read_allowlist_file(path, wordcraft_engine::command_access::MAX_LIST_BYTES)?,
         None => spec.to_string(),
     };
     wordcraft_engine::command_access::CommandAllowlist::parse(&text, registry).map_err(|e| format!("mcp: --allow-commands: {e}"))
+}
+
+/// The text of an `@FILE` command list, at most `max` bytes. The read itself stops after `max + 1`
+/// bytes, whatever the file's metadata says, so a file that grows while it is read or an endless
+/// stream (`/dev/zero`, which reports a length of 0) can't make startup read on; anything longer
+/// than `max` is refused, never cut short.
+fn read_allowlist_file(path: &str, max: usize) -> Result<String, String> {
+    use std::io::Read;
+    let file = std::fs::File::open(path).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?;
+    let limit = u64::try_from(max).unwrap_or(u64::MAX).saturating_add(1);
+    let mut bytes = Vec::new();
+    file.take(limit).read_to_end(&mut bytes).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?;
+    if bytes.len() > max {
+        return Err(format!("mcp: --allow-commands: {path} is too long (more than {max} bytes)"));
+    }
+    String::from_utf8(bytes).map_err(|_| format!("mcp: --allow-commands: {path} is not UTF-8 text"))
 }
 
 /// The password a protected Word file is opened with: `--password` (which any other process on
@@ -670,7 +693,7 @@ fn run<S: AsRef<OsStr>>(args: &[S]) -> Result<(), Failure> {
             validate_options("mcp", &rest, MCP_OPTIONS)?;
             let author = arg_value(&rest, "--author");
             let connect = arg_value(&rest, "--connect");
-            let allow_commands = arg_value(&rest, "--allow-commands");
+            let allow_commands = allow_commands_arg(&rest)?;
             headless_only_flags(connect.is_some(), roots.is_some(), allow_commands.is_some())?;
             let backend: Box<dyn wordcraft_mcp::Backend> = match connect {
                 // The app's user name is the person's own setting; don't rewrite it from a flag.

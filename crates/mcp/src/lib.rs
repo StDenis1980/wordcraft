@@ -75,6 +75,10 @@ pub fn doc_param(params: &Value) -> Result<Option<u64>, String> {
     }
 }
 
+/// Answer `method` on `session` (the active document, or the one `doc` picked). A command the
+/// client names (`engine.execute`, `command`, or a command id as the method) must be on the
+/// command list in force on this thread, and `engine.commands` lists only those; reading the
+/// document (`document.inspect`, page renders, parity) stays available.
 fn answer_on(session: &mut Session, method: &str, params: Value) -> Result<Value, String> {
     match method {
         "engine.execute" | "command" => {
@@ -117,6 +121,8 @@ impl Default for Headless {
 }
 
 impl Backend for Headless {
+    /// Answer one request with this server's command list and automation roots in force on the
+    /// calling thread, whichever thread that is, and the previous ones restored afterwards.
     fn call(&mut self, method: &str, params: Value) -> Result<Value, String> {
         let roots = self.roots.clone();
         let commands = self.commands.clone();

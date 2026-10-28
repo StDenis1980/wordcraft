@@ -101,6 +101,7 @@ pub fn confine_process(list: Arc<CommandAllowlist>) -> bool {
 struct Restore(Option<Arc<CommandAllowlist>>);
 
 impl Drop for Restore {
+    /// Put the thread's previous list (or none) back in force.
     fn drop(&mut self) {
         let previous = self.0.take();
         SCOPE.with(|s| *s.borrow_mut() = previous);
@@ -136,6 +137,7 @@ mod tests {
     use super::*;
     use crate::Session;
 
+    /// A session with an empty document, for its command registry.
     fn session() -> Session {
         Session::new(wordcraft_doc::Document::new())
     }
