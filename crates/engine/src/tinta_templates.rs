@@ -454,6 +454,15 @@ mod tests {
                 assert!((back.last_section.page_w - 595.3).abs() < 0.5 && (back.last_section.page_h - 841.9).abs() < 0.5, "{id} {name}: A4");
                 assert_eq!(back.last_section.footers.default.is_some(), d.last_section.footers.default.is_some(), "{id} {name}: footer");
                 assert!((back.last_section.margin_top - d.last_section.margin_top).abs() < 0.05, "{id} {name}: top margin");
+                // The paragraphs' own spacing and indents come back too (the .odt importer reads them).
+                let spacing = |d: &Document| {
+                    d.body
+                        .iter()
+                        .filter_map(|b| if let Block::Para(p) = &**b { Some(p.props.clone()) } else { None })
+                        .map(|p| [p.space_before, p.space_after, p.indent_left, p.indent_first].map(|v| v.map(|x| (x * 10.0).round() as i32)))
+                        .collect::<Vec<_>>()
+                };
+                assert_eq!(spacing(&back), spacing(&d), "{id} {name}: spacing");
             }
         }
     }

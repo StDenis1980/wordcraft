@@ -2,7 +2,9 @@ use super::import::Pages;
 use super::limits::{MAX_INFO_CHARS, MAX_OPEN_INSERTIONS, MAX_REGIONS, MAX_SECTIONS, MAX_XML_DEPTH};
 use super::styles::Styles;
 use super::xml::{Attrs, Ev, events, get, length, local};
-use super::{Cell, FBlock, FTable, Fmt, HashMap, Inline, Kind, ListInfo, Para, RevMark, RevisionKind, SectionProps, SectionStart, make_img, model};
+use super::{
+    Align, Cell, FBlock, FTable, Fmt, HashMap, Inline, Kind, ListInfo, Para, RevMark, RevisionKind, SectionProps, SectionStart, make_img, model,
+};
 
 /// An embedded ODF formula sub-document's `content.xml`, read for its `math:math` element
 /// (ODF 1.3 §10.4.3.2 wraps it in `office:document-content`/`office:body`/`office:math`, but
@@ -67,13 +69,18 @@ struct TableB {
     hcover: usize,
     /// Widths in points of the `table:table-column`s so far, 0 where the style gives none.
     widths: Vec<f32>,
+    /// Every cell so far says its borders are all `none` (a layout table; Tinta Office).
+    borderless: bool,
+    /// `table:align` of the table's style, when not left (Tinta Office).
+    align: Option<Align>,
 }
 
 impl TableB {
     fn finish(self) -> FTable {
         // A column without a width leaves the whole grid to the equal split.
         let widths = if self.widths.iter().all(|w| *w > 0.0) { self.widths } else { Vec::new() };
-        FTable { rows: self.rows, widths, borderless: false, align: None }
+        let borderless = self.borderless && self.rows.iter().any(|r| !r.is_empty());
+        FTable { rows: self.rows, widths, borderless, align: self.align }
     }
 }
 
@@ -313,7 +320,8 @@ impl Body<'_> {
         if let Some(h) = heading {
             kind = Kind::Heading(h.clamp(1, 6));
         }
-        let mut p = Para { kind, align, page_break: pb, keep_next, ..Default::default() };
+        let (spacing, tabs) = style.map(|s| self.styles.para_direct(s)).unwrap_or_default();
+        let mut p = Para { kind, align, page_break: pb, keep_next, spacing, tabs, ..Default::default() };
         if rule && kind == Kind::Normal {
             p.kind = Kind::Rule;
         }
@@ -564,7 +572,8 @@ impl Body<'_> {
                     self.skip = 1;
                     return;
                 }
-                self.tables.push(TableB { rows: Vec::new(), row: Vec::new(), hcover: 0, widths: Vec::new() });
+                let align = get(a, "table:style-name").and_then(|s| self.styles.table_align(s)).filter(|al| *al != Align::Left);
+                self.tables.push(TableB { rows: Vec::new(), row: Vec::new(), hcover: 0, widths: Vec::new(), borderless: true, align });
             }
             "table-column" => {
                 let w = get(a, "table:style-name").and_then(|n| self.styles.column_width(n)).unwrap_or(0.0);
@@ -586,8 +595,10 @@ impl Body<'_> {
                 let rows = get(a, "table:number-rows-spanned").and_then(|v| v.trim().parse::<u32>().ok()).unwrap_or(1).clamp(1, 1000);
                 let shading = get(a, "table:style-name").and_then(|s| self.styles.cell_background(s));
                 let valign = get(a, "table:style-name").and_then(|s| self.styles.cell_valign(s));
+                let bordered = get(a, "table:style-name").and_then(|s| self.styles.cell_border(s)).unwrap_or(true);
                 if let Some(t) = self.tables.last_mut() {
                     t.hcover = span as usize - 1;
+                    t.borderless &= !bordered;
                 }
                 self.cells.push(Cell { colspan: span, rowspan: rows, shading, valign, ..Default::default() });
                 self.containers.push(Vec::new());

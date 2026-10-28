@@ -371,6 +371,9 @@ impl<'a> Builder<'a> {
         if t.borderless {
             tb.props.style = None;
         }
+        if t.align.is_some() {
+            tb.props.align = t.align;
+        }
         if t.widths.len() == cols && t.widths.iter().all(|w| w.is_finite() && *w > 1.0) {
             tb.grid = t.widths.iter().map(|w| w.clamp(6.0, 1584.0)).collect();
         }
