@@ -20,6 +20,7 @@ pub mod ribbon;
 pub mod sample;
 mod session;
 pub mod speech;
+pub mod tinta_templates;
 
 use std::collections::HashMap;
 

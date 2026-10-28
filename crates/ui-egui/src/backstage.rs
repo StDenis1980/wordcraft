@@ -281,6 +281,11 @@ fn template_tile(ui: &mut Ui, app: &mut WordApp, label: &str, template: &str) {
 const TEMPLATES: [(&str, &str); 5] =
     [("Blank document", "blank"), ("Studio handbook (sample)", "sample"), ("Letter", "letter"), ("Résumé", "resume"), ("Report", "report")];
 
+/// Tinta Office: the templates for Spain ([`wordcraft_engine::tinta_templates`]), on New after
+/// the built-in ones.
+const TINTA_TEMPLATES: [(&str, &str); 4] =
+    [("Invoice (Spain)", "es-invoice"), ("Quote (Spain)", "es-quote"), ("Formal letter (Spain)", "es-letter"), ("CV (Spain)", "es-cv")];
+
 /// How many templates Home shows before "More templates" (the rest are on New).
 const HOME_TEMPLATES: usize = 4;
 
@@ -290,6 +295,7 @@ fn matching_templates(query: &str) -> Vec<(&'static str, &'static str)> {
     let q = query.trim().to_lowercase();
     TEMPLATES
         .into_iter()
+        .chain(TINTA_TEMPLATES)
         .filter(|(label, id)| {
             q.is_empty() || id.contains(&q) || label.to_lowercase().contains(&q) || crate::i18n::tc("template", label).to_lowercase().contains(&q)
         })
@@ -1068,11 +1074,23 @@ mod tests {
     #[test]
     fn template_search_matches_labels_case_insensitively() {
         let ids = |q: &str| matching_templates(q).into_iter().map(|(_, id)| id).collect::<Vec<_>>();
-        assert_eq!(ids(""), ["blank", "sample", "letter", "resume", "report"]);
-        assert_eq!(ids("  LETTER "), ["letter"]);
+        assert_eq!(ids(""), ["blank", "sample", "letter", "resume", "report", "es-invoice", "es-quote", "es-letter", "es-cv"]);
+        assert_eq!(ids("  LETTER "), ["letter", "es-letter"]);
         assert_eq!(ids("re"), ["resume", "report"]);
         assert_eq!(ids("résumé"), ["resume"]);
         assert!(ids("no such template").is_empty());
+    }
+
+    /// Tinta Office: the templates for Spain are the engine's, and each one's label is translated
+    /// in every language the interface offers.
+    #[test]
+    fn the_spanish_templates_are_the_engine_s_and_translated() {
+        assert_eq!(super::TINTA_TEMPLATES.map(|(_, id)| id), wordcraft_engine::tinta_templates::IDS);
+        for lang in crate::i18n::Lang::all().filter(|l| l.code() != crate::i18n::Lang::EN.code()) {
+            for (label, _) in super::TINTA_TEMPLATES {
+                assert_ne!(crate::i18n::trc(lang, "template", label), label, "{label} in {}", lang.code());
+            }
+        }
     }
 
     fn personal_dir(tag: &str) -> std::path::PathBuf {

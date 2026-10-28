@@ -219,7 +219,7 @@ fn new(s: &mut Session, v: &Value) -> CmdResult {
         "letter" => crate::sample::letter(),
         "resume" => crate::sample::resume(),
         "report" => crate::sample::report(),
-        _ => normal_document(s),
+        id => crate::tinta_templates::template(id).unwrap_or_else(|| normal_document(s)),
     };
     s.add_document(doc);
     sel_result(s)
