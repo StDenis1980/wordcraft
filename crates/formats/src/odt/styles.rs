@@ -76,6 +76,16 @@ struct StyleInfo {
     /// `style:tab-stops` of `style:paragraph-properties`, positions from the paragraph's left
     /// margin as ODF writes them (`text:tab-stops-relative-to-indent`, LibreOffice's default).
     tabs: Option<Vec<wordcraft_doc::props::TabStop>>,
+    /// `fo:border*` and `fo:padding*` of `style:paragraph-properties`, when it sets a border.
+    borders: Option<wordcraft_doc::props::Borders>,
+}
+
+/// A paragraph's direct formatting from its styles ([`Styles::para_direct`]).
+#[derive(Default)]
+pub(super) struct ParaDirect {
+    pub(super) spacing: model::Spacing,
+    pub(super) tabs: Vec<wordcraft_doc::props::TabStop>,
+    pub(super) borders: Option<wordcraft_doc::props::Borders>,
 }
 
 /// Most tab stops read for one style.
@@ -161,6 +171,59 @@ fn paragraph_properties(a: &Attrs, s: &mut StyleInfo) {
         s.border_bottom = true;
     }
     paragraph_spacing(a, &mut s.spacing);
+    if let Some(b) = paragraph_borders(a) {
+        s.borders = Some(b);
+    }
+}
+
+/// One `fo:border` value (ODF 1.3 §20.183): `0.74pt solid #1f3864`, in any order; `none` and
+/// zero widths draw nothing.
+fn border_value(v: &str) -> wordcraft_doc::props::Border {
+    use wordcraft_doc::props::{Border, BorderStyle};
+    let mut b = Border { style: BorderStyle::None, width: 0.0, color: None, space: 0.0 };
+    let mut style = None;
+    for part in v.split_whitespace().take(8) {
+        match part.to_ascii_lowercase().as_str() {
+            "none" | "hidden" => return b,
+            "solid" | "groove" | "ridge" | "inset" | "outset" => style = Some(BorderStyle::Single),
+            "double" => style = Some(BorderStyle::Double),
+            "dotted" => style = Some(BorderStyle::Dotted),
+            "dashed" => style = Some(BorderStyle::Dashed),
+            "thin" => b.width = 0.5,
+            "medium" => b.width = 1.0,
+            "thick" => b.width = 2.0,
+            _ => {
+                if let Some(c) = model::parse_color(part) {
+                    b.color = Some(c);
+                } else if let Some(w) = length(part).filter(|w| *w >= 0.0) {
+                    b.width = w.min(12.0);
+                }
+            }
+        }
+    }
+    if b.width > 0.0 {
+        b.style = style.unwrap_or(BorderStyle::Single);
+    }
+    b
+}
+
+/// A paragraph's borders and their distance from the text (`fo:border*`, `fo:padding*`), when any
+/// border attribute is set.
+fn paragraph_borders(a: &Attrs) -> Option<wordcraft_doc::props::Borders> {
+    let all = get(a, "fo:border").map(border_value);
+    let pad_all = get(a, "fo:padding").and_then(length);
+    let mut out = wordcraft_doc::props::Borders::default();
+    let mut any = all.is_some();
+    for (side, slot) in [("top", &mut out.top), ("bottom", &mut out.bottom), ("left", &mut out.left), ("right", &mut out.right)] {
+        let edge = get(a, &format!("fo:border-{side}")).map(border_value);
+        any |= edge.is_some();
+        if let Some(mut e) = edge.or(all) {
+            let pad = get(a, &format!("fo:padding-{side}")).and_then(length).or(pad_all);
+            e.space = pad.unwrap_or(0.0).clamp(0.0, 31.0);
+            *slot = Some(e);
+        }
+    }
+    any.then_some(out)
 }
 
 /// A `style:tab-stops` element starts a style's own list of stops (none, when it is empty); each
@@ -272,6 +335,26 @@ fn text_properties(a: &Attrs, style: &mut StyleInfo) {
             fmt.font = model::kept_font(&family);
         }
     }
+}
+
+/// The paragraph kind a style gives by its name (Heading 1, Title, Quotations, Preformatted
+/// Text…) or its outline level; `None` for a plain paragraph style.
+fn kind_of(name: &str, s: &StyleInfo) -> Option<Kind> {
+    let dn = s.display.as_deref().unwrap_or(name).to_ascii_lowercase().replace("_20_", " ");
+    let nn = name.to_ascii_lowercase().replace("_20_", " ");
+    let mut kind = None;
+    for cand in [dn.as_str(), nn.as_str()] {
+        if let Some(d) = cand.strip_prefix("heading ").and_then(|r| r.trim().parse::<u8>().ok()) {
+            kind = Some(Kind::Heading(d.clamp(1, 6)));
+        } else if cand == "title" {
+            kind = Some(Kind::Title);
+        } else if cand == "quotations" || cand == "quote" {
+            kind = Some(Kind::Quote);
+        } else if cand == "preformatted text" || cand == "source text" || cand == "code" {
+            kind = Some(Kind::Code);
+        }
+    }
+    kind.or_else(|| s.outline.filter(|o| (1..=10).contains(o)).map(|o| Kind::Heading(o.min(6))))
 }
 
 #[derive(Default)]
@@ -465,22 +548,27 @@ impl Styles {
         self.chain(name).iter().find_map(|(_, s)| s.cell_valign)
     }
 
-    /// The spacing, indents, line height and tab stops a paragraph's automatic styles give it
-    /// (its direct formatting; a common style's are its look, as in [`Styles::para`]), each the
-    /// nearest in the chain. Tab positions are from the text column's left edge, as in Word.
-    pub(super) fn para_direct(&self, name: &str) -> (model::Spacing, Vec<wordcraft_doc::props::TabStop>) {
+    /// What a paragraph's own styles give it as direct formatting: spacing before and after, line
+    /// height and borders from every style in its chain up to the one that gives its kind (as
+    /// [`Styles::para`] takes text formatting; `Standard`'s are document defaults), and indents
+    /// and tab stops from its automatic styles only (a common style's indents would fight a
+    /// list's). Each is the nearest in the chain. Tab positions are from the text column's left
+    /// edge, as in Word.
+    pub(super) fn para_direct(&self, name: &str) -> ParaDirect {
         let chain = self.chain(name);
+        let own: Vec<&StyleInfo> =
+            chain.iter().take_while(|(n, s)| kind_of(n, s).is_none()).filter(|(n, s)| s.auto || *n != "Standard").map(|(_, s)| *s).collect();
         let auto: Vec<&StyleInfo> = chain.iter().take_while(|(_, s)| s.auto).map(|(_, s)| *s).collect();
-        let pick = |f: &dyn Fn(&model::Spacing) -> Option<f32>| auto.iter().find_map(|s| f(&s.spacing));
-        let sp = model::Spacing {
-            before: pick(&|x| x.before),
-            after: pick(&|x| x.after),
-            left: pick(&|x| x.left),
-            right: pick(&|x| x.right),
-            first: pick(&|x| x.first),
-            line: auto.iter().find_map(|s| s.spacing.line),
+        let pick = |from: &[&StyleInfo], f: &dyn Fn(&model::Spacing) -> Option<f32>| from.iter().find_map(|s| f(&s.spacing));
+        let spacing = model::Spacing {
+            before: pick(&own, &|x| x.before),
+            after: pick(&own, &|x| x.after),
+            left: pick(&auto, &|x| x.left),
+            right: pick(&auto, &|x| x.right),
+            first: pick(&auto, &|x| x.first),
+            line: own.iter().find_map(|s| s.spacing.line),
         };
-        let indent = sp.left.unwrap_or(0.0);
+        let indent = spacing.left.unwrap_or(0.0);
         let tabs = auto
             .iter()
             .find_map(|s| s.tabs.clone())
@@ -491,7 +579,8 @@ impl Styles {
                 t
             })
             .collect();
-        (sp, tabs)
+        let borders = own.iter().find_map(|s| s.borders);
+        ParaDirect { spacing, tabs, borders }
     }
 
     /// Paragraph kind, alignment, page break, rule, keep-with-next and base formatting. The text formatting of
@@ -501,32 +590,8 @@ impl Styles {
     /// the default paragraph style, holds document defaults and is left out too.
     pub(super) fn para(&self, name: &str) -> (Kind, Option<Align>, bool, bool, bool, Fmt) {
         let chain = self.chain(name);
-        let mut kind = Kind::Normal;
-        let mut kind_at = chain.len();
-        for (i, (n, s)) in chain.iter().enumerate() {
-            kind_at = i;
-            let dn = s.display.as_deref().unwrap_or(n).to_ascii_lowercase().replace("_20_", " ");
-            let nn = n.to_ascii_lowercase().replace("_20_", " ");
-            for cand in [dn.as_str(), nn.as_str()] {
-                if let Some(d) = cand.strip_prefix("heading ").and_then(|r| r.trim().parse::<u8>().ok()) {
-                    kind = Kind::Heading(d.clamp(1, 6));
-                } else if cand == "title" {
-                    kind = Kind::Title;
-                } else if cand == "quotations" || cand == "quote" {
-                    kind = Kind::Quote;
-                } else if cand == "preformatted text" || cand == "source text" || cand == "code" {
-                    kind = Kind::Code;
-                }
-            }
-            if kind != Kind::Normal {
-                break;
-            }
-            if let Some(o) = s.outline.filter(|o| (1..=10).contains(o)) {
-                kind = Kind::Heading(o.min(6));
-                break;
-            }
-            kind_at = chain.len();
-        }
+        let kind_at = chain.iter().position(|(n, s)| kind_of(n, s).is_some()).unwrap_or(chain.len());
+        let kind = chain.get(kind_at).and_then(|(n, s)| kind_of(n, s)).unwrap_or(Kind::Normal);
         let align = chain.iter().find_map(|(_, s)| s.align);
         let pb = chain.iter().take_while(|(_, s)| s.auto).any(|(_, s)| s.page_break);
         let rule = chain.iter().any(|(_, s)| s.border_bottom);

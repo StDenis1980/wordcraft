@@ -320,9 +320,12 @@ impl Body<'_> {
         if let Some(h) = heading {
             kind = Kind::Heading(h.clamp(1, 6));
         }
-        let (spacing, tabs) = style.map(|s| self.styles.para_direct(s)).unwrap_or_default();
-        let mut p = Para { kind, align, page_break: pb, keep_next, spacing, tabs, ..Default::default() };
-        if rule && kind == Kind::Normal {
+        let direct = style.map(|s| self.styles.para_direct(s)).unwrap_or_default();
+        let mut p = Para { kind, align, page_break: pb, keep_next, spacing: direct.spacing, tabs: direct.tabs, ..Default::default() };
+        // Borders read from the style draw themselves; a bare rule is the older reading.
+        if direct.borders.is_some_and(|b| [b.top, b.bottom, b.left, b.right].iter().flatten().any(|e| e.is_visible())) {
+            p.borders = direct.borders;
+        } else if rule && kind == Kind::Normal {
             p.kind = Kind::Rule;
         }
         if let Some(lv) = self.lists.len().checked_sub(1)

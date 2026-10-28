@@ -206,15 +206,10 @@ fn paragraph_spacing_indents_line_height_and_tabs_are_read() {
     assert!(p[3].space_before.is_none() && p[3].tabs.is_none() && p[3].line_spacing.is_none());
 }
 
-/// A common style's spacing is its look (a heading's), not the paragraph's own formatting.
-#[test]
-fn a_common_styles_spacing_is_not_direct_formatting() {
-    let content = format!(
-        r#"<office:document-content {NS}><office:body><office:text><text:p text:style-name="Mine">x</text:p></office:text></office:body></office:document-content>"#
-    );
-    let styles = format!(
-        r#"<office:document-styles {NS}><office:styles><style:style style:name="Mine" style:family="paragraph"><style:paragraph-properties fo:margin-top="30pt"/></style:style></office:styles></office:document-styles>"#
-    );
+/// An .odt with these common styles in `styles.xml` and this body.
+fn with_styles(common: &str, body: &str) -> Document {
+    let content = format!(r#"<office:document-content {NS}><office:body><office:text>{body}</office:text></office:body></office:document-content>"#);
+    let styles = format!(r#"<office:document-styles {NS}><office:styles>{common}</office:styles></office:document-styles>"#);
     use std::io::Write;
     let mut z = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
     let o = zip::write::SimpleFileOptions::default();
@@ -222,9 +217,53 @@ fn a_common_styles_spacing_is_not_direct_formatting() {
         z.start_file(name, o).unwrap();
         z.write_all(data.as_bytes()).unwrap();
     }
-    let d = import(&z.finish().unwrap().into_inner()).unwrap();
-    let Block::Para(p) = &*d.body[0] else { panic!() };
-    assert!(p.props.space_before.is_none(), "{:?}", p.props);
+    import(&z.finish().unwrap().into_inner()).unwrap()
+}
+
+fn props(d: &Document) -> Vec<wordcraft_doc::props::ParaProps> {
+    d.body.iter().filter_map(|b| if let Block::Para(p) = &**b { Some(p.props.clone()) } else { None }).collect()
+}
+
+/// A plain common style's spacing before and after and line height reach its paragraphs (as its
+/// text formatting does); a heading style's are the heading's look, `Standard`'s the document
+/// defaults, and a common style's indents stay with the style (they would fight a list's).
+#[test]
+fn a_common_styles_spacing_applies_but_not_a_headings_or_standards() {
+    let common = r#"<style:style style:name="Standard" style:family="paragraph"><style:paragraph-properties fo:margin-bottom="8pt" fo:line-height="115%"/></style:style>
+        <style:style style:name="Text_20_body" style:display-name="Text body" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="3pt" fo:margin-bottom="7pt" fo:line-height="120%" fo:margin-left="20pt"/></style:style>
+        <style:style style:name="Heading_20_1" style:display-name="Heading 1" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="30pt"/></style:style>"#;
+    let p = props(&with_styles(
+        common,
+        r#"<text:p text:style-name="Text_20_body">a</text:p><text:h text:style-name="Heading_20_1" text:outline-level="1">b</text:h><text:p text:style-name="Standard">c</text:p>"#,
+    ));
+    assert_eq!((p[0].space_before, p[0].space_after, p[0].line_spacing), (Some(3.0), Some(7.0), Some(LineSpacing::Multiple(1.2))), "{:?}", p[0]);
+    assert!(p[0].indent_left.is_none(), "{:?}", p[0]);
+    assert!(p[1].space_before.is_none(), "the heading's: {:?}", p[1]);
+    assert!(p[2].space_after.is_none() && p[2].line_spacing.is_none(), "Standard's: {:?}", p[2]);
+}
+
+/// A paragraph's borders come back with their colour, width and distance from the text: LibreOffice
+/// writes Word's heading rule as `fo:border-bottom` on the paragraph's style.
+#[test]
+fn paragraph_borders_are_read() {
+    let auto = r#"<style:style style:name="P5" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:padding-bottom="0.028in" fo:border-left="none" fo:border-right="none" fo:border-top="none" fo:border-bottom="0.74pt solid #1f3864"/></style:style>
+        <style:style style:name="P6" style:family="paragraph"><style:paragraph-properties fo:border="thin double #ff0000" fo:padding="4pt"/></style:style>
+        <style:style style:name="P7" style:family="paragraph"><style:paragraph-properties fo:border="none"/></style:style>"#;
+    let p = imported(
+        auto,
+        r#"<text:p text:style-name="P5">Descripción</text:p><text:p text:style-name="P6">x</text:p><text:p text:style-name="P7">y</text:p>"#,
+    );
+    let b = p[0].borders.unwrap();
+    let bottom = b.bottom.unwrap();
+    assert!(bottom.style == BorderStyle::Single && (bottom.width - 0.74).abs() < 0.01 && bottom.color == Some(Rgb(0x1F, 0x38, 0x64)), "{bottom:?}");
+    assert!((bottom.space - 2.016).abs() < 0.01, "{bottom:?}");
+    assert!(b.top.is_some_and(|t| !t.is_visible()), "{b:?}");
+    let all = p[1].borders.unwrap();
+    for e in [all.top, all.bottom, all.left, all.right] {
+        let e = e.unwrap();
+        assert!(e.style == BorderStyle::Double && e.width == 0.5 && e.space == 4.0 && e.color == Some(Rgb(0xFF, 0, 0)), "{e:?}");
+    }
+    assert!(p[2].borders.is_none(), "nothing visible: {:?}", p[2]);
 }
 
 #[test]
@@ -234,7 +273,7 @@ fn hostile_spacing_and_tabs_are_clamped() {
         stops.push_str(r#"<style:tab-stop style:position="1e30pt"/><style:tab-stop style:position="NaNpt"/>"#);
     }
     let auto = format!(
-        r#"<style:style style:name="P1" style:family="paragraph"><style:paragraph-properties fo:margin-top="1e30pt" fo:margin-left="-1e30pt" fo:text-indent="infpt" fo:margin-bottom="-5pt" fo:line-height="1e9%" fo:margin-right="50%"><style:tab-stops>{stops}</style:tab-stops></style:paragraph-properties></style:style>
+        r#"<style:style style:name="P1" style:family="paragraph"><style:paragraph-properties fo:margin-top="1e30pt" fo:margin-left="-1e30pt" fo:text-indent="infpt" fo:margin-bottom="-5pt" fo:line-height="1e9%" fo:margin-right="50%" fo:border="1e30pt solid #zzzzzz NaNpt" fo:padding="1e30pt"><style:tab-stops>{stops}</style:tab-stops></style:paragraph-properties></style:style>
         <style:style style:name="P2" style:family="paragraph"><style:paragraph-properties fo:line-height="-3%"/></style:style>"#
     );
     let p = imported(&auto, r#"<text:p text:style-name="P1">x</text:p><text:p text:style-name="P2">y</text:p>"#);
@@ -246,6 +285,8 @@ fn hostile_spacing_and_tabs_are_clamped() {
     let tabs = p[0].tabs.clone().unwrap();
     assert!(tabs.len() <= 64 && tabs.iter().all(|t| t.pos.is_finite() && (0.0..=1584.0).contains(&t.pos)), "{}", tabs.len());
     assert!(p[1].line_spacing.is_none());
+    let b = p[0].borders.unwrap().bottom.unwrap();
+    assert!(b.width == 12.0 && b.space == 31.0 && b.color.is_none(), "{b:?}");
 }
 
 /// What the export writes comes back: the round trip the Spain templates take.
