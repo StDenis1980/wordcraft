@@ -82,6 +82,7 @@ pub fn registry() -> Registry {
     v.extend(table_resize::specs());
     v.extend(table_mouse::specs());
     v.extend(review::specs());
+    v.extend(crate::tinta_suggest::specs());
     v.extend(file::specs());
     v.extend(options::specs());
     v.extend(design::specs());

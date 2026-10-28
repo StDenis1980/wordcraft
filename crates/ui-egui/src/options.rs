@@ -314,6 +314,8 @@ fn proofing(app: &mut WordApp, ui: &mut Ui) {
     section(ui, "Custom dictionary");
     custom_dictionary(app, ui);
     ui.add_space(8.0);
+    tinta_suggest::pane(app, ui);
+    ui.add_space(8.0);
     section(ui, "Dictionaries");
     dictionaries(app, ui);
 }
@@ -857,6 +859,8 @@ fn numeral_picker(app: &mut WordApp, ui: &mut Ui) {
         }
     });
 }
+
+mod tinta_suggest;
 
 #[cfg(test)]
 mod tests;
