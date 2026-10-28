@@ -1,6 +1,7 @@
 //! Tinta Office: what the .odt export keeps of a letter, an invoice or a CV made in Word's way
 //! (headers and footers with page numbers, paragraph spacing, indents, tab stops, borders,
-//! borderless and aligned tables), checked in the XML and back through the importer.
+//! borderless and aligned tables), checked in the XML and back through the importer; and what
+//! the importer reads of a paragraph's own spacing, indents, line height and tab stops.
 
 use std::io::Read;
 
@@ -159,4 +160,145 @@ fn a_layout_table_without_borders_has_no_grid_and_keeps_its_alignment() {
     assert!(content.contains("table:align=\"right\""), "{content}");
     assert!(content.contains("fo:border=\"none\""), "the layout table: {content}");
     assert!(content.contains("fo:border=\"0.5pt solid #000000\""), "the grid table keeps its grid: {content}");
+}
+
+fn package(content: &str) -> Vec<u8> {
+    use std::io::Write;
+    let mut z = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    let o = zip::write::SimpleFileOptions::default().compression_method(zip::CompressionMethod::Stored);
+    for (name, data) in [("mimetype", "application/vnd.oasis.opendocument.text"), ("content.xml", content)] {
+        z.start_file(name, o).unwrap();
+        z.write_all(data.as_bytes()).unwrap();
+    }
+    z.finish().unwrap().into_inner()
+}
+
+const NS: &str = r#"xmlns:office="urn:oasis:names:tc:opendocument:xmlns:office:1.0" xmlns:text="urn:oasis:names:tc:opendocument:xmlns:text:1.0" xmlns:style="urn:oasis:names:tc:opendocument:xmlns:style:1.0" xmlns:fo="urn:oasis:names:tc:opendocument:xmlns:xsl-fo-compatible:1.0""#;
+
+/// The body paragraphs' properties of an .odt whose `office:automatic-styles` and body are given.
+fn imported(auto: &str, body: &str) -> Vec<wordcraft_doc::props::ParaProps> {
+    let content = format!(
+        r#"<office:document-content {NS}><office:automatic-styles>{auto}</office:automatic-styles><office:body><office:text>{body}</office:text></office:body></office:document-content>"#
+    );
+    let d = import(&package(&content)).unwrap();
+    d.body.iter().filter_map(|b| if let Block::Para(p) = &**b { Some(p.props.clone()) } else { None }).collect()
+}
+
+#[test]
+fn paragraph_spacing_indents_line_height_and_tabs_are_read() {
+    let auto = r#"<style:style style:name="P1" style:family="paragraph" style:parent-style-name="Standard"><style:paragraph-properties fo:margin-top="0.4236cm" fo:margin-bottom="4pt" fo:margin-left="1.27cm" fo:margin-right="0.5in" fo:text-indent="-18pt" fo:line-height="150%"><style:tab-stops><style:tab-stop style:position="200pt" style:type="right" style:leader-style="dotted" style:leader-text="."/><style:tab-stop style:position="1cm" style:type="center"/><style:tab-stop style:position="3cm" style:type="char" style:char=","/></style:tab-stops></style:paragraph-properties></style:style>
+        <style:style style:name="P2" style:family="paragraph"><style:paragraph-properties fo:line-height="14pt"/></style:style>
+        <style:style style:name="P3" style:family="paragraph"><style:paragraph-properties style:line-height-at-least="16pt"/></style:style>"#;
+    let p = imported(
+        auto,
+        r#"<text:p text:style-name="P1">Ref.<text:tab/>Exp.</text:p><text:p text:style-name="P2">b</text:p><text:p text:style-name="P3">c</text:p><text:p>d</text:p>"#,
+    );
+    let close = |a: Option<f32>, b: f32| a.is_some_and(|a| (a - b).abs() < 0.05);
+    assert!(close(p[0].space_before, 12.0) && close(p[0].space_after, 4.0), "{:?}", p[0]);
+    assert!(close(p[0].indent_left, 36.0) && close(p[0].indent_right, 36.0) && close(p[0].indent_first, -18.0), "{:?}", p[0]);
+    assert_eq!(p[0].line_spacing, Some(LineSpacing::Multiple(1.5)));
+    let tabs = p[0].tabs.clone().unwrap();
+    // From the text column's left edge, as Word measures them: the indent is added back.
+    assert!(close(Some(tabs[0].pos), 236.0) && tabs[0].align == TabAlign::Right && tabs[0].leader == TabLeader::Dot, "{tabs:?}");
+    assert!(tabs[1].align == TabAlign::Center && tabs[1].leader == TabLeader::None && tabs[2].align == TabAlign::Decimal, "{tabs:?}");
+    assert_eq!(p[1].line_spacing, Some(LineSpacing::Exactly(14.0)));
+    assert_eq!(p[2].line_spacing, Some(LineSpacing::AtLeast(16.0)));
+    assert!(p[3].space_before.is_none() && p[3].tabs.is_none() && p[3].line_spacing.is_none());
+}
+
+/// A common style's spacing is its look (a heading's), not the paragraph's own formatting.
+#[test]
+fn a_common_styles_spacing_is_not_direct_formatting() {
+    let content = format!(
+        r#"<office:document-content {NS}><office:body><office:text><text:p text:style-name="Mine">x</text:p></office:text></office:body></office:document-content>"#
+    );
+    let styles = format!(
+        r#"<office:document-styles {NS}><office:styles><style:style style:name="Mine" style:family="paragraph"><style:paragraph-properties fo:margin-top="30pt"/></style:style></office:styles></office:document-styles>"#
+    );
+    use std::io::Write;
+    let mut z = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+    let o = zip::write::SimpleFileOptions::default();
+    for (name, data) in [("mimetype", "application/vnd.oasis.opendocument.text"), ("content.xml", &content), ("styles.xml", &styles)] {
+        z.start_file(name, o).unwrap();
+        z.write_all(data.as_bytes()).unwrap();
+    }
+    let d = import(&z.finish().unwrap().into_inner()).unwrap();
+    let Block::Para(p) = &*d.body[0] else { panic!() };
+    assert!(p.props.space_before.is_none(), "{:?}", p.props);
+}
+
+#[test]
+fn hostile_spacing_and_tabs_are_clamped() {
+    let mut stops = String::new();
+    for _ in 0..500 {
+        stops.push_str(r#"<style:tab-stop style:position="1e30pt"/><style:tab-stop style:position="NaNpt"/>"#);
+    }
+    let auto = format!(
+        r#"<style:style style:name="P1" style:family="paragraph"><style:paragraph-properties fo:margin-top="1e30pt" fo:margin-left="-1e30pt" fo:text-indent="infpt" fo:margin-bottom="-5pt" fo:line-height="1e9%" fo:margin-right="50%"><style:tab-stops>{stops}</style:tab-stops></style:paragraph-properties></style:style>
+        <style:style style:name="P2" style:family="paragraph"><style:paragraph-properties fo:line-height="-3%"/></style:style>"#
+    );
+    let p = imported(&auto, r#"<text:p text:style-name="P1">x</text:p><text:p text:style-name="P2">y</text:p>"#);
+    assert_eq!(p[0].space_before, Some(1584.0));
+    assert_eq!(p[0].space_after, Some(0.0));
+    assert_eq!(p[0].indent_left, Some(-1584.0));
+    assert!(p[0].indent_first.is_none() && p[0].indent_right.is_none(), "{:?}", p[0]);
+    assert_eq!(p[0].line_spacing, Some(LineSpacing::Multiple(10.0)));
+    let tabs = p[0].tabs.clone().unwrap();
+    assert!(tabs.len() <= 64 && tabs.iter().all(|t| t.pos.is_finite() && (0.0..=1584.0).contains(&t.pos)), "{}", tabs.len());
+    assert!(p[1].line_spacing.is_none());
+}
+
+/// What the export writes comes back: the round trip the Spain templates take.
+#[test]
+fn spacing_indents_and_tabs_survive_odt() {
+    let mut d = Document::new();
+    let mut p = Paragraph::with_text("Ref.\tExpediente", CharProps::default());
+    p.props.space_before = Some(12.0);
+    p.props.space_after = Some(4.0);
+    p.props.indent_left = Some(36.0);
+    p.props.indent_first = Some(28.35);
+    p.props.line_spacing = Some(LineSpacing::Multiple(1.15));
+    p.props.tabs = Some(vec![TabStop { pos: 236.0, align: TabAlign::Right, leader: TabLeader::Dot }]);
+    d.body = vec![para_block(p.clone())];
+    let back = import(&export(&d).unwrap()).unwrap();
+    let Block::Para(q) = &*back.body[0] else { panic!() };
+    let close = |a: Option<f32>, b: Option<f32>| match (a, b) {
+        (Some(a), Some(b)) => (a - b).abs() < 0.05,
+        (a, b) => a == b,
+    };
+    assert!(close(q.props.space_before, p.props.space_before) && close(q.props.space_after, p.props.space_after), "{:?}", q.props);
+    assert!(close(q.props.indent_left, p.props.indent_left) && close(q.props.indent_first, p.props.indent_first), "{:?}", q.props);
+    assert_eq!(q.props.line_spacing, p.props.line_spacing);
+    let tabs = q.props.tabs.clone().unwrap();
+    assert!(close(Some(tabs[0].pos), Some(236.0)) && tabs[0].align == TabAlign::Right && tabs[0].leader == TabLeader::Dot, "{tabs:?}");
+}
+
+/// A layout table whose cells all say `fo:border="none"` (LibreOffice writes Word's borderless
+/// tables so) opens without a grid; a table with any bordered or unstyled cell keeps it. A
+/// table's alignment comes back too.
+#[test]
+fn a_table_whose_cells_have_no_borders_opens_without_a_grid() {
+    let auto = r#"<style:style style:name="N" style:family="table-cell"><style:table-cell-properties fo:border="none"/></style:style>
+        <style:style style:name="E" style:family="table-cell"><style:table-cell-properties fo:border-top="none" fo:border-bottom="none" fo:border-left="none" fo:border-right="none"/></style:style>
+        <style:style style:name="G" style:family="table-cell"><style:table-cell-properties fo:border="0.5pt solid #000000"/></style:style>"#;
+    let table = |a: &str, b: &str| {
+        format!(
+            r#"<table:table><table:table-column table:number-columns-repeated="2"/><table:table-row><table:table-cell table:style-name="{a}"><text:p>a</text:p></table:table-cell><table:table-cell{b}><text:p>b</text:p></table:table-cell></table:table-row></table:table>"#
+        )
+    };
+    let body = [table("N", r#" table:style-name="E""#), table("N", r#" table:style-name="G""#), table("N", "")].concat().replacen(
+        "<table:table>",
+        r#"<table:table table:style-name="T">"#,
+        1,
+    );
+    let auto = format!(r#"{auto}<style:style style:name="T" style:family="table"><style:table-properties table:align="right"/></style:style>"#);
+    let content = format!(
+        r#"<office:document-content {NS} xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"><office:automatic-styles>{auto}</office:automatic-styles><office:body><office:text>{body}</office:text></office:body></office:document-content>"#
+    );
+    let d = import(&package(&content)).unwrap();
+    let styles: Vec<Option<String>> =
+        d.body.iter().filter_map(|b| if let Block::Table(t) = &**b { Some(t.props.style.clone()) } else { None }).collect();
+    assert_eq!(styles.len(), 3);
+    assert!(styles[0].is_none(), "the layout table: {styles:?}");
+    assert!(styles[1].is_some() && styles[2].is_some(), "the grids stay: {styles:?}");
 }

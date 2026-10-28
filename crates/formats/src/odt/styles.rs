@@ -56,6 +56,11 @@ struct StyleInfo {
     cell_background: Option<Rgb>,
     /// `style:vertical-align` of a table-cell style's `style:table-cell-properties`.
     cell_valign: Option<VAlign>,
+    /// Whether a table-cell style's `fo:border*` attributes draw a line: `Some(false)` when they
+    /// are all `none`, `None` when it names none (Tinta Office).
+    cell_border: Option<bool>,
+    /// `table:align` of a table style's `style:table-properties` (Tinta Office).
+    table_align: Option<Align>,
     /// `style:column-width` of a table-column style's `style:table-column-properties`, in points.
     column_width: Option<f32>,
     /// `style:master-page-name` of a paragraph or table style: its paragraphs (tables) start a
@@ -66,6 +71,137 @@ struct StyleInfo {
     page_number: Option<Option<u32>>,
     /// `style:columns` of a section style.
     columns: Option<Columns>,
+    /// Spacing, indents and line height of `style:paragraph-properties` (Tinta Office).
+    spacing: model::Spacing,
+    /// `style:tab-stops` of `style:paragraph-properties`, positions from the paragraph's left
+    /// margin as ODF writes them (`text:tab-stops-relative-to-indent`, LibreOffice's default).
+    tabs: Option<Vec<wordcraft_doc::props::TabStop>>,
+}
+
+/// Most tab stops read for one style.
+const MAX_TABS: usize = 64;
+
+/// No indent or spacing is larger than this many points (22 inches, the largest page).
+const MAX_SPACING: f32 = 1584.0;
+
+/// Spacing, indents and line height of a `style:paragraph-properties` element (ODF 1.3 §17.6).
+fn paragraph_spacing(a: &Attrs, sp: &mut model::Spacing) {
+    use wordcraft_doc::props::LineSpacing;
+    let clamp = |v: f32, min: f32| v.clamp(min, MAX_SPACING);
+    for (attr, slot, min) in [
+        ("fo:margin-top", &mut sp.before, 0.0),
+        ("fo:margin-bottom", &mut sp.after, 0.0),
+        ("fo:margin-left", &mut sp.left, -MAX_SPACING),
+        ("fo:margin-right", &mut sp.right, -MAX_SPACING),
+        ("fo:text-indent", &mut sp.first, -MAX_SPACING),
+    ] {
+        // Percentages (of the parent's value) aren't read.
+        if let Some(v) = get(a, attr).filter(|v| !v.trim().ends_with('%')).and_then(length) {
+            *slot = Some(clamp(v, min));
+        }
+    }
+    if let Some(v) = get(a, "fo:line-height").map(str::trim) {
+        if let Some(pct) = v.strip_suffix('%') {
+            if let Some(m) = pct.trim().parse::<f32>().ok().filter(|m| m.is_finite() && *m > 0.0) {
+                sp.line = Some(LineSpacing::Multiple((m / 100.0).clamp(0.25, 10.0)));
+            }
+        } else if v.eq_ignore_ascii_case("normal") {
+            sp.line = Some(LineSpacing::Multiple(1.0));
+        } else if let Some(l) = length(v).filter(|l| *l > 0.0) {
+            sp.line = Some(LineSpacing::Exactly(l.min(MAX_SPACING)));
+        }
+    } else if let Some(l) = get(a, "style:line-height-at-least").and_then(length).filter(|l| *l >= 0.0) {
+        sp.line = Some(LineSpacing::AtLeast(l.min(MAX_SPACING)));
+    }
+}
+
+/// A table style's `style:table-properties` (ODF 1.3 §17.15).
+fn table_properties(a: &Attrs, s: &mut StyleInfo) {
+    if let Some(v) = get(a, "style:page-number") {
+        s.page_number = Some(v.trim().parse::<u32>().ok().map(|n| n.min(32_767)));
+    }
+    // `margins` (and `left`) is Word's default: the table starts at the left margin.
+    match get(a, "table:align").map(str::trim) {
+        Some("center") => s.table_align = Some(Align::Center),
+        Some("right") => s.table_align = Some(Align::Right),
+        Some("left") | Some("margins") => s.table_align = Some(Align::Left),
+        _ => {}
+    }
+}
+
+/// Does a `style:table-cell-properties` element draw a border? `None` when it sets none of
+/// `fo:border`, `fo:border-top`, `fo:border-bottom`, `fo:border-left` and `fo:border-right`.
+fn cell_border(a: &Attrs) -> Option<bool> {
+    let edges: Vec<&str> =
+        ["fo:border", "fo:border-top", "fo:border-bottom", "fo:border-left", "fo:border-right"].iter().filter_map(|k| get(a, k)).collect();
+    (!edges.is_empty()).then(|| edges.iter().any(|e| !e.trim().eq_ignore_ascii_case("none") && !e.trim().is_empty()))
+}
+
+/// A paragraph style's `style:paragraph-properties` (ODF 1.3 §17.6).
+fn paragraph_properties(a: &Attrs, s: &mut StyleInfo) {
+    s.align = match get(a, "fo:text-align").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
+        Some("center") => Some(Align::Center),
+        Some("end") | Some("right") => Some(Align::Right),
+        Some("justify") => Some(Align::Justify),
+        Some("start") | Some("left") => Some(Align::Left),
+        _ => s.align,
+    };
+    if get(a, "fo:break-before").is_some_and(|b| b.trim().eq_ignore_ascii_case("page")) {
+        s.page_break = true;
+    }
+    match get(a, "fo:keep-with-next") {
+        Some("always") => s.keep_next = Some(true),
+        Some("auto") => s.keep_next = Some(false),
+        _ => {}
+    }
+    if let Some(v) = get(a, "style:page-number") {
+        s.page_number = Some(v.trim().parse::<u32>().ok().map(|n| n.min(32_767)));
+    }
+    if get(a, "fo:border-bottom").is_some_and(|b| !b.trim().eq_ignore_ascii_case("none")) {
+        s.border_bottom = true;
+    }
+    paragraph_spacing(a, &mut s.spacing);
+}
+
+/// A `style:tab-stops` element starts a style's own list of stops (none, when it is empty); each
+/// `style:tab-stop` inside adds one, up to [`MAX_TABS`].
+fn tab_element(s: &mut StyleInfo, name: &str, a: &Attrs) {
+    if name == "tab-stops" {
+        s.tabs = Some(Vec::new());
+    } else if let Some(tabs) = &mut s.tabs
+        && tabs.len() < MAX_TABS
+        && let Some(t) = tab_stop(a)
+    {
+        tabs.push(t);
+    }
+}
+
+/// A `style:tab-stop` element (ODF 1.3 §17.8), its position as written.
+fn tab_stop(a: &Attrs) -> Option<wordcraft_doc::props::TabStop> {
+    use wordcraft_doc::props::{TabAlign, TabLeader, TabStop};
+    let pos = get(a, "style:position").and_then(length)?.clamp(0.0, MAX_SPACING);
+    let align = match get(a, "style:type").map(str::trim) {
+        Some("center") => TabAlign::Center,
+        Some("right") => TabAlign::Right,
+        Some("char") => TabAlign::Decimal,
+        _ => TabAlign::Left,
+    };
+    let style = get(a, "style:leader-style").map(str::trim).filter(|s| *s != "none");
+    let leader = match get(a, "style:leader-text").map(str::trim) {
+        Some(".") => TabLeader::Dot,
+        Some("-") => TabLeader::Hyphen,
+        Some("_") => TabLeader::Underscore,
+        Some("·") => TabLeader::MiddleDot,
+        Some(" ") | Some("") => TabLeader::None,
+        // No leader text: the leader style draws it.
+        _ => match style {
+            Some("dotted") => TabLeader::Dot,
+            Some("dash") | Some("long-dash") | Some("dot-dash") | Some("dot-dot-dash") => TabLeader::Hyphen,
+            Some(_) => TabLeader::Underscore,
+            None => TabLeader::None,
+        },
+    };
+    Some(TabStop { pos, align, leader })
 }
 
 /// Columns of a `style:columns` element (ODF 1.3 §17.12): count and gap, clamped as the RTF and
@@ -178,10 +314,8 @@ impl Styles {
                     }
                 }
                 "table-properties" => {
-                    if let Some((_, s)) = &mut cur
-                        && let Some(v) = get(&a, "style:page-number")
-                    {
-                        s.page_number = Some(v.trim().parse::<u32>().ok().map(|n| n.min(32_767)));
+                    if let Some((_, s)) = &mut cur {
+                        table_properties(&a, s);
                     }
                 }
                 "table-column-properties" => {
@@ -196,6 +330,7 @@ impl Styles {
                         if let Some(c) = get(&a, "fo:background-color").and_then(model::parse_color) {
                             s.cell_background = Some(c);
                         }
+                        s.cell_border = cell_border(&a).or(s.cell_border);
                         if let Some(va) = get(&a, "style:vertical-align") {
                             s.cell_valign = match va.trim() {
                                 "top" => Some(VAlign::Top),
@@ -208,27 +343,12 @@ impl Styles {
                 }
                 "paragraph-properties" => {
                     if let Some((_, s)) = &mut cur {
-                        s.align = match get(&a, "fo:text-align").map(|v| v.trim().to_ascii_lowercase()).as_deref() {
-                            Some("center") => Some(Align::Center),
-                            Some("end") | Some("right") => Some(Align::Right),
-                            Some("justify") => Some(Align::Justify),
-                            Some("start") | Some("left") => Some(Align::Left),
-                            _ => s.align,
-                        };
-                        if get(&a, "fo:break-before").is_some_and(|b| b.trim().eq_ignore_ascii_case("page")) {
-                            s.page_break = true;
-                        }
-                        match get(&a, "fo:keep-with-next") {
-                            Some("always") => s.keep_next = Some(true),
-                            Some("auto") => s.keep_next = Some(false),
-                            _ => {}
-                        }
-                        if let Some(v) = get(&a, "style:page-number") {
-                            s.page_number = Some(v.trim().parse::<u32>().ok().map(|n| n.min(32_767)));
-                        }
-                        if get(&a, "fo:border-bottom").is_some_and(|b| !b.trim().eq_ignore_ascii_case("none")) {
-                            s.border_bottom = true;
-                        }
+                        paragraph_properties(&a, s);
+                    }
+                }
+                "tab-stops" | "tab-stop" if q.starts_with("style:") => {
+                    if let Some((_, s)) = &mut cur {
+                        tab_element(s, local(&q), &a);
                     }
                 }
                 "columns" if q.starts_with("style:") => {
@@ -330,9 +450,48 @@ impl Styles {
         self.chain(name).iter().find_map(|(_, s)| s.cell_background)
     }
 
+    /// The alignment of a table style (whole chain).
+    pub(super) fn table_align(&self, name: &str) -> Option<Align> {
+        self.chain(name).iter().find_map(|(_, s)| s.table_align)
+    }
+
+    /// Whether a table-cell style draws a border (whole chain; `None`: it doesn't say).
+    pub(super) fn cell_border(&self, name: &str) -> Option<bool> {
+        self.chain(name).iter().find_map(|(_, s)| s.cell_border)
+    }
+
     /// Vertical alignment of a table-cell style (whole chain).
     pub(super) fn cell_valign(&self, name: &str) -> Option<VAlign> {
         self.chain(name).iter().find_map(|(_, s)| s.cell_valign)
+    }
+
+    /// The spacing, indents, line height and tab stops a paragraph's automatic styles give it
+    /// (its direct formatting; a common style's are its look, as in [`Styles::para`]), each the
+    /// nearest in the chain. Tab positions are from the text column's left edge, as in Word.
+    pub(super) fn para_direct(&self, name: &str) -> (model::Spacing, Vec<wordcraft_doc::props::TabStop>) {
+        let chain = self.chain(name);
+        let auto: Vec<&StyleInfo> = chain.iter().take_while(|(_, s)| s.auto).map(|(_, s)| *s).collect();
+        let pick = |f: &dyn Fn(&model::Spacing) -> Option<f32>| auto.iter().find_map(|s| f(&s.spacing));
+        let sp = model::Spacing {
+            before: pick(&|x| x.before),
+            after: pick(&|x| x.after),
+            left: pick(&|x| x.left),
+            right: pick(&|x| x.right),
+            first: pick(&|x| x.first),
+            line: auto.iter().find_map(|s| s.spacing.line),
+        };
+        let indent = sp.left.unwrap_or(0.0);
+        let tabs = auto
+            .iter()
+            .find_map(|s| s.tabs.clone())
+            .unwrap_or_default()
+            .into_iter()
+            .map(|mut t| {
+                t.pos = (t.pos + indent).clamp(0.0, MAX_SPACING);
+                t
+            })
+            .collect();
+        (sp, tabs)
     }
 
     /// Paragraph kind, alignment, page break, rule, keep-with-next and base formatting. The text formatting of
