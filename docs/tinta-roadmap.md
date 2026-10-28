@@ -3,7 +3,8 @@
 > **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
-> (priority 2) done; 2026-10-28 priority 9: automatic validation of users' words.
+> (priority 2) done; 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
+> automatic sending.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -30,7 +31,7 @@ app since Preview 3).
 | 6 | Formatting revisions and content controls | upstream | 2 |
 | 7 | .odt export for Spanish administrations that use ODF: check the current state | our check | 2 |
 | 8 | Charts, SmartArt, ink (≈ 3% today) | upstream | 3 |
-| 9 | Analysis: a shared Tinta dictionary built from the words users add (see [below](#analysis-a-shared-dictionary-from-users-words)) | fork | 2 (analysis), 3 (build) |
+| 9 | A shared Tinta dictionary built from the words users add (see [below](#analysis-a-shared-dictionary-from-users-words)): the "Suggest these words" button and automatic validation, then automatic sending | fork | 2 (button), 3 (automatic) |
 
 ## Analysis: a shared dictionary from users' words
 
@@ -74,8 +75,9 @@ them with the next update. To analyse in stage 2, before any code:
   list next to each Hunspell dictionary (not supported today).
 - **Updates.** Words arrive with each monthly release; a separate dictionary update without
   reinstalling comes later.
-- **Owner decisions.** Decided: automatic validation without a person (2026-10-28). Still open:
-  whether to collect at all, manual or automatic channel, server and its cost.
+- **Owner decisions (2026-10-28).** Collect the words; validate them automatically without a
+  person; send them first by hand (stage 2: the "Suggest these words" button, the user reviews
+  the list and sends it), then automatically after a one-time consent (stage 3: the server).
 
 ## Suite-wide work (all five Tinta Office apps)
 
