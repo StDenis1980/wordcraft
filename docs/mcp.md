@@ -162,6 +162,34 @@ sha256 of each archive only matches what that index says: it catches a broken do
 changed pack. `proof.packs` then returns `"index_override": "<url or path>"`, and the app shows the
 test source in File › Options › Language and on the bar's Install.
 
+## Confining commands
+
+```sh
+wordcraft-cli mcp --allow-commands "text.*, format.*, para.*, select.text, caret.*, file.new, file.save"
+wordcraft-cli mcp --allow-commands @allowed.txt   # one id or group.* per line, # comments
+```
+
+`--allow-commands` keeps the agent to the commands it was given, the way the roots above keep it
+to folders. Use both together.
+
+- Every command a client asks for must be on the list: `execute`, each command of `batch`, and
+  the commands behind `new_document` (`file.new`), `open_document` (`file.open`),
+  `save_document` (`file.save`, or `file.exportPng` for `.png`), `type_text` (`text.insert`),
+  `select_text` (`select.text`), `get_text` (`document.text`) and `list_documents`
+  (`view.switchWindows`). A command off the list is an ordinary tool error:
+  `command `insert.table` is not allowed: it is not on this session's --allow-commands list`.
+- So must every step a macro plays back: allowing `tools.macros` doesn't allow what its macros
+  run, so a macro (even one defined before) is never a way around the list.
+- Commands a command runs itself (Heading 1 applying its style) are part of the command that was
+  allowed and aren't checked again. `inspect_document`, `render_page` and `parity` read the
+  document without a command and stay available.
+- `list_commands` shows only the commands the client may run.
+- A list names ids (`format.bold`) and groups (`format.*`: every command whose id starts with
+  `format.`), separated by commas, spaces or new lines. An unknown id, or a group that matches no
+  command, stops the server at startup, so a typo never leaves the agent with less, or more, than
+  meant. An empty list is an error too.
+- Like the roots, the list holds the headless server: `--connect` with it is an error.
+
 ## Tools
 
 | Tool | What it does |

@@ -9,6 +9,7 @@
 pub use wordcraft_brand as brand;
 pub mod catalog;
 pub mod cmd;
+pub mod command_access;
 pub(crate) mod doc_state;
 pub mod file_access;
 pub(crate) mod ime;

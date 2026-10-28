@@ -80,6 +80,9 @@ pub(super) fn macros(s: &mut Session, v: &Value) -> CmdResult {
             if id == "tools.macros" {
                 continue;
             }
+            // A macro step is a command automation asked for: held to --allow-commands like one
+            // sent directly, so a macro can't run what the list leaves out.
+            crate::command_access::check(id).map_err(CmdError::Disabled)?;
             s.run(id, params)?;
         }
         return Ok(json!({"ran": n, "steps": steps.len()}));
