@@ -304,26 +304,24 @@ fn an_allowlist_file_is_read_up_to_its_limit_and_no_further() {
 
 #[cfg(unix)]
 #[test]
-fn an_endless_allowlist_stream_is_refused() {
-    // `/dev/zero` reports a length of 0 and never ends: only a bounded read stops.
+fn streams_and_devices_are_refused_before_they_are_opened() {
     let limit = wordcraft_engine::command_access::MAX_LIST_BYTES;
-    assert!(read_allowlist_file("/dev/zero", limit).unwrap_err().contains("too long"));
-    // A pipe whose writer keeps writing: nothing in its metadata says how long it will get.
+    // `/dev/zero` reports a length of 0 and never ends.
+    assert!(read_allowlist_file("/dev/zero", limit).unwrap_err().contains("not a regular file"));
     let dir = scratch("fifo");
+    assert!(read_allowlist_file(&dir.to_string_lossy(), limit).unwrap_err().contains("not a regular file"));
+    // A FIFO with no writer: opening it would block for good, so it must be refused without
+    // being opened. The test would hang here if it were.
     let fifo = dir.join("list");
     let made = std::process::Command::new("mkfifo").arg(&fifo).status();
-    if made.is_ok_and(|s| s.success()) {
-        let path = fifo.clone();
-        let writer = std::thread::spawn(move || {
-            use std::io::Write;
-            let mut f = std::fs::OpenOptions::new().write(true).open(&path).unwrap();
-            let chunk = [b'#'; 4096];
-            // Ends when the reader hangs up (BrokenPipe), not before.
-            while f.write_all(&chunk).is_ok() {}
-        });
-        assert!(read_allowlist_file(&fifo.to_string_lossy(), limit).unwrap_err().contains("too long"));
-        writer.join().unwrap();
-    }
+    assert!(made.is_ok_and(|s| s.success()), "mkfifo");
+    let started = std::time::Instant::now();
+    assert!(read_allowlist_file(&fifo.to_string_lossy(), limit).unwrap_err().contains("not a regular file"));
+    assert!(started.elapsed() < std::time::Duration::from_secs(5));
+    // A link to a regular file is still a regular file.
+    std::fs::write(dir.join("real"), "format.bold").unwrap();
+    std::os::unix::fs::symlink(dir.join("real"), dir.join("link")).unwrap();
+    assert_eq!(read_allowlist_file(&dir.join("link").to_string_lossy(), limit).unwrap(), "format.bold");
     let _ = std::fs::remove_dir_all(&dir);
 }
 

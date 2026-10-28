@@ -1,6 +1,6 @@
 //! `wordcraft-cli mcp --allow-commands` at startup, through the real binary: a flag without its
-//! list, an oversized or endless `@FILE`, and `--connect` all stop the server before it serves;
-//! a good list starts it held to that list.
+//! list, an oversized `@FILE` or one that is a stream, and `--connect` all stop the server before
+//! it serves; a good list starts it held to that list.
 
 use std::process::{Command, Output};
 
@@ -49,8 +49,16 @@ fn an_oversized_list_file_is_refused() {
 
 #[cfg(unix)]
 #[test]
-fn an_endless_list_file_is_refused() {
-    refused(&["mcp", "--allow-commands", "@/dev/zero"], "too long");
+fn streams_are_refused_at_once() {
+    refused(&["mcp", "--allow-commands", "@/dev/zero"], "not a regular file");
+    // A FIFO that nobody writes to: startup must not block on it.
+    let dir = std::env::temp_dir().join(format!("wordcraft-it-fifo-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let fifo = dir.join("list");
+    assert!(Command::new("mkfifo").arg(&fifo).status().is_ok_and(|s| s.success()), "mkfifo");
+    refused(&["mcp", "--allow-commands", &format!("@{}", fifo.display())], "not a regular file");
+    let _ = std::fs::remove_dir_all(&dir);
 }
 
 #[test]

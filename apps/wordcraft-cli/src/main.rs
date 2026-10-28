@@ -359,16 +359,27 @@ fn read_command_allowlist(spec: &str, registry: &wordcraft_engine::Registry) -> 
     wordcraft_engine::command_access::CommandAllowlist::parse(&text, registry).map_err(|e| format!("mcp: --allow-commands: {e}"))
 }
 
-/// The text of an `@FILE` command list, at most `max` bytes. The read itself stops after `max + 1`
-/// bytes, whatever the file's metadata says, so a file that grows while it is read or an endless
-/// stream (`/dev/zero`, which reports a length of 0) can't make startup read on; anything longer
-/// than `max` is refused, never cut short.
+/// The text of an `@FILE` command list, at most `max` bytes. Only a regular file (or a link to one)
+/// is read: a pipe, socket or device (`/dev/zero`, a FIFO that sends a short list and stays open)
+/// is refused before it is opened, since opening or reading it could block startup forever. The
+/// read itself stops after `max + 1` bytes, whatever the file's metadata says, so a file that grows
+/// while it is read can't make startup read on; anything longer than `max` is refused, never cut
+/// short.
 fn read_allowlist_file(path: &str, max: usize) -> Result<String, String> {
     use std::io::Read;
-    let file = std::fs::File::open(path).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?;
+    let not_regular = || format!("mcp: --allow-commands: {path} is not a regular file");
+    let cannot_read = |e: std::io::Error| format!("mcp: --allow-commands: cannot read {path}: {e}");
+    if !std::fs::metadata(path).map_err(cannot_read)?.is_file() {
+        return Err(not_regular());
+    }
+    let file = std::fs::File::open(path).map_err(cannot_read)?;
+    // Checked again on the opened file, in case the path was swapped after the first look.
+    if !file.metadata().map_err(cannot_read)?.is_file() {
+        return Err(not_regular());
+    }
     let limit = u64::try_from(max).unwrap_or(u64::MAX).saturating_add(1);
     let mut bytes = Vec::new();
-    file.take(limit).read_to_end(&mut bytes).map_err(|e| format!("mcp: --allow-commands: cannot read {path}: {e}"))?;
+    file.take(limit).read_to_end(&mut bytes).map_err(cannot_read)?;
     if bytes.len() > max {
         return Err(format!("mcp: --allow-commands: {path} is too long (more than {max} bytes)"));
     }
