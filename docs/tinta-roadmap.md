@@ -2,7 +2,8 @@
 
 > **Status:** 2026-10-27 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
-> shared dictionary built from users' added words (priority 9).
+> shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
+> (priority 2) done.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -13,7 +14,7 @@ for users in Spain and Ukraine. It is a fork-only file, so upstream syncs never 
 
 Ready for real work ≈ 60% (essentials user ≈ 63%, upstream estimate); 157 commits behind
 upstream. Styles, lists, tables, review and mail merge work; the main risk is other people's
-.docx: never tested on real files, and charts and SmartArt are dropped silently. Spelling in
+.docx: our own test set of typical documents now passes open → save with nothing lost, but charts and SmartArt are still dropped silently. Spelling in
 Spanish, Catalan, Galician, Basque and Ukrainian works out of the box (dictionaries ship with the
 app since Preview 3).
 
@@ -22,7 +23,7 @@ app since Preview 3).
 | # | Task | Where | Stage |
 |---|---|---|---|
 | 1 | ✅ Tinta dictionary pack: es_ES, ca, gl_ES, eu, uk_UA ship in every package ([packaging/dictionaries](../packaging/dictionaries/README.md): pinned sources, SHA-256, licences); spelling in Ukrainian, Catalan, Galician and Basque (crate `proof`, module `plain`; the affix engine reads long and numeric flags, up to 512 flags, IGNORE, ICONV, NEEDAFFIX, KEEPCASE). Offer the code upstream. Next: the Valencian `ca-valencia` dictionary, hyphenation patterns for these languages | fork (pack) + upstream (code) | 1 |
-| 2 | Our .docx test set: typical self-employed documents (invoice, contract, CV, letter) written from scratch; an "open → save → nothing lost" test | fork (tests) → fixes upstream | 1 |
+| 2 | ✅ Our .docx test set ([`crates/docx/tests/it/tinta_documents.rs`](../crates/docx/tests/it/tinta_documents.rs)): a Spanish invoice with a header logo, IVA and IRPF, a service contract with numbered clauses and a footnote, a Ukrainian CV in a layout table, a Catalan letter with a date field, written from the spec in the shape Word saves them. "Open → save → open" keeps the model, every element, attribute and paragraph of text, every relationship and document property; a second save is byte-identical. It found one loss, now fixed: the language, status, identifier, version and last-printed date of the document properties. Next: more documents as users report problems (offer the fix and the tests upstream) | fork (tests) → fixes upstream | 1 |
 | 3 | Keep charts, SmartArt and OLE through open and save (upstream item 3) | upstream | 1–2 |
 | 4 | Templates for Spain: factura, presupuesto, carta formal, currículum — our own text and colours, no Microsoft assets | fork or upstream | 2 |
 | 5 | Pagination like Word: column balancing, footnote continuation, Aptos/Calibri substitutes | upstream | 2 |
