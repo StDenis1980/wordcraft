@@ -344,6 +344,7 @@ fn flow_table(doc: &Document, t: &Table, depth: usize, tracked: bool) -> FTable 
                 shading: c.props.shading,
                 borders: c.props.borders,
                 valign: c.props.valign,
+                margins: cell_margins(&t.props, &c.props),
             });
         }
         rows.push(cells);
@@ -437,4 +438,14 @@ impl ListCounter {
             _ => format!("{}.", wordcraft_doc::section::roman(n)),
         }
     }
+}
+
+/// Tinta Office: a cell's margins when the cell or its table sets any (else `None`, Word's
+/// default), for the exporters.
+fn cell_margins(t: &wordcraft_doc::props::TableProps, c: &wordcraft_doc::props::CellProps) -> Option<[f32; 4]> {
+    if t.cell_margins.is_none() && c.margins.is_none() && c.partial_margins.is_none() {
+        return None;
+    }
+    let m = c.resolved_margins(t.cell_margins.unwrap_or(super::WORD_CELL_MARGINS));
+    (m.iter().all(|v| v.is_finite()) && m != super::WORD_CELL_MARGINS).then_some(m)
 }

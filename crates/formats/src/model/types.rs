@@ -368,11 +368,18 @@ pub struct Cell {
     /// The cell's own borders (RTF `\clbrdr…`), drawn whatever the table's style.
     pub borders: Option<wordcraft_doc::props::Borders>,
     pub valign: Option<VAlign>,
+    /// The cell's margins (top, left, bottom, right) in points, when they aren't Word's default
+    /// [`WORD_CELL_MARGINS`] (Tinta Office: .odt cell padding).
+    pub margins: Option<[f32; 4]>,
 }
+
+/// Word's default cell margins (top, left, bottom, right), points: what a table cell gets when
+/// neither the table nor the cell sets any.
+pub const WORD_CELL_MARGINS: [f32; 4] = [0.0, 5.4, 0.0, 5.4];
 
 impl Default for Cell {
     fn default() -> Self {
-        Cell { blocks: Vec::new(), colspan: 1, rowspan: 1, covered: false, header: false, shading: None, borders: None, valign: None }
+        Cell { blocks: Vec::new(), colspan: 1, rowspan: 1, covered: false, header: false, shading: None, borders: None, valign: None, margins: None }
     }
 }
 

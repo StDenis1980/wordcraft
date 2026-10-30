@@ -405,6 +405,7 @@ impl<'a> Builder<'a> {
                         shading: c.shading,
                         borders: c.borders,
                         valign: c.valign,
+                        margins: c.margins.filter(|m| m.iter().all(|v| v.is_finite())).map(|m| m.map(|v| v.clamp(0.0, MAX_CELL_MARGIN))),
                         ..Default::default()
                     },
                     blocks,
@@ -419,6 +420,10 @@ impl<'a> Builder<'a> {
         Some(tb)
     }
 }
+
+/// No cell margin is larger than this many points (Word's limit is 22 inches; a cell's own
+/// content box keeps the rest).
+const MAX_CELL_MARGIN: f32 = 144.0;
 
 fn finite_or(v: f32, d: f32) -> f32 {
     if v.is_finite() { v } else { d }

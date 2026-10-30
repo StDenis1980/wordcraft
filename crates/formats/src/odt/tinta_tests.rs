@@ -343,3 +343,69 @@ fn a_table_whose_cells_have_no_borders_opens_without_a_grid() {
     assert!(styles[0].is_none(), "the layout table: {styles:?}");
     assert!(styles[1].is_some() && styles[2].is_some(), "the grids stay: {styles:?}");
 }
+
+/// The cells' margins of the first table in an .odt whose `office:automatic-styles` and one row's
+/// cells are given.
+fn cell_margins(auto: &str, cells: &str) -> Vec<Option<[f32; 4]>> {
+    let content = format!(
+        r#"<office:document-content {NS} xmlns:table="urn:oasis:names:tc:opendocument:xmlns:table:1.0"><office:automatic-styles>{auto}</office:automatic-styles><office:body><office:text><table:table><table:table-column table:number-columns-repeated="4"/><table:table-row>{cells}</table:table-row></table:table></office:text></office:body></office:document-content>"#
+    );
+    let d = import(&package(&content)).unwrap();
+    let Some(Block::Table(t)) = d.body.iter().map(|b| &**b).find(|b| matches!(b, Block::Table(_))) else { panic!("no table") };
+    t.rows[0].cells.iter().map(|c| c.props.margins).collect()
+}
+
+#[test]
+fn cell_padding_is_read_as_cell_margins() {
+    // LibreOffice's default (0.097cm on every side), one side of four, Word's own and none.
+    let auto = r#"<style:style style:name="L" style:family="table-cell"><style:table-cell-properties fo:padding="0.097cm" fo:border="0.5pt solid #000000"/></style:style>
+        <style:style style:name="S" style:family="table-cell"><style:table-cell-properties fo:padding="0.1in" fo:padding-left="0.25in" fo:padding-right="0pt"/></style:style>
+        <style:style style:name="W" style:family="table-cell"><style:table-cell-properties fo:padding-top="0pt" fo:padding-bottom="0pt" fo:padding-left="5.4pt" fo:padding-right="5.4pt"/></style:style>"#;
+    let cell = |s: &str| format!(r#"<table:table-cell{s}><text:p>x</text:p></table:table-cell>"#);
+    let cells = [cell(r#" table:style-name="L""#), cell(r#" table:style-name="S""#), cell(r#" table:style-name="W""#), cell("")].concat();
+    let m = cell_margins(auto, &cells);
+    let l = m[0].expect("LibreOffice's padding");
+    assert!(l.iter().all(|v| (v - 2.75).abs() < 0.01), "{l:?}");
+    let s = m[1].expect("one side of four");
+    assert!(s.iter().zip([7.2, 18.0, 7.2, 0.0]).all(|(v, want)| (v - want).abs() < 0.01), "top, left, bottom, right: {s:?}");
+    assert_eq!(m[2], None, "Word's default margins add nothing");
+    assert_eq!(m[3], None, "no style: Word's default");
+    // Hostile paddings are clamped, never negative or infinite.
+    let hostile = r#"<style:style style:name="H" style:family="table-cell"><style:table-cell-properties fo:padding="1e30pt" fo:padding-left="-5pt" fo:padding-top="NaNpt"/></style:style>"#;
+    let h = cell_margins(hostile, &cell(r#" table:style-name="H""#))[0].expect("clamped");
+    assert!(h.iter().all(|v| v.is_finite() && (0.0..=144.0).contains(v)), "{h:?}");
+}
+
+#[test]
+fn cell_margins_survive_odt_and_padding_is_written_once() {
+    let mut d = Document::new();
+    let mut t = Table::new(1, 2, 270.0);
+    t.props.cell_margins = Some([3.0, 10.0, 3.0, 10.0]);
+    // A cell border with a distance used to write a second `fo:padding-top`.
+    let edge = Border { style: BorderStyle::Single, width: 1.0, color: None, space: 4.0 };
+    t.rows[0].cells[1].props.borders = Some(Borders::all(edge));
+    t.rows[0].cells[1].props.margins = Some([1.0, 2.0, 3.0, 4.0]);
+    d.body = vec![std::sync::Arc::new(Block::Table(t))];
+    let bytes = export(&d).unwrap();
+    let content = part(&bytes, "content.xml");
+    for style in content.split("<style:table-cell-properties").skip(1) {
+        let props = style.split("/>").next().unwrap_or("");
+        assert_eq!(props.matches("fo:padding-top=").count(), 1, "{props}");
+    }
+    let back = import(&bytes).unwrap();
+    let Some(Block::Table(t)) = back.body.first().map(|b| &**b) else { panic!("no table") };
+    assert_eq!(t.rows[0].cells[0].props.margins, Some([3.0, 10.0, 3.0, 10.0]), "the table's margins");
+    assert_eq!(t.rows[0].cells[1].props.margins, Some([1.0, 2.0, 3.0, 4.0]), "the cell's own");
+    // A table at Word's default writes Word's default and reads back as nothing set.
+    let plain = import(
+        &export(&{
+            let mut d = Document::new();
+            d.body = vec![std::sync::Arc::new(Block::Table(Table::new(1, 1, 100.0)))];
+            d
+        })
+        .unwrap(),
+    )
+    .unwrap();
+    let Some(Block::Table(t)) = plain.body.first().map(|b| &**b) else { panic!("no table") };
+    assert_eq!(t.rows[0].cells[0].props.margins, None);
+}

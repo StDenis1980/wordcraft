@@ -599,11 +599,13 @@ impl Body<'_> {
                 let shading = get(a, "table:style-name").and_then(|s| self.styles.cell_background(s));
                 let valign = get(a, "table:style-name").and_then(|s| self.styles.cell_valign(s));
                 let bordered = get(a, "table:style-name").and_then(|s| self.styles.cell_border(s)).unwrap_or(true);
+                // Tinta Office: the cell's padding, unless it is Word's default.
+                let margins = get(a, "table:style-name").and_then(|s| self.styles.cell_padding(s)).filter(|m| *m != model::WORD_CELL_MARGINS);
                 if let Some(t) = self.tables.last_mut() {
                     t.hcover = span as usize - 1;
                     t.borderless &= !bordered;
                 }
-                self.cells.push(Cell { colspan: span, rowspan: rows, shading, valign, ..Default::default() });
+                self.cells.push(Cell { colspan: span, rowspan: rows, shading, valign, margins, ..Default::default() });
                 self.containers.push(Vec::new());
                 self.lists_saved.push((std::mem::take(&mut self.lists), std::mem::take(&mut self.item_used)));
             }
