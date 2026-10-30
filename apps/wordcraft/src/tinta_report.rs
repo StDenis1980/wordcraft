@@ -219,8 +219,8 @@ pub fn report(kind: &str, message: &str, location: &str, frames: Vec<String>, se
         "frames": frames,
         "log": log,
     });
-    if let Some(s) = seconds {
-        r["seconds"] = json!(s);
+    if let (Some(s), Some(o)) = (seconds, r.as_object_mut()) {
+        o.insert("seconds".into(), json!(s));
     }
     r
 }
@@ -238,9 +238,12 @@ fn write_report(kind: &str, message: &str, location: &str, frames: Vec<String>, 
     }
     let mut body = report(kind, message, location, frames, seconds, log_tail());
     let mut text = body.to_string();
-    if text.len() > MAX_REPORT_BYTES {
-        body["log"] = json!([]);
-        body["frames"] = json!(body["frames"].as_array().map(|f| f.iter().take(10).cloned().collect::<Vec<_>>()).unwrap_or_default());
+    if text.len() > MAX_REPORT_BYTES
+        && let Some(o) = body.as_object_mut()
+    {
+        let frames: Vec<Value> = o.get("frames").and_then(Value::as_array).map(|f| f.iter().take(10).cloned().collect()).unwrap_or_default();
+        o.insert("log".into(), json!([]));
+        o.insert("frames".into(), Value::Array(frames));
         text = body.to_string();
     }
     let name = format!("{}-{kind}.json", now_ms());
@@ -378,12 +381,14 @@ fn send_pending(agent: &ureq::Agent, endpoint: &str, dir: &Path, id: &str, local
     let mut files = json_files(&pending);
     files.sort();
     for f in files.into_iter().take(10) {
-        let Some(mut body) = std::fs::read(&f).ok().and_then(|b| serde_json::from_slice::<Value>(&b).ok()) else {
+        // Only reports this app wrote are sent; anything else in the folder is dropped.
+        let Some(Value::Object(mut fields)) = std::fs::read(&f).ok().and_then(|b| serde_json::from_slice::<Value>(&b).ok()) else {
             let _ = std::fs::remove_file(&f);
             continue;
         };
-        body["install_id"] = json!(id);
-        body["locale"] = json!(locale);
+        fields.insert("install_id".into(), json!(id));
+        fields.insert("locale".into(), json!(locale));
+        let body = Value::Object(fields);
         match post(agent, endpoint, "/v1/report", &body) {
             // Taken, or refused for good (a malformed or oversized report): either way it is done.
             Some(s) if (200..300).contains(&s) || (400..500).contains(&s) && s != 429 => {
@@ -434,6 +439,18 @@ mod tests {
         assert_eq!(r["app"], "texto");
         assert!(r.get("install_id").is_none());
         assert_eq!(r["message"], "boom at <path>");
+    }
+
+    /// A pending file that is not a report (damaged, or put there by hand) is dropped, and the
+    /// sender carries on instead of panicking on it.
+    #[test]
+    fn malformed_pending_files_are_dropped() {
+        let dir = std::env::temp_dir().join(format!("tinta-report-bad-{}", now_ms()));
+        std::fs::create_dir_all(dir.join("pending")).unwrap();
+        std::fs::write(dir.join("pending").join("1-panic.json"), "[1, 2]").unwrap();
+        send_pending(&agent(), "http://127.0.0.1:9", &dir, "0f8fad5b-d9cb-469f-a165-70867728950e", "es");
+        assert!(json_files(&dir.join("pending")).is_empty());
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]
