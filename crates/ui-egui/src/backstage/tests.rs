@@ -62,6 +62,49 @@ fn the_side_menu_edge_is_not_a_resize_handle() {
     }
 }
 
+/// The side menu's links stay inside its 200 points: in Ukrainian "Отримати допомогу та
+/// підтримку" ran off the edge, cut to "Отримати допомогу та підтр…".
+#[test]
+fn the_side_menu_links_fit_the_side_menu() {
+    if !crate::i18n::catalogs_embedded() {
+        return;
+    }
+    for language in ["uk", "fr", "es", "en"] {
+        let mut app = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
+        // `ui` switches the interface to this language each frame.
+        app.ui.language = language.into();
+        app.ui.backstage = true;
+        let ctx = egui::Context::default();
+        let mut overflow = Vec::new();
+        for frame in 0..4 {
+            let input = egui::RawInput {
+                time: Some(f64::from(frame) * 0.1),
+                screen_rect: Some(egui::Rect::from_min_size(egui::pos2(0.0, 0.0), egui::vec2(1440.0, 900.0))),
+                ..Default::default()
+            };
+            let mut out = ctx.run_ui(input, |ui| {
+                app.logic(&ctx.clone());
+                app.ui(ui);
+            });
+            crate::i18n::set_current(crate::i18n::Lang::EN);
+            out.textures_delta.clear();
+            if frame == 3 {
+                fn texts(s: &egui::Shape, out: &mut Vec<(String, f32, f32)>) {
+                    match s {
+                        egui::Shape::Text(t) => out.push((t.galley.text().to_owned(), t.pos.x + t.galley.rect.min.x, t.pos.x + t.galley.rect.max.x)),
+                        egui::Shape::Vec(v) => v.iter().for_each(|s| texts(s, out)),
+                        _ => {}
+                    }
+                }
+                let mut all = Vec::new();
+                out.shapes.iter().for_each(|s| texts(&s.shape, &mut all));
+                overflow = all.into_iter().filter(|(_, left, right)| *left < 200.0 && *right > 200.0).collect();
+            }
+        }
+        assert!(overflow.is_empty(), "{language}: text runs past the side menu: {overflow:?}");
+    }
+}
+
 /// #2938: opening a deleted file from Recent keeps File open and reports the error instead of
 /// closing it on a greyed-out window.
 #[test]

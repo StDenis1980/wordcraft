@@ -126,12 +126,15 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             ui.with_layout(egui::Layout::bottom_up(egui::Align::Min), |ui| {
                 let community = if wordcraft_engine::brand::REBRANDED { "Get help and support" } else { "Discord community" };
                 for (label, id) in [("About", "about"), (community, "discord")] {
-                    let (r, resp) = ui.allocate_exact_size(vec2(200.0, 32.0), Sense::click());
+                    // A long translation ("Отримати допомогу та підтримку") wraps onto a second
+                    // line inside the 200 px sidebar instead of running off its edge.
+                    let text = ui.painter().layout(tl!(label).to_owned(), regular(13.0), egui::Color32::WHITE, 200.0 - 22.0 - 12.0);
+                    let (r, resp) = ui.allocate_exact_size(vec2(200.0, (text.size().y + 14.0).max(32.0)), Sense::click());
                     resp.widget_info(|| egui::WidgetInfo::labeled(egui::Role::Button, ui.is_enabled(), tl!(label)));
                     if resp.hovered() {
                         ui.painter().rect_filled(r, 0.0, egui::Color32::from_white_alpha(26));
                     }
-                    ui.painter().text(pos2(r.min.x + 22.0, r.center().y), Align2::LEFT_CENTER, tl!(label), regular(13.0), egui::Color32::WHITE);
+                    ui.painter().galley(pos2(r.min.x + 22.0, r.center().y - text.size().y / 2.0), text, egui::Color32::WHITE);
                     if resp.clicked() {
                         if id == "discord" {
                             let _ = app.run("ui.discord", json!({}));
