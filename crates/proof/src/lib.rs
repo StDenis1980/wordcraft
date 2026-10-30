@@ -39,9 +39,10 @@
 //!   `es_UY`, with fallbacks; not bundled), dictionary-driven suggestions, Uruguayan `vos` forms,
 //!   and generic checks plus the opening `¿`/`¡` with Spanish messages. Hyphenation uses the
 //!   existing English fallback.
-//! - **Ukrainian, Catalan, Galician and Basque** ([`ProofLang::Uk`], [`ProofLang::Ca`],
-//!   [`ProofLang::Gl`], [`ProofLang::Eu`], module [`plain`]): each language's installed Hunspell
-//!   dictionary (`uk_UA`, `ca`, `gl_ES`, `eu`; not bundled), dictionary-driven suggestions and
+//! - **Ukrainian, Catalan, Valencian, Galician and Basque** ([`ProofLang::Uk`], [`ProofLang::Ca`],
+//!   [`ProofLang::CaValencia`], [`ProofLang::Gl`], [`ProofLang::Eu`], module [`plain`]): each
+//!   language's installed Hunspell dictionary (`uk_UA`, `ca`, `ca-valencia` else `ca`, `gl_ES`,
+//!   `eu`; not bundled), dictionary-driven suggestions and
 //!   generic checks with messages in the language. Hyphenation uses the English fallback.
 //! - **German** ([`ProofLang::De`]): hyphenation by `hyph-utf8`'s German patterns (reformed
 //!   spelling, MIT); no spelling or grammar marks yet.
@@ -798,6 +799,7 @@ pub fn is_correct_in_with(word: &str, lang: ProofLang, opts: &Options) -> bool {
         ProofLang::Id => accepted_by_options(word, opts) || id::is_correct_with_options(word, opts),
         ProofLang::Uk => accepted_by_options(word, opts) || plain::UK.is_correct_with_options(word, opts),
         ProofLang::Ca => accepted_by_options(word, opts) || plain::CA.is_correct_with_options(word, opts),
+        ProofLang::CaValencia => accepted_by_options(word, opts) || plain::CA_VALENCIA.is_correct_with_options(word, opts),
         ProofLang::Gl => accepted_by_options(word, opts) || plain::GL.is_correct_with_options(word, opts),
         ProofLang::Eu => accepted_by_options(word, opts) || plain::EU.is_correct_with_options(word, opts),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => true,
@@ -821,6 +823,7 @@ pub fn suggest_in(word: &str, max: usize, lang: ProofLang) -> Vec<String> {
         ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => es::suggest(word, max, lang),
         ProofLang::Uk => plain::UK.suggest(word, max),
         ProofLang::Ca => plain::CA.suggest(word, max),
+        ProofLang::CaValencia => plain::CA_VALENCIA.suggest(word, max),
         ProofLang::Gl => plain::GL.suggest(word, max),
         ProofLang::Eu => plain::EU.suggest(word, max),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => Vec::new(),
@@ -855,6 +858,7 @@ fn grammar_in(text: &str, lang: ProofLang, capital_first: bool) -> Vec<Issue> {
         // Generic checks only, with no sentence-capital rule.
         ProofLang::Uk => plain::UK.grammar(text),
         ProofLang::Ca => plain::CA.grammar(text),
+        ProofLang::CaValencia => plain::CA_VALENCIA.grammar(text),
         ProofLang::Gl => plain::GL.grammar(text),
         ProofLang::Eu => plain::EU.grammar(text),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => Vec::new(),
@@ -1061,6 +1065,7 @@ mod tests {
             (ProofLang::EsUy, "es_UY"),
             (ProofLang::Uk, "uk_UA"),
             (ProofLang::Ca, "ca"),
+            (ProofLang::CaValencia, "ca-valencia"),
             (ProofLang::Gl, "gl_ES"),
             (ProofLang::Eu, "eu"),
         ] {
@@ -1139,6 +1144,8 @@ mod tests {
                 (ProofLang::EsUy, Some(dir.join("es_UY.dic"))),
                 (ProofLang::Uk, Some(dir.join("uk_UA.dic"))),
                 (ProofLang::Ca, Some(dir.join("ca.dic"))),
+                // No `ca-valencia` in the folder: Valencian falls back to the central dictionary.
+                (ProofLang::CaValencia, Some(dir.join("ca.dic"))),
                 (ProofLang::Gl, Some(dir.join("gl_ES.dic"))),
                 (ProofLang::Eu, Some(dir.join("eu.dic"))),
             ]
@@ -1893,7 +1900,7 @@ mod tests {
             let _ = has_dictionary(Some(&s));
             let _ = is_correct_for(&s, Some(&s));
             let _ = hyphen::hyphen_points(&s, &hyphen::Limits::default());
-            for lang in [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Hr, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::De, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::Gl, ProofLang::Eu, ProofLang::Other] {
+            for lang in [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Hr, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::De, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Other] {
                 let _ = check_spelling_in(&s, lang);
                 let _ = check_grammar_in(&s, lang);
                 let _ = is_correct_in(&s, lang);
@@ -1948,7 +1955,7 @@ mod tests {
         #[test]
         fn ukrainian_catalan_galician_basque_never_panic(s in "[a-zçàèéíïòóúü·а-яґєіїА-ЯҐЄІЇ'’ʼ\u{301} -]{0,14}") {
             plain::test_dict::install();
-            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::Gl, ProofLang::Eu] {
+            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu] {
                 let _ = suggest_in(&s, 4, lang);
                 let _ = is_correct_in(&s, lang);
                 let _ = check_text(&s, &[(0..s.len(), lang)]);
@@ -1957,7 +1964,7 @@ mod tests {
 
         #[test]
         fn mixed_spans_never_panic(s in "\\PC{0,60}", cuts in proptest::collection::vec((0usize..80, 0usize..80, 0u8..15), 0..6)) {
-            let langs = [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::Gl, ProofLang::Eu, ProofLang::Other];
+            let langs = [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Other];
             let spans: Vec<(Range<usize>, ProofLang)> = cuts.iter().map(|&(a, b, l)| (a.min(b)..a.max(b), langs[l as usize % langs.len()])).collect();
             for i in check_text(&s, &spans) {
                 proptest::prop_assert!(i.start <= i.end && i.end <= s.len());

@@ -1,7 +1,8 @@
 //! Languages proofed by their Hunspell dictionary alone: Ukrainian, Catalan, Galician and Basque.
 //!
 //! Each reads its installed `.aff`/`.dic` pair ([`crate::hunspell`]; nothing is bundled with the
-//! code): Ukrainian `uk_UA` (dict_uk, MPL), Catalan `ca` (Softcatalà, GPL/LGPL), Galician `gl_ES`
+//! code): Ukrainian `uk_UA` (dict_uk, MPL), Catalan `ca` and Valencian `ca-valencia` (Softcatalà,
+//! GPL/LGPL), Galician `gl_ES`
 //! (Proxecto Trasno, GPL) and Basque `eu` (Xuxen, GPL). Suggestions use the dictionary's own
 //! MAP/REP/TRY/KEY tables ([`crate::cs::suggest::suggest_in`]), and grammar is the generic
 //! repeated-word and spacing checks, with messages in the language. Without a dictionary the
@@ -64,11 +65,25 @@ pub static UK: Lang = Lang {
     dict: RwLock::new(None),
 };
 
-/// Catalan (`ca`, `ca-ES`, Valencian `ca-ES-valencia`).
+/// Catalan (`ca`, `ca-ES`).
 pub static CA: Lang = Lang {
     lang: ProofLang::Ca,
-    names: &["ca", "ca_ES", "ca-ES", "ca-valencia", "ca_ES-valencia"],
+    names: &["ca", "ca_ES", "ca-ES"],
     english: "Catalan",
+    script: Script::Latin,
+    misspelled: "Possible error ortogràfic",
+    repeated: "Paraula repetida: «{w}»",
+    space_before: "Espai abans d'un signe de puntuació",
+    double_space: "Doble espai",
+    dict: RwLock::new(None),
+};
+
+/// Valencian (`ca-ES-valencia`): the `ca-valencia` dictionary, else the central Catalan one. The
+/// messages are the same words in both.
+pub static CA_VALENCIA: Lang = Lang {
+    lang: ProofLang::CaValencia,
+    names: &["ca-valencia", "ca_ES-valencia", "ca-ES-valencia", "ca_ES@valencia", "ca", "ca_ES", "ca-ES"],
+    english: "Valencian",
     script: Script::Latin,
     misspelled: "Possible error ortogràfic",
     repeated: "Paraula repetida: «{w}»",
@@ -104,7 +119,7 @@ pub static EU: Lang = Lang {
 };
 
 /// Every language of this module.
-pub const ALL: [&Lang; 4] = [&UK, &CA, &GL, &EU];
+pub const ALL: [&Lang; 5] = [&UK, &CA, &CA_VALENCIA, &GL, &EU];
 
 /// The module's entry for `lang`, if it is one of its languages.
 pub fn of(lang: ProofLang) -> Option<&'static Lang> {
@@ -291,6 +306,11 @@ pub(crate) mod test_dict {
     pub const CA_AFF: &str = "SET UTF-8\nFLAG long\nFORBIDDENWORD ZZ\nICONV 1\nICONV ’ '\nTRY esairtocnlumdpgv\nSFX Fa Y 1\nSFX Fa 0 es [^a]\nSFX Fa a es a\nPFX El Y 1\nPFX El 0 l' [aeiouh]\n";
     pub const CA_DIC: &str = "7\ncasa/Fa\nhome/El\nfactura/Fa\ncol·legi\ndóna-li\npressupost\nhomes/ZZ\n";
 
+    /// Valencian: Catalan's notation, with Valencian forms and accents (`este`, `vore`, `café`)
+    /// the central test dictionary doesn't have.
+    pub const CA_VALENCIA_AFF: &str = "SET UTF-8\nFLAG long\nICONV 1\nICONV ’ '\nTRY esairtocnlumdpgv\nSFX Fa Y 1\nSFX Fa 0 es [^a]\nSFX Fa a es a\n";
+    pub const CA_VALENCIA_DIC: &str = "6\ncasa/Fa\nfactura/Fa\neste\nvore\ncafé\nanglés\n";
+
     /// Galician: numeric flags, a NEEDAFFIX stem.
     pub const GL_AFF: &str = "SET UTF-8\nFLAG num\nNEEDAFFIX 666\nTRY aeosrnidlctu\nSFX 10 Y 1\nSFX 10 0 s .\nSFX 20 Y 1\nSFX 20 0 mos .\n";
     pub const GL_DIC: &str = "4\ncasa/10\nfactura/10\norzamento/10\ncanta/20,666\n";
@@ -299,10 +319,15 @@ pub(crate) mod test_dict {
     pub const EU_AFF: &str = "SET UTF-8\nFLAG num\nTRY aeiournktzs\nSFX 1 Y 2\nSFX 1 0 a/2 [^a]\nSFX 1 0 k [a]\nSFX 2 Y 1\nSFX 2 0 k .\n";
     pub const EU_DIC: &str = "3\netxe/1\nfaktura/1\nkaixo\n";
 
-    /// Install all four.
+    /// Install them all.
     pub fn install() {
-        for (l, aff, dic) in [(&super::UK, UK_AFF, UK_DIC), (&super::CA, CA_AFF, CA_DIC), (&super::GL, GL_AFF, GL_DIC), (&super::EU, EU_AFF, EU_DIC)]
-        {
+        for (l, aff, dic) in [
+            (&super::UK, UK_AFF, UK_DIC),
+            (&super::CA, CA_AFF, CA_DIC),
+            (&super::CA_VALENCIA, CA_VALENCIA_AFF, CA_VALENCIA_DIC),
+            (&super::GL, GL_AFF, GL_DIC),
+            (&super::EU, EU_AFF, EU_DIC),
+        ] {
             if let Err(e) = l.install_dictionary(aff, dic) {
                 panic!("{}: {e}", l.english);
             }
@@ -355,6 +380,27 @@ mod tests {
         }
     }
 
+    /// Tinta Office: Valencian text is checked with the Valencian dictionary, so its own forms
+    /// aren't marked, and Catalan text keeps the central one.
+    #[test]
+    fn valencian_has_its_own_dictionary() {
+        test_dict::install();
+        for w in ["este", "vore", "café", "anglés", "factures"] {
+            assert!(ok(&CA_VALENCIA, w), "{w}");
+            assert!(crate::is_correct_in(w, ProofLang::CaValencia), "{w}");
+        }
+        for w in ["este", "café"] {
+            assert!(!ok(&CA, w), "{w}");
+            assert!(!crate::is_correct_in(w, ProofLang::Ca), "{w}");
+        }
+        assert!(!ok(&CA_VALENCIA, "cafè"), "only its own words");
+        let text = "Este café, factura.";
+        assert!(crate::check_text(text, &[(0..text.len(), ProofLang::from_tag(Some("ca-ES-valencia")))]).is_empty());
+        let marked = crate::check_text(text, &[(0..text.len(), ProofLang::from_tag(Some("ca-ES")))]);
+        assert_eq!(marked.iter().filter_map(|i| text.get(i.start..i.end)).collect::<Vec<_>>(), ["Este", "café"]);
+        assert_eq!(crate::check_grammar_in("la la casa", ProofLang::CaValencia).first().map(|i| i.lang), Some(ProofLang::CaValencia));
+    }
+
     #[test]
     fn galician_and_basque_numeric_flags() {
         test_dict::install();
@@ -370,7 +416,8 @@ mod tests {
         test_dict::install();
         for (lang, tag, bad, want, message) in [
             (ProofLang::Uk, "uk-UA", "рахунак", "рахунок", "Можлива орфографічна помилка"),
-            (ProofLang::Ca, "ca-ES-valencia", "factuar", "factura", "Possible error ortogràfic"),
+            (ProofLang::Ca, "ca-ES", "factuar", "factura", "Possible error ortogràfic"),
+            (ProofLang::CaValencia, "ca-ES-valencia", "factuar", "factura", "Possible error ortogràfic"),
             (ProofLang::Gl, "gl", "facturra", "factura", "Posible erro ortográfico"),
             (ProofLang::Eu, "eus", "faktuar", "faktura", "Ortografia-akats posiblea"),
         ] {

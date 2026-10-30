@@ -531,12 +531,13 @@ fn every_proofing_language_is_picked_from_the_language_menu() {
     let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 600.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
     h.run();
     for (tag, name) in PROOFING_LANGUAGES {
-        h.get(By::new().label_contains(name)).click();
+        // Exact labels: "Catalan" is part of "Catalan (Valencian)".
+        h.get(By::new().label(name)).click();
         h.run();
         let st = h.state_mut().session.run("format.state", &json!({})).unwrap();
         assert_eq!(st.get("lang").and_then(Value::as_str), Some(tag), "{name}");
         for (_, other) in PROOFING_LANGUAGES {
-            let ticked = h.get(By::new().label_contains(other)).accesskit_node().toggled();
+            let ticked = h.get(By::new().label(other)).accesskit_node().toggled();
             assert_eq!(ticked == Some(egui::accesskit::Toggled::True), other == name, "{name}: {other} ticked {ticked:?}");
         }
     }
@@ -703,6 +704,7 @@ fn ukrainian_catalan_galician_and_basque_are_in_the_language_menu() {
     for (tag, name, aliases) in [
         ("uk-UA", "Ukrainian", &["uk", "UK-ua", "ukr"][..]),
         ("ca-ES", "Catalan", &["ca", "cat"][..]),
+        ("ca-ES-valencia", "Catalan (Valencian)", &["ca-valencia", "CA-es-Valencia", "ca_ES-valencia"][..]),
         ("gl-ES", "Galician", &["gl", "glg"][..]),
         ("eu-ES", "Basque", &["eu", "eus"][..]),
     ] {

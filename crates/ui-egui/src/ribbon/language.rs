@@ -1,7 +1,7 @@
 use super::{Ui, Value, WordApp, json, vec2};
 
 /// The proofing languages the Language menu offers: tag and English name (translated when drawn).
-pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 20] = [
+pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 21] = [
     ("en-US", "English (United States)"),
     ("en-GB", "English (United Kingdom)"),
     ("en-AU", "English (Australia)"),
@@ -20,6 +20,7 @@ pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 20] = [
     ("es-UY", "Spanish (Uruguay)"),
     ("uk-UA", "Ukrainian"),
     ("ca-ES", "Catalan"),
+    ("ca-ES-valencia", "Catalan (Valencian)"),
     ("gl-ES", "Galician"),
     ("eu-ES", "Basque"),
 ];
@@ -32,7 +33,8 @@ pub(crate) fn language_name(tag: Option<&str>) -> String {
     let named =
         |t: &str| PROOFING_LANGUAGES.iter().chain(crate::dialogs_layout::LANGUAGES.iter()).find(|(l, _)| l.eq_ignore_ascii_case(t)).map(|(_, n)| *n);
     // Any language the Language dialog offers (French, German…) by its name, not its tag (#860).
-    if let Some(name) = named(tag) {
+    // POSIX spelling too: `ca_ES-valencia` is `ca-ES-valencia`.
+    if let Some(name) = named(tag).or_else(|| named(&tag.replace('_', "-"))) {
         return name.to_string();
     }
     let mut parts = tag.split(['-', '_']);
@@ -66,6 +68,7 @@ pub(crate) fn language_name(tag: Option<&str>) -> String {
             wordcraft_engine::proof::ProofLang::De => "German (Germany)".into(),
             wordcraft_engine::proof::ProofLang::Uk => "Ukrainian".into(),
             wordcraft_engine::proof::ProofLang::Ca => "Catalan".into(),
+            wordcraft_engine::proof::ProofLang::CaValencia => "Catalan (Valencian)".into(),
             wordcraft_engine::proof::ProofLang::Gl => "Galician".into(),
             wordcraft_engine::proof::ProofLang::Eu => "Basque".into(),
             wordcraft_engine::proof::ProofLang::En if tag.eq_ignore_ascii_case("en") => "English (United States)".into(),
@@ -209,6 +212,8 @@ pub(crate) fn language_menu(ui: &mut Ui, app: &mut WordApp) {
             || (tag == "es-ES" && current.eq_ignore_ascii_case("es"))
             || (tag == "uk-UA" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Uk)
             || (tag == "ca-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Ca)
+            || (tag == "ca-ES-valencia"
+                && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::CaValencia)
             || (tag == "gl-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Gl)
             || (tag == "eu-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Eu)
             || (tag == "en-US" && current.eq_ignore_ascii_case("en"))

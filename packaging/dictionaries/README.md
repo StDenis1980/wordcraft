@@ -26,7 +26,8 @@ form their authors publish and edit, and their sources are listed below.
 | File | Language | Source | Licence |
 |---|---|---|---|
 | `es_ES.aff`, `es_ES.dic` | Spanish (Spain) | RLA-ES, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/es) | GPL-3.0+, LGPL-3.0+ or MPL-1.1+, at your option |
-| `ca.aff`, `ca.dic` | Catalan (central standard; the Valencian `ca-valencia` dictionary is not shipped yet) | Softcatalà, by Jaume Ortolà, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/ca) | LGPL-2.1+ or GPL-2.0+, at your option |
+| `ca.aff`, `ca.dic` | Catalan (central standard) | Softcatalà, by Jaume Ortolà, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/ca) | LGPL-2.1+ or GPL-2.0+, at your option |
+| `ca-valencia.aff`, `ca-valencia.dic` | Valencian (text marked Catalan (Valencian), `ca-ES-valencia`) | Softcatalà, by Jaume Ortolà, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/ca) | LGPL-2.1+ or GPL-2.0+, at your option |
 | `gl_ES.aff`, `gl_ES.dic` | Galician | Proxecto Trasno, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/gl) | GPL-3.0 |
 | `uk_UA.aff`, `uk_UA.dic` | Ukrainian | [dict_uk](https://github.com/brown-uk/dict_uk) by Andriy Rysin and contributors, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/uk_UA) | MPL-1.1 |
 | `eu.aff`, `eu.dic` | Basque | Xuxen ([xuxen.eus](https://xuxen.eus)), as packaged by [wooorm/dictionaries](https://github.com/wooorm/dictionaries/tree/main/dictionaries/eu) | GPL-2.0 |
