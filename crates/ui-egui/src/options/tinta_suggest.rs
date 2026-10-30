@@ -1,6 +1,7 @@
 //! Tinta Office: Suggest my words for Tinta's dictionaries (File › Options › Proofing; the engine's
 //! `review.suggestWords` and `review.suggestedWords`). Off by default, with the GDPR notice beside
-//! it: turning it on is the consent, so there is no pop-up.
+//! it: turning it on is the consent, so there is no pop-up. "Send them automatically"
+//! (`review.suggestWordsAuto`) is a second consent with its own notice, shown while the first is on.
 
 use egui::{RichText, Ui, vec2};
 use serde_json::{Value, json};
@@ -17,9 +18,17 @@ pub(super) fn pane(app: &mut WordApp, ui: &mut Ui) {
     }
     note(ui, NOTICE_WHAT);
     note(ui, NOTICE_RIGHTS);
+    if app.session.prefs.tinta_suggest.forget_pending.is_some() {
+        note(ui, PENDING);
+    }
     if !app.session.prefs.tinta_suggest.enabled {
         return;
     }
+    let mut auto = app.session.prefs.tinta_suggest.auto;
+    if ui.checkbox(&mut auto, tl!(AUTO)).changed() {
+        run(app, "review.suggestWordsAuto", json!({"value": auto}));
+    }
+    note(ui, NOTICE_AUTO);
     let words = app.session.prefs.tinta_suggest.words.clone();
     if words.is_empty() {
         note(ui, "No words listed yet.");
@@ -30,7 +39,8 @@ pub(super) fn pane(app: &mut WordApp, ui: &mut Ui) {
             ui.horizontal(|ui| {
                 ui.allocate_ui_with_layout(vec2(220.0, 20.0), egui::Layout::left_to_right(egui::Align::Center), |ui| {
                     ui.set_min_width(220.0);
-                    ui.add(egui::Label::new(format!("{}  ·  {}", w.word, w.lang)).truncate());
+                    let line = if w.sent { format!("{}  ·  {}  ·  {}", w.word, w.lang, tl!(SENT)) } else { format!("{}  ·  {}", w.word, w.lang) };
+                    ui.add(egui::Label::new(line).truncate());
                 });
                 if ui.small_button(tl!("Remove")).clicked() {
                     run(app, "review.suggestedWords", json!({"remove": [w.word]}));
@@ -64,8 +74,16 @@ pub(super) fn pane(app: &mut WordApp, ui: &mut Ui) {
     }
 }
 
-/// What is listed and sent, and that nothing goes by itself.
-const NOTICE_WHAT: &str = "Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.";
+/// What is listed and sent, and that nothing goes by itself without the second consent.
+const NOTICE_WHAT: &str = "Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Unless you also turn on sending them automatically, nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.";
+
+/// The second consent and its notice (tintaoffice.com's privacy policy repeats it).
+const AUTO: &str = "Send them automatically";
+const NOTICE_AUTO: &str = "Off by default too. While it is on, the listed words in Spanish, Catalan, Galician, Basque and Ukrainian go once a day to report.tintaoffice.com (EU) with a random installation number; the server keeps only a fingerprint of it, never your IP address. A word joins Tinta's dictionaries once 5 installations (10 for Spanish) added it and Wiktionary lists it. Turning this off removes your words from the server's counts.";
+/// Beside a word automatic sending sent.
+const SENT: &str = "sent";
+/// While the server hasn't confirmed a withdrawal yet.
+const PENDING: &str = "Removing your words from the server's counts…";
 
 /// Why, how long and how to withdraw (the GDPR notice; tintaoffice.com's privacy policy repeats it).
 const NOTICE_RIGHTS: &str = "Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.";
@@ -81,11 +99,15 @@ fn run(app: &mut WordApp, id: &str, params: Value) -> Option<Value> {
 }
 
 #[cfg(test)]
-pub(super) const STRINGS: [&str; 9] = [
+pub(super) const STRINGS: [&str; 13] = [
     "Suggest my words",
     "Suggest my words for Tinta's dictionaries",
     NOTICE_WHAT,
     NOTICE_RIGHTS,
+    AUTO,
+    NOTICE_AUTO,
+    SENT,
+    PENDING,
     "No words listed yet.",
     "Send by email",
     "Copy the list",
@@ -149,6 +171,32 @@ mod tests {
         h.get_by_label("Suggest my words for Tinta's dictionaries").click();
         h.run_steps(2);
         assert!(!h.state().session.prefs.tinta_suggest.enabled);
+    }
+
+    /// "Send them automatically" shows only while the option is on, with its own notice; a sent
+    /// word is marked, and turning it off waits for the server to forget the installation's words.
+    #[test]
+    fn automatic_sending_is_a_second_checkbox() {
+        let mut h = harness();
+        assert!(h.query_by_label("Send them automatically").is_none(), "hidden while the option is off");
+        h.get_by_label("Suggest my words for Tinta's dictionaries").click();
+        h.run_steps(2);
+        let _ = h.get_by_label_contains("Off by default too.");
+        assert!(!h.state().session.prefs.tinta_suggest.auto);
+        h.get_by_label("Send them automatically").click();
+        h.run_steps(2);
+        assert!(h.state().session.prefs.tinta_suggest.auto);
+        h.state_mut().run("file.options", json!({"addWords": ["tintaenviada"]})).unwrap();
+        let p = &mut h.state_mut().session.prefs.tinta_suggest;
+        let sent = wordcraft_engine::tinta_suggest::unsent(p);
+        wordcraft_engine::tinta_suggest::mark_sent(p, &sent);
+        p.install_id = "0f8fad5b-d9cb-469f-a165-70867728950e".into();
+        h.run_steps(2);
+        let _ = h.get_by_label("tintaenviada  ·  es  ·  sent");
+        h.get_by_label("Send them automatically").click();
+        h.run_steps(2);
+        assert!(!h.state().session.prefs.tinta_suggest.auto);
+        let _ = h.get_by_label("Removing your words from the server's counts…");
     }
 
     /// The option and its list come back after a restart (ui.json).

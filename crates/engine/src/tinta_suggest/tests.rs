@@ -108,7 +108,10 @@ fn decode(s: &str) -> String {
 
 #[test]
 fn the_email_holds_the_words_that_fit() {
-    let words = vec![SuggestedWord { word: "tinta".into(), lang: "es".into() }, SuggestedWord { word: "п'ятниця".into(), lang: "uk".into() }];
+    let words = vec![
+        SuggestedWord { word: "tinta".into(), lang: "es".into(), ..Default::default() },
+        SuggestedWord { word: "п'ятниця".into(), lang: "uk".into(), ..Default::default() },
+    ];
     let (link, n) = mailto(&words);
     assert_eq!(n, 2);
     let (head, body) = link.split_once("&body=").unwrap();
@@ -118,7 +121,8 @@ fn the_email_holds_the_words_that_fit() {
     assert!(body.ends_with("es\ttinta\nuk\tп'ятниця\n"), "{body}");
     assert!(super::text(&words).starts_with("To: hola@tintaoffice.com\n"));
 
-    let many: Vec<SuggestedWord> = (0..500).map(|i| SuggestedWord { word: format!("palabra{}", "a".repeat(i % 30)), lang: "es".into() }).collect();
+    let many: Vec<SuggestedWord> =
+        (0..500).map(|i| SuggestedWord { word: format!("palabra{}", "a".repeat(i % 30)), lang: "es".into(), ..Default::default() }).collect();
     let (link, n) = mailto(&many);
     assert!(link.len() <= MAX_MAILTO_BYTES, "{}", link.len());
     assert!(n > 10 && n < many.len(), "{n}");
@@ -174,7 +178,65 @@ fn bad_params_are_errors() {
         ("review.suggestedWords", json!({"remove": [1]})),
         ("review.suggestedWords", json!({"clear": 1})),
         ("review.suggestedWords", json!({"remove": vec![Value::from("a"); 1001]})),
+        ("review.suggestWordsAuto", json!({"value": 1})),
+        ("review.suggestWordsAuto", json!({"value": true})),
     ] {
         assert!(s.run(id, &v).is_err(), "{id} {v}");
     }
+}
+
+const ID: &str = "0f8fad5b-d9cb-469f-a165-70867728950e";
+
+/// Automatic sending is a second consent: off by default, only while the option is on, and only
+/// for the languages the server checks.
+#[test]
+fn automatic_sending_is_a_second_consent() {
+    let mut s = spanish_with_words();
+    assert!(!s.prefs.tinta_suggest.auto);
+    assert!(super::unsent(&s.prefs.tinta_suggest).is_empty(), "nothing goes by itself while it is off");
+    let r = s.run("review.suggestWordsAuto", &json!({"value": true})).unwrap();
+    assert_eq!(r["auto"], json!(true));
+    super::record(&mut s, "motclau", "fr");
+    super::record(&mut s, "п'ятничка", "uk");
+    let unsent = super::unsent(&s.prefs.tinta_suggest);
+    let w: Vec<_> = unsent.iter().map(|w| (w.lang.as_str(), w.word.as_str())).collect();
+    assert_eq!(w, vec![("es", "tintaguardada"), ("uk", "п'ятничка")], "French is only sent by email");
+    super::mark_sent(&mut s.prefs.tinta_suggest, &unsent);
+    assert!(super::unsent(&s.prefs.tinta_suggest).is_empty());
+    let r = s.run("review.suggestedWords", &json!({})).unwrap();
+    assert_eq!(r["words"][0]["sent"], json!(true));
+    assert_eq!(r["words"][1]["sent"], json!(false));
+    // Needs the option on.
+    let mut off = spanish();
+    assert!(off.run("review.suggestWordsAuto", &json!({"value": true})).is_err());
+    assert!(!off.prefs.tinta_suggest.auto);
+}
+
+/// Turning automatic sending or the option off asks the server to forget the installation's
+/// words; later words go under a new id.
+#[test]
+fn withdrawing_asks_the_server_to_forget() {
+    for off in [("review.suggestWordsAuto", json!({"value": false})), ("review.suggestWords", json!({"value": false}))] {
+        let mut s = spanish_with_words();
+        s.run("review.suggestWordsAuto", &json!({})).unwrap();
+        s.prefs.tinta_suggest.install_id = ID.into();
+        let r = s.run(off.0, &off.1).unwrap();
+        assert_eq!(r["auto"], json!(false), "{}", off.0);
+        assert_eq!(r["forgetPending"], json!(true), "{}", off.0);
+        assert!(s.prefs.tinta_suggest.install_id.is_empty());
+        assert_eq!(s.prefs.tinta_suggest.forget_pending.as_deref(), Some(ID));
+    }
+}
+
+#[test]
+fn saved_automatic_state_is_read_leniently() {
+    let read = |v: Value| serde_json::from_value::<crate::Prefs>(json!({"tintaSuggest": v})).unwrap().tinta_suggest;
+    let p = read(json!({"enabled": true, "auto": true, "install_id": ID, "words": [{"word": "tinta", "lang": "es", "sent": true}]}));
+    assert!(p.auto && p.install_id == ID && p.words[0].sent);
+    // Auto without the option is off, and its id goes to the pending deletion.
+    let p = read(json!({"enabled": false, "auto": true, "install_id": ID}));
+    assert!(!p.auto && p.install_id.is_empty());
+    assert_eq!(p.forget_pending.as_deref(), Some(ID));
+    let p = read(json!({"enabled": true, "auto": true, "install_id": "../../x", "forget_pending": "nope"}));
+    assert!(p.auto && p.install_id.is_empty() && p.forget_pending.is_none());
 }
