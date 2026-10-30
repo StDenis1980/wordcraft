@@ -18,6 +18,10 @@
 //! **German**: the TeX German patterns for the reformed spelling ([`Patterns::de`]), also for
 //! Swiss text, whose `ss` the patterns split like any double consonant (`Stras-se`).
 //!
+//! **Tinta Office: Spanish, Catalan, Galician, Basque and Ukrainian**: hyph-utf8's patterns for
+//! each ([`Patterns::es`], [`Patterns::ca`], [`Patterns::gl`], [`Patterns::eu`], [`Patterns::uk`]),
+//! bundled unmodified. Latin words in Ukrainian text are hyphenated as English.
+//!
 //! Then the paragraph's limits ([`Limits`]) are applied.
 
 pub use crate::dict;
@@ -42,6 +46,18 @@ static IT_PAT: &str = include_str!("../../../assets/hyphenation/it.pat");
 /// hyph-utf8's `hyph-de-1996.tex` (reformed spelling), unmodified (MIT; the notice is in the
 /// file's header).
 static DE_PAT: &str = include_str!("../../../assets/hyphenation/de.pat");
+/// Tinta Office: hyph-utf8's `hyph-es.tex` (Javier Bezos, CervanTeX), unmodified (MIT).
+static ES_PAT: &str = include_str!("../../../assets/hyphenation/es.pat");
+/// Tinta Office: hyph-utf8's `hyph-ca.tex` (Gonçal Badenes), unmodified (LPPL 1+).
+static CA_PAT: &str = include_str!("../../../assets/hyphenation/ca.pat");
+/// Tinta Office: hyph-utf8's `hyph-gl.tex` (Javier A. Múgica), unmodified (Unlicense).
+static GL_PAT: &str = include_str!("../../../assets/hyphenation/gl.pat");
+/// Tinta Office: hyph-utf8's `hyph-eu.tex` (Juan M. Aguirregabiria), unmodified (its permission
+/// notice is in the file's header).
+static EU_PAT: &str = include_str!("../../../assets/hyphenation/eu.pat");
+/// Tinta Office: hyph-utf8's `hyph-uk.tex` (Maksym Polyakov), unmodified (offered under MIT or
+/// LPPL; WordCraft uses MIT).
+static UK_PAT: &str = include_str!("../../../assets/hyphenation/uk.pat");
 
 impl Dictionary {
     /// The bundled US English dictionary (decoded on first use).
@@ -89,6 +105,47 @@ impl Patterns {
         static P: OnceLock<Patterns> = OnceLock::new();
         P.get_or_init(|| Patterns::parse(DE_PAT))
     }
+
+    /// Tinta Office: the bundled Spanish patterns, for every Spanish (parsed on first use). `ü`
+    /// (`pingüino`) is in the alphabet though no pattern names it.
+    pub fn es() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| with_letters(ES_PAT, "ü"))
+    }
+
+    /// Tinta Office: the bundled Catalan patterns and exception words, also for Valencian (parsed
+    /// on first use).
+    pub fn ca() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| Patterns::parse(CA_PAT))
+    }
+
+    /// Tinta Office: the bundled Galician patterns (parsed on first use).
+    pub fn gl() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| with_letters(GL_PAT, "ü"))
+    }
+
+    /// Tinta Office: the bundled Basque patterns (parsed on first use). The accented vowels of
+    /// loanwords and names are in the alphabet though no pattern names them.
+    pub fn eu() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| with_letters(EU_PAT, "áéíóúü"))
+    }
+
+    /// Tinta Office: the bundled Ukrainian patterns (parsed on first use).
+    pub fn uk() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| Patterns::parse(UK_PAT))
+    }
+}
+
+/// `text`'s patterns with `letters` added to the alphabet, so a word with one of them is still
+/// hyphenated by the patterns rather than the English heuristic.
+fn with_letters(text: &str, letters: &str) -> Patterns {
+    let mut p = Patterns::parse(text);
+    p.add_letters(letters.chars());
+    p
 }
 
 /// Hyphenation limits from the paragraph's Hyphenation settings.
@@ -146,6 +203,14 @@ fn core_breaks(core: &[char], lang: ProofLang) -> (Vec<usize>, Source) {
         ProofLang::Pt => return core_breaks_patterns(Patterns::pt(), core),
         ProofLang::It => return core_breaks_patterns(Patterns::it(), core),
         ProofLang::De => return core_breaks_patterns(Patterns::de(), core),
+        ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => return core_breaks_patterns(Patterns::es(), core),
+        ProofLang::Ca | ProofLang::CaValencia => return core_breaks_patterns(Patterns::ca(), core),
+        ProofLang::Gl => return core_breaks_patterns(Patterns::gl(), core),
+        ProofLang::Eu => return core_breaks_patterns(Patterns::eu(), core),
+        // Latin-script words in Ukrainian text (`WordCraft`) are hyphenated as English below.
+        ProofLang::Uk if core.iter().all(|&c| c == '\'' || crate::ru::is_cyrillic(c)) => {
+            return core_breaks_patterns(Patterns::uk(), core);
+        }
         _ => {}
     }
     if lang == ProofLang::Ru && core.iter().all(|&c| crate::ru::is_cyrillic(c)) {
@@ -201,6 +266,21 @@ fn core_breaks_patterns(pats: &Patterns, core: &[char]) -> (Vec<usize>, Source) 
         && let Some(p) = pats.points(core)
     {
         return (p, Source::Patterns);
+    }
+    // Tinta Office: an elided word (Catalan `l'empresa`) whose patterns don't know the
+    // apostrophe: each part by the patterns.
+    if core.contains(&'\'') && !pats.is_empty() {
+        let (mut out, mut start, mut all) = (Vec::new(), 0, true);
+        for part in core.split(|&c| c == '\'') {
+            match pats.points(part) {
+                Some(p) => out.extend(p.into_iter().map(|i| start + i)),
+                None => all = false,
+            }
+            start += part.len() + 1;
+        }
+        if all {
+            return (out, Source::Patterns);
+        }
     }
     (heuristic_points(core), Source::Heuristic)
 }
@@ -876,7 +956,8 @@ mod tests {
     #[test]
     fn languages_without_patterns_keep_the_english_ones() {
         for w in ["hyphenation", "typography", "internationalization"] {
-            for lang in [ProofLang::Other, ProofLang::Cs, ProofLang::Id, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy] {
+            // Tinta Office: the Spanishes have their own patterns ([`Patterns::es`]).
+            for lang in [ProofLang::Other, ProofLang::Cs, ProofLang::Id] {
                 assert_eq!(hyphen_points_in(w, &Limits::default(), lang), hyphen_points(w, &Limits::default()), "{w}");
             }
         }
@@ -916,5 +997,62 @@ mod tests {
         for w in ["publication", "WordCraft"] {
             assert_eq!(hyphen_points_in(w, &Limits::default(), ProofLang::Bg), hyphen_points(w, &Limits::default()), "{w}");
         }
+    }
+}
+
+/// Tinta Office: the languages of Spain and Ukrainian are hyphenated by their own patterns.
+#[cfg(test)]
+mod tinta_tests {
+    use super::*;
+
+    /// `word` with a hyphen at each unrestricted break point.
+    fn shown(word: &str, lang: ProofLang) -> String {
+        let (points, _) = word_breaks_in(word, lang);
+        let mut s = String::new();
+        for (i, c) in word.chars().enumerate() {
+            if points.contains(&i) {
+                s.push('-');
+            }
+            s.push(c);
+        }
+        s
+    }
+
+    #[test]
+    fn spain_and_ukrainian_words_break_at_syllables() {
+        for (lang, words) in [
+            (ProofLang::Es, &["ca-mi-se-ta", "pre-su-pues-to", "cons-truc-ción", "ca-rre-te-ra", "Ayun-ta-mien-to", "de-sa-rro-llo"][..]),
+            (ProofLang::EsMx, &["pre-su-pues-to"][..]),
+            (ProofLang::Ca, &["fac-tu-ra", "pres-su-post", "col·le-gi", "Ge-ne-ra-li-tat", "pa-rai-gua", "car-re-te-ra", "l'em-pre-sa"][..]),
+            (ProofLang::CaValencia, &["co-nei-xe-ment", "tre-ba-lla-dor"][..]),
+            (ProofLang::Gl, &["or-za-men-to", "Ga-li-za", "con-ce-llo"][..]),
+            (ProofLang::Eu, &["au-rre-kon-tua", "fak-tu-ra", "me-se-dez", "Eus-ka-di"][..]),
+            (ProofLang::Uk, &["під-при-єм-ство", "м'я-со", "п’я-тни-ця", "за-пла-ти-ти", "Word-Craft"][..]),
+        ] {
+            for want in words {
+                let word = want.replace('-', "");
+                assert_eq!(shown(&word, lang), *want, "{lang:?}");
+                let (_, src) = word_breaks_in(&word, lang);
+                assert_ne!(src, Source::Heuristic, "{lang:?}: {word}");
+            }
+        }
+        // The paragraph limits still apply: no single letter left at either end.
+        let lim = Limits::default();
+        assert_eq!(hyphen_points_in("рахунок", &lim, ProofLang::Uk), [2, 4]);
+        assert!(!hyphen_points_in("etxea", &lim, ProofLang::Eu).contains(&1));
+    }
+
+    #[test]
+    fn the_bundled_files_parse() {
+        for (name, p, at_least) in [
+            ("es", Patterns::es(), 4000),
+            ("ca", Patterns::ca(), 800),
+            ("gl", Patterns::gl(), 2000),
+            ("eu", Patterns::eu(), 150),
+            ("uk", Patterns::uk(), 1900),
+        ] {
+            assert!(p.len() >= at_least, "{name}: {}", p.len());
+        }
+        assert!(Patterns::ca().exception_count() > 0, "Catalan has exception words");
     }
 }
