@@ -4,6 +4,11 @@ use super::{FileDialogAnswer, FileDialogRequest, async_saves, paste_picture, pri
 /// Platform services injected by the host (file dialogs, file I/O).
 #[derive(Default)]
 pub struct Services {
+    /// Tinta Office, desktop: the folder the app keeps its error reports in (written, sent and
+    /// sent ones), set only when this build can send them to report.tintaoffice.com. Then the
+    /// first start asks whether to send them and File › Options › General has the settings
+    /// ([`crate::tinta_reports_ui`]).
+    pub error_reports_dir: Option<std::path::PathBuf>,
     /// Desktop: discover configured printers on a worker.
     pub printers: Option<printing::Discover>,
     /// Desktop: submit the PDF with the chosen settings on a worker.

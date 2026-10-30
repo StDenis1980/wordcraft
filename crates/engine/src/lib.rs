@@ -25,6 +25,7 @@ pub mod sample;
 mod session;
 pub(crate) mod snapshot;
 pub mod speech;
+pub mod tinta_reports;
 pub mod tinta_suggest;
 pub mod tinta_templates;
 pub(crate) mod view;

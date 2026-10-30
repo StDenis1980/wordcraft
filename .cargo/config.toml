@@ -10,3 +10,5 @@ WORDCRAFT_BRAND_APP_ID = "io.github.stdenis1980.tintatexto"
 WORDCRAFT_BRAND_PUBLISHER = "Tinta Office"
 WORDCRAFT_BRAND_WEBSITE = "https://github.com/StDenis1980/wordcraft"
 WORDCRAFT_BRAND_GITHUB = "https://github.com/StDenis1980/wordcraft"
+# Tinta Office: where error reports go once the person allowed them (apps/wordcraft/src/tinta_report.rs).
+TINTA_REPORT_URL = "https://report.tintaoffice.com"

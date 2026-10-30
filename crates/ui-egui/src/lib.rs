@@ -63,6 +63,7 @@ pub mod table_pen;
 pub mod table_resize;
 pub mod table_ruler;
 pub mod theme;
+mod tinta_reports_ui;
 pub mod updates_ui;
 pub mod widgets;
 pub mod window_close;

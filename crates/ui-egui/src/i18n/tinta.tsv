@@ -578,3 +578,322 @@ zh-hant	Send by email	以電子郵件傳送
 zh-hant	Copy the list	複製清單
 zh-hant	Clear the list	清除清單
 zh-hant	The email holds {n} of {total} words; send the rest next time, or copy the list.	郵件包含 {total} 個字詞中的 {n} 個；其餘的請下次傳送，或複製清單。
+es	Send error reports automatically?	¿Enviar informes de errores automáticamente?
+es	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Cuando el programa falla o deja de responder, puede enviar un informe para que el problema se corrija sin que tengas que escribirnos. El informe contiene la versión del programa, el sistema, el idioma, el lugar del código donde ocurrió el error y las últimas líneas del registro técnico. Nunca el texto de tus documentos, nombres de archivos, carpetas, direcciones de correo ni contraseñas.
+es	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Los informes van a Tinta Office (report.tintaoffice.com, almacenados en la UE) y se borran a los 90 días. Puedes cambiarlo cuando quieras en Archivo › Opciones › General y borrar allí tus informes del servidor. Detalles: tintaoffice.com/aviso-legal
+es	Yes, send reports	Sí, enviar informes
+es	No	No
+es	Error reports	Informes de errores
+es	Send error reports automatically	Enviar informes de errores automáticamente
+es	Installation id: {id}	Identificador de la instalación: {id}
+es	Delete my reports from the server	Borrar mis informes del servidor
+es	Deletion requested: it completes the next time the app is online.	Borrado solicitado: se completará la próxima vez que el programa tenga conexión.
+es	Open the reports folder	Abrir la carpeta de informes
+ca	Send error reports automatically?	Voleu enviar informes d'errors automàticament?
+ca	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Quan el programa falla o deixa de respondre, pot enviar un informe perquè el problema es corregeixi sense que ens hàgiu d'escriure. L'informe conté la versió del programa, el sistema, l'idioma, el lloc del codi on s'ha produït l'error i les últimes línies del registre tècnic. Mai el text dels vostres documents, noms de fitxers, carpetes, adreces electròniques ni contrasenyes.
+ca	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Els informes van a Tinta Office (report.tintaoffice.com, emmagatzemats a la UE) i s'esborren als 90 dies. Podeu canviar-ho quan vulgueu a Fitxer › Opcions › General i esborrar-hi els vostres informes del servidor. Detalls: tintaoffice.com/aviso-legal
+ca	Yes, send reports	Sí, envia els informes
+ca	No	No
+ca	Error reports	Informes d'errors
+ca	Send error reports automatically	Envia els informes d'errors automàticament
+ca	Installation id: {id}	Identificador de la instal·lació: {id}
+ca	Delete my reports from the server	Esborra els meus informes del servidor
+ca	Deletion requested: it completes the next time the app is online.	Esborrament sol·licitat: es completarà la propera vegada que el programa tingui connexió.
+ca	Open the reports folder	Obre la carpeta d'informes
+gl	Send error reports automatically?	Enviar informes de erros automaticamente?
+gl	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Cando o programa falla ou deixa de responder, pode enviar un informe para que o problema se corrixa sen que teñas que escribirnos. O informe contén a versión do programa, o sistema, o idioma, o lugar do código onde se produciu o erro e as últimas liñas do rexistro técnico. Nunca o texto dos teus documentos, nomes de ficheiros, cartafoles, enderezos de correo nin contrasinais.
+gl	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Os informes van a Tinta Office (report.tintaoffice.com, almacenados na UE) e bórranse aos 90 días. Podes cambialo cando queiras en Ficheiro › Opcións › Xeral e borrar alí os teus informes do servidor. Detalles: tintaoffice.com/aviso-legal
+gl	Yes, send reports	Si, enviar informes
+gl	No	Non
+gl	Error reports	Informes de erros
+gl	Send error reports automatically	Enviar informes de erros automaticamente
+gl	Installation id: {id}	Identificador da instalación: {id}
+gl	Delete my reports from the server	Borrar os meus informes do servidor
+gl	Deletion requested: it completes the next time the app is online.	Borrado solicitado: completarase a próxima vez que o programa teña conexión.
+gl	Open the reports folder	Abrir o cartafol de informes
+eu	Send error reports automatically?	Errore-txostenak automatikoki bidali?
+eu	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Programak huts egiten duenean edo erantzuteari uzten dionean, txosten bat bidal dezake arazoa konpontzeko, guri idatzi behar izan gabe. Txostenak programaren bertsioa, sistema, hizkuntza, errorea kodearen zein lekutan gertatu den eta erregistro teknikoaren azken lerroak ditu. Inoiz ez zure dokumentuen testua, fitxategi-izenak, karpetak, helbide elektronikoak edo pasahitzak.
+eu	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Txostenak Tinta Officera doaz (report.tintaoffice.com, EBn gordeta) eta 90 egunen buruan ezabatzen dira. Nahi duzunean alda dezakezu Fitxategia › Aukerak › Orokorra atalean, eta zure txostenak zerbitzaritik ezabatu bertan. Xehetasunak: tintaoffice.com/aviso-legal
+eu	Yes, send reports	Bai, bidali txostenak
+eu	No	Ez
+eu	Error reports	Errore-txostenak
+eu	Send error reports automatically	Bidali errore-txostenak automatikoki
+eu	Installation id: {id}	Instalazioaren identifikatzailea: {id}
+eu	Delete my reports from the server	Ezabatu nire txostenak zerbitzaritik
+eu	Deletion requested: it completes the next time the app is online.	Ezabatzea eskatuta: programak konexioa duen hurrengo aldian osatuko da.
+eu	Open the reports folder	Ireki txostenen karpeta
+uk	Send error reports automatically?	Надсилати звіти про помилки автоматично?
+uk	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Коли програма аварійно завершується або перестає відповідати, вона може надіслати звіт, щоб проблему виправили без вашого листа нам. У звіті є версія програми, система, мова, місце в коді, де сталася помилка, і останні рядки технічного журналу. Ніколи — текст ваших документів, назви файлів, папки, адреси email чи паролі.
+uk	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Звіти надходять до Tinta Office (report.tintaoffice.com, зберігаються в ЄС) і видаляються через 90 днів. Змінити це можна будь-коли в меню Файл › Параметри › Загальні, там само можна видалити свої звіти із сервера. Докладніше: tintaoffice.com/uk/pravova-informatsiia
+uk	Yes, send reports	Так, надсилати звіти
+uk	No	Ні
+uk	Error reports	Звіти про помилки
+uk	Send error reports automatically	Надсилати звіти про помилки автоматично
+uk	Installation id: {id}	Ідентифікатор встановлення: {id}
+uk	Delete my reports from the server	Видалити мої звіти із сервера
+uk	Deletion requested: it completes the next time the app is online.	Видалення запитано: воно завершиться, коли програма наступного разу буде в мережі.
+uk	Open the reports folder	Відкрити папку звітів
+fr	Send error reports automatically?	Envoyer automatiquement les rapports d'erreur ?
+fr	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Quand l'application plante ou ne répond plus, elle peut envoyer un rapport pour que le problème soit corrigé sans que vous ayez à nous écrire. Le rapport contient la version de l'application, le système, la langue, l'endroit du code où l'erreur s'est produite et les dernières lignes du journal technique. Jamais le texte de vos documents, les noms de fichiers, les dossiers, les adresses e-mail ni les mots de passe.
+fr	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Les rapports sont envoyés à Tinta Office (report.tintaoffice.com, stockés dans l'UE) et supprimés après 90 jours. Vous pouvez changer ce choix à tout moment dans Fichier › Options › Général et y supprimer vos rapports du serveur. Détails : tintaoffice.com/en/legal
+fr	Yes, send reports	Oui, envoyer les rapports
+fr	No	Non
+fr	Error reports	Rapports d'erreur
+fr	Send error reports automatically	Envoyer automatiquement les rapports d'erreur
+fr	Installation id: {id}	Identifiant de l'installation : {id}
+fr	Delete my reports from the server	Supprimer mes rapports du serveur
+fr	Deletion requested: it completes the next time the app is online.	Suppression demandée : elle aura lieu la prochaine fois que l'application sera en ligne.
+fr	Open the reports folder	Ouvrir le dossier des rapports
+de	Send error reports automatically?	Fehlerberichte automatisch senden?
+de	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Wenn die App abstürzt oder nicht mehr reagiert, kann sie einen Bericht senden, damit das Problem behoben wird, ohne dass Sie uns schreiben müssen. Der Bericht enthält die App-Version, das System, die Sprache, die Stelle im Code, an der der Fehler auftrat, und die letzten Zeilen des technischen Protokolls. Niemals den Text Ihrer Dokumente, Dateinamen, Ordner, E-Mail-Adressen oder Passwörter.
+de	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Berichte gehen an Tinta Office (report.tintaoffice.com, Speicherung in der EU) und werden nach 90 Tagen gelöscht. Sie können das jederzeit unter Datei › Optionen › Allgemein ändern und dort Ihre Berichte vom Server löschen. Details: tintaoffice.com/en/legal
+de	Yes, send reports	Ja, Berichte senden
+de	No	Nein
+de	Error reports	Fehlerberichte
+de	Send error reports automatically	Fehlerberichte automatisch senden
+de	Installation id: {id}	Installations-ID: {id}
+de	Delete my reports from the server	Meine Berichte vom Server löschen
+de	Deletion requested: it completes the next time the app is online.	Löschung angefordert: Sie wird abgeschlossen, sobald die App das nächste Mal online ist.
+de	Open the reports folder	Berichtsordner öffnen
+it	Send error reports automatically?	Inviare automaticamente le segnalazioni di errore?
+it	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Quando l'app si blocca o smette di rispondere, può inviare una segnalazione perché il problema venga corretto senza che tu debba scriverci. La segnalazione contiene la versione dell'app, il sistema, la lingua, il punto del codice in cui si è verificato l'errore e le ultime righe del registro tecnico. Mai il testo dei tuoi documenti, nomi di file, cartelle, indirizzi e-mail o password.
+it	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Le segnalazioni vanno a Tinta Office (report.tintaoffice.com, archiviate nell'UE) e vengono eliminate dopo 90 giorni. Puoi cambiare la scelta in qualsiasi momento in File › Opzioni › Generali ed eliminare lì le tue segnalazioni dal server. Dettagli: tintaoffice.com/en/legal
+it	Yes, send reports	Sì, invia le segnalazioni
+it	No	No
+it	Error reports	Segnalazioni di errore
+it	Send error reports automatically	Invia automaticamente le segnalazioni di errore
+it	Installation id: {id}	ID dell'installazione: {id}
+it	Delete my reports from the server	Elimina le mie segnalazioni dal server
+it	Deletion requested: it completes the next time the app is online.	Eliminazione richiesta: verrà completata la prossima volta che l'app sarà online.
+it	Open the reports folder	Apri la cartella delle segnalazioni
+pl	Send error reports automatically?	Wysyłać raporty o błędach automatycznie?
+pl	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Gdy aplikacja ulegnie awarii lub przestanie odpowiadać, może wysłać raport, aby problem został naprawiony bez pisania do nas. Raport zawiera wersję aplikacji, system, język, miejsce w kodzie, w którym wystąpił błąd, i ostatnie wiersze dziennika technicznego. Nigdy treści Twoich dokumentów, nazw plików, folderów, adresów e-mail ani haseł.
+pl	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Raporty trafiają do Tinta Office (report.tintaoffice.com, przechowywane w UE) i są usuwane po 90 dniach. Możesz to zmienić w dowolnej chwili w Plik › Opcje › Ogólne i tam usunąć swoje raporty z serwera. Szczegóły: tintaoffice.com/en/legal
+pl	Yes, send reports	Tak, wysyłaj raporty
+pl	No	Nie
+pl	Error reports	Raporty o błędach
+pl	Send error reports automatically	Wysyłaj raporty o błędach automatycznie
+pl	Installation id: {id}	Identyfikator instalacji: {id}
+pl	Delete my reports from the server	Usuń moje raporty z serwera
+pl	Deletion requested: it completes the next time the app is online.	Usunięcie zlecone: zakończy się, gdy aplikacja następnym razem będzie online.
+pl	Open the reports folder	Otwórz folder raportów
+pt-br	Send error reports automatically?	Enviar relatórios de erro automaticamente?
+pt-br	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Quando o aplicativo trava ou para de responder, ele pode enviar um relatório para que o problema seja corrigido sem que você precise nos escrever. O relatório contém a versão do aplicativo, o sistema, o idioma, o ponto do código onde o erro ocorreu e as últimas linhas do registro técnico. Nunca o texto dos seus documentos, nomes de arquivos, pastas, endereços de e-mail ou senhas.
+pt-br	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Os relatórios vão para a Tinta Office (report.tintaoffice.com, armazenados na UE) e são excluídos após 90 dias. Você pode mudar isso a qualquer momento em Arquivo › Opções › Geral e excluir lá seus relatórios do servidor. Detalhes: tintaoffice.com/en/legal
+pt-br	Yes, send reports	Sim, enviar relatórios
+pt-br	No	Não
+pt-br	Error reports	Relatórios de erro
+pt-br	Send error reports automatically	Enviar relatórios de erro automaticamente
+pt-br	Installation id: {id}	ID da instalação: {id}
+pt-br	Delete my reports from the server	Excluir meus relatórios do servidor
+pt-br	Deletion requested: it completes the next time the app is online.	Exclusão solicitada: será concluída na próxima vez que o aplicativo estiver online.
+pt-br	Open the reports folder	Abrir a pasta de relatórios
+ru	Send error reports automatically?	Отправлять отчёты об ошибках автоматически?
+ru	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Когда программа аварийно завершается или перестаёт отвечать, она может отправить отчёт, чтобы проблему исправили без вашего письма нам. В отчёте есть версия программы, система, язык, место в коде, где произошла ошибка, и последние строки технического журнала. Никогда — текст ваших документов, имена файлов, папки, адреса email или пароли.
+ru	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Отчёты поступают в Tinta Office (report.tintaoffice.com, хранятся в ЕС) и удаляются через 90 дней. Изменить это можно в любое время в меню Файл › Параметры › Общие, там же можно удалить свои отчёты с сервера. Подробнее: tintaoffice.com/en/legal
+ru	Yes, send reports	Да, отправлять отчёты
+ru	No	Нет
+ru	Error reports	Отчёты об ошибках
+ru	Send error reports automatically	Отправлять отчёты об ошибках автоматически
+ru	Installation id: {id}	Идентификатор установки: {id}
+ru	Delete my reports from the server	Удалить мои отчёты с сервера
+ru	Deletion requested: it completes the next time the app is online.	Удаление запрошено: оно завершится, когда программа в следующий раз будет в сети.
+ru	Open the reports folder	Открыть папку отчётов
+zh-hans	Send error reports automatically?	自动发送错误报告？
+zh-hans	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	当应用崩溃或停止响应时，它可以发送一份报告，让问题无需你写信给我们即可得到修复。报告包含应用版本、系统、语言、代码中发生错误的位置以及技术日志的最后几行。绝不包含你的文档文本、文件名、文件夹、电子邮件地址或密码。
+zh-hans	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	报告发送至 Tinta Office（report.tintaoffice.com，存储在欧盟），90 天后删除。你可以随时在“文件 › 选项 › 常规”中更改此设置，并在那里从服务器删除你的报告。详情：tintaoffice.com/en/legal
+zh-hans	Yes, send reports	是，发送报告
+zh-hans	No	否
+zh-hans	Error reports	错误报告
+zh-hans	Send error reports automatically	自动发送错误报告
+zh-hans	Installation id: {id}	安装 ID：{id}
+zh-hans	Delete my reports from the server	从服务器删除我的报告
+zh-hans	Deletion requested: it completes the next time the app is online.	已请求删除：将在应用下次联网时完成。
+zh-hans	Open the reports folder	打开报告文件夹
+zh-hant	Send error reports automatically?	自動傳送錯誤報告？
+zh-hant	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	當應用程式當機或停止回應時，它可以傳送一份報告，讓問題無需你寫信給我們即可修正。報告包含應用程式版本、系統、語言、程式碼中發生錯誤的位置以及技術記錄的最後幾行。絕不包含你的文件內容、檔案名稱、資料夾、電子郵件地址或密碼。
+zh-hant	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	報告會傳送到 Tinta Office（report.tintaoffice.com，儲存在歐盟），並於 90 天後刪除。你可以隨時在「檔案 › 選項 › 一般」中變更此設定，並在那裡從伺服器刪除你的報告。詳情：tintaoffice.com/en/legal
+zh-hant	Yes, send reports	是，傳送報告
+zh-hant	No	否
+zh-hant	Error reports	錯誤報告
+zh-hant	Send error reports automatically	自動傳送錯誤報告
+zh-hant	Installation id: {id}	安裝 ID：{id}
+zh-hant	Delete my reports from the server	從伺服器刪除我的報告
+zh-hant	Deletion requested: it completes the next time the app is online.	已要求刪除：將在應用程式下次連線時完成。
+zh-hant	Open the reports folder	開啟報告資料夾
+ja	Send error reports automatically?	エラー レポートを自動的に送信しますか?
+ja	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	アプリがクラッシュしたり応答しなくなったりしたときに、レポートを送信して、ご連絡いただかなくても問題を修正できるようにします。レポートには、アプリのバージョン、システム、言語、エラーが発生したコード内の場所、技術ログの最後の数行が含まれます。文書の本文、ファイル名、フォルダー、メール アドレス、パスワードは決して含まれません。
+ja	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	レポートは Tinta Office (report.tintaoffice.com、EU 内に保存) に送られ、90 日後に削除されます。[ファイル] › [オプション] › [全般] でいつでも変更でき、そこでサーバーからレポートを削除することもできます。詳細: tintaoffice.com/en/legal
+ja	Yes, send reports	はい、送信します
+ja	No	いいえ
+ja	Error reports	エラー レポート
+ja	Send error reports automatically	エラー レポートを自動的に送信する
+ja	Installation id: {id}	インストール ID: {id}
+ja	Delete my reports from the server	サーバーから自分のレポートを削除
+ja	Deletion requested: it completes the next time the app is online.	削除を要求しました: 次にアプリがオンラインになったときに完了します。
+ja	Open the reports folder	レポート フォルダーを開く
+ko	Send error reports automatically?	오류 보고서를 자동으로 보낼까요?
+ko	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	앱이 충돌하거나 응답하지 않을 때 보고서를 보내 문의하지 않아도 문제가 해결되도록 할 수 있습니다. 보고서에는 앱 버전, 시스템, 언어, 오류가 발생한 코드 위치, 기술 로그의 마지막 몇 줄이 포함됩니다. 문서 내용, 파일 이름, 폴더, 이메일 주소, 암호는 절대 포함되지 않습니다.
+ko	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	보고서는 Tinta Office(report.tintaoffice.com, EU에 저장)로 전송되며 90일 후 삭제됩니다. 파일 › 옵션 › 일반에서 언제든지 변경할 수 있고, 그곳에서 서버의 보고서를 삭제할 수 있습니다. 자세히: tintaoffice.com/en/legal
+ko	Yes, send reports	예, 보고서 보내기
+ko	No	아니요
+ko	Error reports	오류 보고서
+ko	Send error reports automatically	오류 보고서 자동으로 보내기
+ko	Installation id: {id}	설치 ID: {id}
+ko	Delete my reports from the server	서버에서 내 보고서 삭제
+ko	Deletion requested: it completes the next time the app is online.	삭제 요청됨: 다음에 앱이 온라인일 때 완료됩니다.
+ko	Open the reports folder	보고서 폴더 열기
+sr	Send error reports automatically?	Аутоматски слати извештаје о грешкама?
+sr	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Када се апликација сруши или престане да одговара, може да пошаље извештај како би се проблем исправио без вашег писања нама. Извештај садржи верзију апликације, систем, језик, место у коду где је грешка настала и последње редове техничког дневника. Никада текст ваших докумената, имена датотека, фасцикле, адресе е-поште или лозинке.
+sr	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Извештаји иду у Tinta Office (report.tintaoffice.com, чувају се у ЕУ) и бришу се после 90 дана. То можете променити било када у Датотека › Опције › Опште и тамо обрисати своје извештаје са сервера. Детаљи: tintaoffice.com/en/legal
+sr	Yes, send reports	Да, шаљи извештаје
+sr	No	Не
+sr	Error reports	Извештаји о грешкама
+sr	Send error reports automatically	Аутоматски шаљи извештаје о грешкама
+sr	Installation id: {id}	ИД инсталације: {id}
+sr	Delete my reports from the server	Обриши моје извештаје са сервера
+sr	Deletion requested: it completes the next time the app is online.	Брисање је затражено: завршиће се следећи пут када апликација буде на мрежи.
+sr	Open the reports folder	Отвори фасциклу извештаја
+sr-latn	Send error reports automatically?	Automatski slati izveštaje o greškama?
+sr-latn	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Kada se aplikacija sruši ili prestane da odgovara, može da pošalje izveštaj kako bi se problem ispravio bez vašeg pisanja nama. Izveštaj sadrži verziju aplikacije, sistem, jezik, mesto u kodu gde je greška nastala i poslednje redove tehničkog dnevnika. Nikada tekst vaših dokumenata, imena datoteka, fascikle, adrese e-pošte ili lozinke.
+sr-latn	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Izveštaji idu u Tinta Office (report.tintaoffice.com, čuvaju se u EU) i brišu se posle 90 dana. To možete promeniti bilo kada u Datoteka › Opcije › Opšte i tamo obrisati svoje izveštaje sa servera. Detalji: tintaoffice.com/en/legal
+sr-latn	Yes, send reports	Da, šalji izveštaje
+sr-latn	No	Ne
+sr-latn	Error reports	Izveštaji o greškama
+sr-latn	Send error reports automatically	Automatski šalji izveštaje o greškama
+sr-latn	Installation id: {id}	ID instalacije: {id}
+sr-latn	Delete my reports from the server	Obriši moje izveštaje sa servera
+sr-latn	Deletion requested: it completes the next time the app is online.	Brisanje je zatraženo: završiće se sledeći put kada aplikacija bude na mreži.
+sr-latn	Open the reports folder	Otvori fasciklu izveštaja
+cs	Send error reports automatically?	Odesílat zprávy o chybách automaticky?
+cs	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Když aplikace spadne nebo přestane reagovat, může odeslat zprávu, aby se problém opravil, aniž byste nám museli psát. Zpráva obsahuje verzi aplikace, systém, jazyk, místo v kódu, kde k chybě došlo, a poslední řádky technického protokolu. Nikdy text vašich dokumentů, názvy souborů, složky, e-mailové adresy ani hesla.
+cs	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Zprávy jdou do Tinta Office (report.tintaoffice.com, uloženy v EU) a po 90 dnech se mažou. Kdykoli to můžete změnit v nabídce Soubor › Možnosti › Obecné a tam také smazat své zprávy ze serveru. Podrobnosti: tintaoffice.com/en/legal
+cs	Yes, send reports	Ano, odesílat zprávy
+cs	No	Ne
+cs	Error reports	Zprávy o chybách
+cs	Send error reports automatically	Odesílat zprávy o chybách automaticky
+cs	Installation id: {id}	ID instalace: {id}
+cs	Delete my reports from the server	Smazat mé zprávy ze serveru
+cs	Deletion requested: it completes the next time the app is online.	Smazání vyžádáno: dokončí se, až bude aplikace příště online.
+cs	Open the reports folder	Otevřít složku se zprávami
+et	Send error reports automatically?	Kas saata veateated automaatselt?
+et	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Kui rakendus jookseb kokku või lakkab reageerimast, võib see saata teate, et probleem saaks parandatud ilma, et peaksite meile kirjutama. Teade sisaldab rakenduse versiooni, süsteemi, keelt, koodi kohta, kus viga tekkis, ja tehnilise logi viimaseid ridu. Mitte kunagi teie dokumentide teksti, failinimesid, kaustu, e-posti aadresse ega paroole.
+et	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Teated lähevad Tinta Office'ile (report.tintaoffice.com, salvestatakse ELis) ja kustutatakse 90 päeva pärast. Saate seda igal ajal muuta jaotises Fail › Suvandid › Üldist ja kustutada seal oma teated serverist. Üksikasjad: tintaoffice.com/en/legal
+et	Yes, send reports	Jah, saada teated
+et	No	Ei
+et	Error reports	Veateated
+et	Send error reports automatically	Saada veateated automaatselt
+et	Installation id: {id}	Installi ID: {id}
+et	Delete my reports from the server	Kustuta minu teated serverist
+et	Deletion requested: it completes the next time the app is online.	Kustutamine taotletud: see lõpeb, kui rakendus on järgmine kord võrgus.
+et	Open the reports folder	Ava teadete kaust
+tr	Send error reports automatically?	Hata raporları otomatik olarak gönderilsin mi?
+tr	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Uygulama çöktüğünde veya yanıt vermediğinde, bize yazmanıza gerek kalmadan sorunun düzeltilmesi için bir rapor gönderebilir. Rapor; uygulama sürümünü, sistemi, dili, hatanın koddaki yerini ve teknik günlüğün son satırlarını içerir. Belgelerinizin metnini, dosya adlarını, klasörleri, e-posta adreslerini veya parolaları asla içermez.
+tr	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Raporlar Tinta Office'e (report.tintaoffice.com, AB'de saklanır) gider ve 90 gün sonra silinir. Bunu istediğiniz zaman Dosya › Seçenekler › Genel bölümünden değiştirebilir ve raporlarınızı oradan sunucudan silebilirsiniz. Ayrıntılar: tintaoffice.com/en/legal
+tr	Yes, send reports	Evet, raporları gönder
+tr	No	Hayır
+tr	Error reports	Hata raporları
+tr	Send error reports automatically	Hata raporlarını otomatik olarak gönder
+tr	Installation id: {id}	Kurulum kimliği: {id}
+tr	Delete my reports from the server	Raporlarımı sunucudan sil
+tr	Deletion requested: it completes the next time the app is online.	Silme istendi: uygulama bir sonraki çevrimiçi olduğunda tamamlanacak.
+tr	Open the reports folder	Rapor klasörünü aç
+hu	Send error reports automatically?	Automatikusan küldjön hibajelentéseket?
+hu	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Ha az alkalmazás összeomlik vagy nem válaszol, jelentést küldhet, hogy a hibát akkor is kijavítsuk, ha nem ír nekünk. A jelentés tartalmazza az alkalmazás verzióját, a rendszert, a nyelvet, a kód azon helyét, ahol a hiba történt, és a műszaki napló utolsó sorait. Soha nem tartalmazza dokumentumai szövegét, fájlneveket, mappákat, e-mail-címeket vagy jelszavakat.
+hu	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	A jelentések a Tinta Office-hoz kerülnek (report.tintaoffice.com, tárolás az EU-ban), és 90 nap után törlődnek. Ezt bármikor módosíthatja a Fájl › Beállítások › Általános helyen, és ott törölheti jelentéseit a kiszolgálóról. Részletek: tintaoffice.com/en/legal
+hu	Yes, send reports	Igen, küldjön jelentéseket
+hu	No	Nem
+hu	Error reports	Hibajelentések
+hu	Send error reports automatically	Hibajelentések automatikus küldése
+hu	Installation id: {id}	Telepítési azonosító: {id}
+hu	Delete my reports from the server	Jelentéseim törlése a kiszolgálóról
+hu	Deletion requested: it completes the next time the app is online.	Törlés kérve: akkor fejeződik be, amikor az alkalmazás legközelebb online lesz.
+hu	Open the reports folder	Jelentések mappájának megnyitása
+bg	Send error reports automatically?	Да се изпращат ли отчети за грешки автоматично?
+bg	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Когато приложението се срине или спре да отговаря, то може да изпрати отчет, за да бъде отстранен проблемът, без да ни пишете. Отчетът съдържа версията на приложението, системата, езика, мястото в кода, където е възникнала грешката, и последните редове от техническия дневник. Никога текста на вашите документи, имена на файлове, папки, имейл адреси или пароли.
+bg	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Отчетите отиват в Tinta Office (report.tintaoffice.com, съхраняват се в ЕС) и се изтриват след 90 дни. Можете да промените това по всяко време от Файл › Опции › Общи и там да изтриете отчетите си от сървъра. Подробности: tintaoffice.com/en/legal
+bg	Yes, send reports	Да, изпращай отчети
+bg	No	Не
+bg	Error reports	Отчети за грешки
+bg	Send error reports automatically	Автоматично изпращане на отчети за грешки
+bg	Installation id: {id}	ИД на инсталацията: {id}
+bg	Delete my reports from the server	Изтрий моите отчети от сървъра
+bg	Deletion requested: it completes the next time the app is online.	Изтриването е заявено: ще приключи следващия път, когато приложението е онлайн.
+bg	Open the reports folder	Отвори папката с отчети
+vi	Send error reports automatically?	Tự động gửi báo cáo lỗi?
+vi	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Khi ứng dụng bị lỗi hoặc ngừng phản hồi, nó có thể gửi báo cáo để sự cố được khắc phục mà bạn không cần viết cho chúng tôi. Báo cáo gồm phiên bản ứng dụng, hệ thống, ngôn ngữ, vị trí trong mã nơi xảy ra lỗi và vài dòng cuối của nhật ký kỹ thuật. Không bao giờ có nội dung tài liệu, tên tệp, thư mục, địa chỉ email hay mật khẩu của bạn.
+vi	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Báo cáo được gửi đến Tinta Office (report.tintaoffice.com, lưu trữ tại EU) và bị xóa sau 90 ngày. Bạn có thể thay đổi bất cứ lúc nào trong Tệp › Tùy chọn › Chung và xóa báo cáo của mình khỏi máy chủ tại đó. Chi tiết: tintaoffice.com/en/legal
+vi	Yes, send reports	Có, gửi báo cáo
+vi	No	Không
+vi	Error reports	Báo cáo lỗi
+vi	Send error reports automatically	Tự động gửi báo cáo lỗi
+vi	Installation id: {id}	ID cài đặt: {id}
+vi	Delete my reports from the server	Xóa báo cáo của tôi khỏi máy chủ
+vi	Deletion requested: it completes the next time the app is online.	Đã yêu cầu xóa: sẽ hoàn tất vào lần tới ứng dụng trực tuyến.
+vi	Open the reports folder	Mở thư mục báo cáo
+sv	Send error reports automatically?	Skicka felrapporter automatiskt?
+sv	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	När appen kraschar eller slutar svara kan den skicka en rapport så att problemet åtgärdas utan att du behöver skriva till oss. Rapporten innehåller appens version, systemet, språket, platsen i koden där felet inträffade och de sista raderna i den tekniska loggen. Aldrig texten i dina dokument, filnamn, mappar, e-postadresser eller lösenord.
+sv	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Rapporterna går till Tinta Office (report.tintaoffice.com, lagras i EU) och raderas efter 90 dagar. Du kan ändra detta när som helst under Arkiv › Alternativ › Allmänt och där radera dina rapporter från servern. Mer information: tintaoffice.com/en/legal
+sv	Yes, send reports	Ja, skicka rapporter
+sv	No	Nej
+sv	Error reports	Felrapporter
+sv	Send error reports automatically	Skicka felrapporter automatiskt
+sv	Installation id: {id}	Installations-id: {id}
+sv	Delete my reports from the server	Radera mina rapporter från servern
+sv	Deletion requested: it completes the next time the app is online.	Radering begärd: den slutförs nästa gång appen är online.
+sv	Open the reports folder	Öppna rapportmappen
+hr	Send error reports automatically?	Automatski slati izvješća o pogreškama?
+hr	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Kad se aplikacija sruši ili prestane odgovarati, može poslati izvješće kako bi se problem ispravio bez da nam pišete. Izvješće sadrži verziju aplikacije, sustav, jezik, mjesto u kodu gdje je nastala pogreška i posljednje retke tehničkog dnevnika. Nikada tekst vaših dokumenata, nazive datoteka, mape, adrese e-pošte ni lozinke.
+hr	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Izvješća idu u Tinta Office (report.tintaoffice.com, pohranjena u EU) i brišu se nakon 90 dana. To možete promijeniti bilo kada u Datoteka › Mogućnosti › Općenito i ondje izbrisati svoja izvješća s poslužitelja. Pojedinosti: tintaoffice.com/en/legal
+hr	Yes, send reports	Da, šalji izvješća
+hr	No	Ne
+hr	Error reports	Izvješća o pogreškama
+hr	Send error reports automatically	Automatski šalji izvješća o pogreškama
+hr	Installation id: {id}	ID instalacije: {id}
+hr	Delete my reports from the server	Izbriši moja izvješća s poslužitelja
+hr	Deletion requested: it completes the next time the app is online.	Brisanje je zatraženo: dovršit će se kad aplikacija sljedeći put bude na mreži.
+hr	Open the reports folder	Otvori mapu izvješća
+nl	Send error reports automatically?	Foutrapporten automatisch versturen?
+nl	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Als de app vastloopt of niet meer reageert, kan hij een rapport sturen zodat het probleem wordt opgelost zonder dat u ons hoeft te schrijven. Het rapport bevat de appversie, het systeem, de taal, de plek in de code waar de fout optrad en de laatste regels van het technische logboek. Nooit de tekst van uw documenten, bestandsnamen, mappen, e-mailadressen of wachtwoorden.
+nl	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Rapporten gaan naar Tinta Office (report.tintaoffice.com, opgeslagen in de EU) en worden na 90 dagen verwijderd. U kunt dit altijd wijzigen via Bestand › Opties › Algemeen en daar uw rapporten van de server verwijderen. Details: tintaoffice.com/en/legal
+nl	Yes, send reports	Ja, rapporten versturen
+nl	No	Nee
+nl	Error reports	Foutrapporten
+nl	Send error reports automatically	Foutrapporten automatisch versturen
+nl	Installation id: {id}	Installatie-ID: {id}
+nl	Delete my reports from the server	Mijn rapporten van de server verwijderen
+nl	Deletion requested: it completes the next time the app is online.	Verwijdering aangevraagd: deze wordt voltooid zodra de app weer online is.
+nl	Open the reports folder	Map met rapporten openen
+da	Send error reports automatically?	Send fejlrapporter automatisk?
+da	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Når appen går ned eller holder op med at svare, kan den sende en rapport, så problemet bliver rettet, uden at du behøver at skrive til os. Rapporten indeholder appens version, systemet, sproget, stedet i koden, hvor fejlen opstod, og de sidste linjer i den tekniske log. Aldrig teksten i dine dokumenter, filnavne, mapper, e-mailadresser eller adgangskoder.
+da	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Rapporterne går til Tinta Office (report.tintaoffice.com, opbevares i EU) og slettes efter 90 dage. Du kan ændre det når som helst under Filer › Indstillinger › Generelt og der slette dine rapporter fra serveren. Detaljer: tintaoffice.com/en/legal
+da	Yes, send reports	Ja, send rapporter
+da	No	Nej
+da	Error reports	Fejlrapporter
+da	Send error reports automatically	Send fejlrapporter automatisk
+da	Installation id: {id}	Installations-id: {id}
+da	Delete my reports from the server	Slet mine rapporter fra serveren
+da	Deletion requested: it completes the next time the app is online.	Sletning anmodet: den gennemføres, næste gang appen er online.
+da	Open the reports folder	Åbn mappen med rapporter
+ro	Send error reports automatically?	Trimiteți automat rapoarte de eroare?
+ro	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Când aplicația se blochează sau nu mai răspunde, poate trimite un raport pentru ca problema să fie rezolvată fără să ne scrieți. Raportul conține versiunea aplicației, sistemul, limba, locul din cod unde a apărut eroarea și ultimele rânduri din jurnalul tehnic. Niciodată textul documentelor, numele fișierelor, folderele, adresele de e-mail sau parolele.
+ro	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Rapoartele ajung la Tinta Office (report.tintaoffice.com, stocate în UE) și sunt șterse după 90 de zile. Puteți schimba oricând aceasta în Fișier › Opțiuni › General și tot acolo vă puteți șterge rapoartele de pe server. Detalii: tintaoffice.com/en/legal
+ro	Yes, send reports	Da, trimite rapoarte
+ro	No	Nu
+ro	Error reports	Rapoarte de eroare
+ro	Send error reports automatically	Trimite automat rapoarte de eroare
+ro	Installation id: {id}	ID-ul instalării: {id}
+ro	Delete my reports from the server	Șterge rapoartele mele de pe server
+ro	Deletion requested: it completes the next time the app is online.	Ștergere solicitată: se va finaliza data viitoare când aplicația este online.
+ro	Open the reports folder	Deschide folderul cu rapoarte
+sl	Send error reports automatically?	Samodejno pošiljati poročila o napakah?
+sl	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Ko se aplikacija sesuje ali se preneha odzivati, lahko pošlje poročilo, da se težava odpravi, ne da bi nam morali pisati. Poročilo vsebuje različico aplikacije, sistem, jezik, mesto v kodi, kjer je prišlo do napake, in zadnje vrstice tehničnega dnevnika. Nikoli besedila vaših dokumentov, imen datotek, map, e-poštnih naslovov ali gesel.
+sl	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Poročila gredo v Tinta Office (report.tintaoffice.com, shranjena v EU) in se po 90 dneh izbrišejo. To lahko kadar koli spremenite v Datoteka › Možnosti › Splošno in tam izbrišete svoja poročila s strežnika. Podrobnosti: tintaoffice.com/en/legal
+sl	Yes, send reports	Da, pošiljaj poročila
+sl	No	Ne
+sl	Error reports	Poročila o napakah
+sl	Send error reports automatically	Samodejno pošiljaj poročila o napakah
+sl	Installation id: {id}	ID namestitve: {id}
+sl	Delete my reports from the server	Izbriši moja poročila s strežnika
+sl	Deletion requested: it completes the next time the app is online.	Brisanje je zahtevano: končalo se bo, ko bo aplikacija naslednjič povezana.
+sl	Open the reports folder	Odpri mapo s poročili
