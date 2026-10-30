@@ -25,7 +25,8 @@ pub use media::{base64_decode, base64_encode, data_uri, decode_bounded, image_px
 pub use to_doc::{char_props, part_blocks, to_doc, to_doc_in};
 pub use types::{
     CODE_STYLE, Cell, FBlock, FTable, Flow, Fmt, FmtChange, Img, Inline, Kind, ListInfo, MAX_DEPTH, MAX_FONT_NAME, MAX_LINK, MONO_FONT, Meta,
-    PageField, Para, RUBY_BASE_SIZE, RevMark, Spacing, clean_text, equations_as_text, kept_font, kept_link, ruby_as_text, ruby_object,
+    PageField, Para, RUBY_BASE_SIZE, RevMark, Spacing, WORD_CELL_MARGINS, clean_text, equations_as_text, kept_font, kept_link, ruby_as_text,
+    ruby_object,
 };
 pub(crate) use types::{Dropped, begin_import, dropped};
 

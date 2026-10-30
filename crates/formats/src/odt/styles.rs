@@ -59,6 +59,9 @@ struct StyleInfo {
     /// Whether a table-cell style's `fo:border*` attributes draw a line: `Some(false)` when they
     /// are all `none`, `None` when it names none (Tinta Office).
     cell_border: Option<bool>,
+    /// `fo:padding*` of a table-cell style's `style:table-cell-properties` (top, left, bottom,
+    /// right), each side when the style sets it (Tinta Office).
+    cell_padding: [Option<f32>; 4],
     /// `table:align` of a table style's `style:table-properties` (Tinta Office).
     table_align: Option<Align>,
     /// `style:column-width` of a table-column style's `style:table-column-properties`, in points.
@@ -145,6 +148,18 @@ fn cell_border(a: &Attrs) -> Option<bool> {
     let edges: Vec<&str> =
         ["fo:border", "fo:border-top", "fo:border-bottom", "fo:border-left", "fo:border-right"].iter().filter_map(|k| get(a, k)).collect();
     (!edges.is_empty()).then(|| edges.iter().any(|e| !e.trim().eq_ignore_ascii_case("none") && !e.trim().is_empty()))
+}
+
+/// The sides of a cell's padding (`fo:padding`, `fo:padding-top`…, ODF 1.3 §20.215) a
+/// `style:table-cell-properties` element sets, into `pad` (top, left, bottom, right).
+fn cell_padding(a: &Attrs, pad: &mut [Option<f32>; 4]) {
+    let value = |k: &str| get(a, k).and_then(length).map(|v| v.clamp(0.0, MAX_SPACING));
+    let all = value("fo:padding");
+    for (slot, side) in pad.iter_mut().zip(["top", "left", "bottom", "right"]) {
+        if let Some(v) = value(&format!("fo:padding-{side}")).or(all) {
+            *slot = Some(v);
+        }
+    }
 }
 
 /// A paragraph style's `style:paragraph-properties` (ODF 1.3 §17.6).
@@ -414,6 +429,7 @@ impl Styles {
                             s.cell_background = Some(c);
                         }
                         s.cell_border = cell_border(&a).or(s.cell_border);
+                        cell_padding(&a, &mut s.cell_padding);
                         if let Some(va) = get(&a, "style:vertical-align") {
                             s.cell_valign = match va.trim() {
                                 "top" => Some(VAlign::Top),
@@ -541,6 +557,15 @@ impl Styles {
     /// Whether a table-cell style draws a border (whole chain; `None`: it doesn't say).
     pub(super) fn cell_border(&self, name: &str) -> Option<bool> {
         self.chain(name).iter().find_map(|(_, s)| s.cell_border)
+    }
+
+    /// A table-cell style's padding (top, left, bottom, right; each side the nearest in the
+    /// chain that sets it, else 0, as ODF reads a missing padding), when any style sets one.
+    pub(super) fn cell_padding(&self, name: &str) -> Option<[f32; 4]> {
+        let chain = self.chain(name);
+        let side = |i: usize| chain.iter().find_map(|(_, s)| s.cell_padding.get(i).copied().flatten());
+        let sides = [side(0), side(1), side(2), side(3)];
+        sides.iter().any(Option::is_some).then(|| sides.map(|v| v.unwrap_or(0.0)))
     }
 
     /// Vertical alignment of a table-cell style (whole chain).

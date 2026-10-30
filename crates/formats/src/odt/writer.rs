@@ -67,11 +67,18 @@ pub(super) fn border(b: &wordcraft_doc::props::Border) -> String {
 
 /// `fo:border-*` and `fo:padding-*` for the sides of `b` that are set.
 fn borders_props(b: &wordcraft_doc::props::Borders) -> String {
+    borders_props_with(b, true)
+}
+
+/// [`borders_props`], with the padding only when `padding` (a table cell's padding is its
+/// margins, written on their own).
+fn borders_props_with(b: &wordcraft_doc::props::Borders, padding: bool) -> String {
     let mut s = String::new();
     for (side, edge) in [("top", b.top), ("bottom", b.bottom), ("left", b.left), ("right", b.right)] {
         let Some(e) = edge else { continue };
         s.push_str(&format!(" fo:border-{side}=\"{}\"", border(&e)));
-        if e.is_visible()
+        if padding
+            && e.is_visible()
             && let Some(p) = len(e.space.max(0.0))
         {
             s.push_str(&format!(" fo:padding-{side}=\"{p}\""));
@@ -705,7 +712,12 @@ impl Writer {
                 let grid = if t.borderless { "none".to_string() } else { "0.5pt solid #000000".to_string() };
                 let mut b = format!(" fo:border=\"{grid}\"");
                 if let Some(own) = &c.borders {
-                    b.push_str(&borders_props(own));
+                    b.push_str(&borders_props_with(own, false));
+                }
+                // Tinta Office: the cell's margins as its padding (Word's default when it has none).
+                let [top, left, bottom, right] = c.margins.unwrap_or(model::WORD_CELL_MARGINS);
+                for (side, v) in [("top", top), ("bottom", bottom), ("left", left), ("right", right)] {
+                    b.push_str(&format!(" fo:padding-{side}=\"{}\"", len(v.max(0.0)).unwrap_or_else(|| "0pt".into())));
                 }
                 let st = self.cell_style(c.shading, c.valign, b);
                 let mut attrs = format!(" table:style-name=\"{st}\" office:value-type=\"string\"");
@@ -811,7 +823,7 @@ impl Writer {
                 None => "",
             };
             s.push_str(&format!(
-                "<style:style style:name=\"{}Cell{}\" style:family=\"table-cell\"><style:table-cell-properties fo:padding-top=\"0pt\" fo:padding-bottom=\"0pt\" fo:padding-left=\"5.4pt\" fo:padding-right=\"5.4pt\"{borders}{bg}{va_str}/></style:style>",
+                "<style:style style:name=\"{}Cell{}\" style:family=\"table-cell\"><style:table-cell-properties{borders}{bg}{va_str}/></style:style>",
                 self.prefix,
                 i + 1
             ));
