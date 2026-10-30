@@ -1,6 +1,6 @@
 # Tinta Texto — Tinta Office roadmap
 
-> **Status:** 2026-10-28 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
+> **Status:** 2026-10-30 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
 > (priority 2) done; 2026-10-28 charts, SmartArt and OLE kept on save confirmed (priority 3); 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
@@ -8,7 +8,8 @@
 > for Spain (priority 4) done; .odt export checked (priority 7); 2026-10-28 synced with upstream;
 > .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7);
 > 2026-10-28 Suggest my words option and list (priority 9, stage 2) done; priorities 5 and 6 checked against upstream;
-> 2026-10-28 the .odt importer reads paragraph spacing, indents, line height, tab stops, borderless and aligned tables (priority 7); then paragraph borders and common styles' spacing.
+> 2026-10-28 the .odt importer reads paragraph spacing, indents, line height, tab stops, borderless and aligned tables (priority 7); then paragraph borders and common styles' spacing;
+> 2026-10-30 Valencian `ca-valencia` dictionary in the pack and Catalan (Valencian) proofing (priority 1).
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -27,7 +28,7 @@ app since Preview 3).
 
 | # | Task | Where | Stage |
 |---|---|---|---|
-| 1 | ✅ Tinta dictionary pack: es_ES, ca, gl_ES, eu, uk_UA ship in every package ([packaging/dictionaries](../packaging/dictionaries/README.md): pinned sources, SHA-256, licences); spelling in Ukrainian, Catalan, Galician and Basque (crate `proof`, module `plain`; the affix engine reads long and numeric flags, up to 512 flags, IGNORE, ICONV, NEEDAFFIX, KEEPCASE). Offer the code upstream. Next: the Valencian `ca-valencia` dictionary, hyphenation patterns for these languages | fork (pack) + upstream (code) | 1 |
+| 1 | ✅ Tinta dictionary pack: es_ES, ca, ca-valencia, gl_ES, eu, uk_UA ship in every package ([packaging/dictionaries](../packaging/dictionaries/README.md): pinned sources, SHA-256, licences); spelling in Ukrainian, Catalan, Galician and Basque (crate `proof`, module `plain`; the affix engine reads long and numeric flags, up to 512 flags, IGNORE, ICONV, NEEDAFFIX, KEEPCASE). Valencian: text marked Catalan (Valencian), `ca-ES-valencia` (Review › Language), is checked with Softcatalà's `ca-valencia` dictionary, which accepts the Valencian forms and accents the central one marks (`este`, `vore`, `conéixer`, `anglés`, `café`), else with `ca`. Offer the code upstream. Next: hyphenation patterns for these languages | fork (pack) + upstream (code) | 1 |
 | 2 | ✅ Our .docx test set ([`crates/docx/tests/it/tinta_documents.rs`](../crates/docx/tests/it/tinta_documents.rs)): a Spanish invoice with a header logo, IVA and IRPF, a service contract with numbered clauses and a footnote, a Ukrainian CV in a layout table, a Catalan letter with a date field, written from the spec in the shape Word saves them. "Open → save → open" keeps the model, every element, attribute and paragraph of text, every relationship and document property; a second save is byte-identical. It found one loss, now fixed: the language, status, identifier, version and last-printed date of the document properties. Next: more documents as users report problems (offer the fix and the tests upstream) | fork (tests) → fixes upstream | 1 |
 | 3 | ✅ Keep charts, SmartArt and OLE through open and save: already done upstream (#319); our report document (`informe` in the test set: a bar chart with its workbook, a SmartArt process, an embedded spreadsheet) proves it. It found one bug, fixed: an OLE object's picture got a new name on every save (`image2_2_2….png`). Editing Word's charts is upstream gap 13 (stage 3) | upstream; tests and fix in the fork, to offer upstream | 1 |
 | 4 | ✅ Templates for Spain on File › New ([`crates/engine/src/tinta_templates.rs`](../crates/engine/src/tinta_templates.rs), `file.new` ids `es-invoice`, `es-quote`, `es-letter`, `es-cv`): factura with the fields of RD 1619/2012 (number, date, both NIFs, base, IVA, IRPF retention, IBAN), presupuesto with validity, conditions and acceptance, carta formal with Ref. and Asunto, currículum with the RGPD/LOPDGDD consent line. A4, Spanish language, page numbers in the footer, our own text and colours; the gallery labels are translated in all 29 interface languages. Tests: each fits one page, File › New opens it, and it survives .docx and .odt | fork | 2 |

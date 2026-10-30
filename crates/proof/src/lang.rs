@@ -70,10 +70,14 @@ pub enum ProofLang {
     /// dictionary, dictionary-driven suggestions and generic checks with Ukrainian messages
     /// ([`crate::plain`]).
     Uk,
-    /// Catalan and Valencian (`ca`, `ca-ES`, `ca-ES-valencia`, `ca-AD`; also `cat`): the
-    /// installed Hunspell `ca` dictionary and generic checks with Catalan messages
+    /// Catalan (`ca`, `ca-ES`, `ca-AD`, `ca-FR`, `ca-IT`; also `cat`): the installed Hunspell
+    /// `ca` dictionary (the central standard) and generic checks with Catalan messages
     /// ([`crate::plain`]).
     Ca,
+    /// Valencian (`ca-ES-valencia`, POSIX `ca_ES@valencia`): Tinta Office's [`ProofLang::Ca`] with
+    /// the installed `ca-valencia` dictionary (`este`, `vore`, `café`), else the central
+    /// `ca` one.
+    CaValencia,
     /// Galician (`gl`, `gl-ES`; also `glg`): the installed Hunspell `gl_ES` dictionary and generic
     /// checks with Galician messages ([`crate::plain`]).
     Gl,
@@ -93,7 +97,7 @@ pub enum ProofLang {
 
 impl ProofLang {
     /// Every language with a spelling dictionary, in display order.
-    pub const PROOFED: [ProofLang; 19] = [
+    pub const PROOFED: [ProofLang; 20] = [
         ProofLang::En,
         ProofLang::EnGb,
         ProofLang::EnCa,
@@ -111,6 +115,7 @@ impl ProofLang {
         ProofLang::EsUy,
         ProofLang::Uk,
         ProofLang::Ca,
+        ProofLang::CaValencia,
         ProofLang::Gl,
         ProofLang::Eu,
     ];
@@ -147,7 +152,7 @@ impl ProofLang {
         } else if ["uk", "ukr"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::Uk
         } else if ["ca", "cat"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
-            ProofLang::Ca
+            ProofLang::catalan(tag)
         } else if ["gl", "glg"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::Gl
         } else if ["eu", "eus", "baq"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
@@ -182,6 +187,16 @@ impl ProofLang {
         }
     }
 
+    /// The Catalan of a Catalan tag: [`ProofLang::CaValencia`] with the `valencia` variant
+    /// (`ca-ES-valencia`, `ca-valencia`, `ca_ES@valencia`), before any singleton; else
+    /// [`ProofLang::Ca`].
+    fn catalan(tag: &str) -> ProofLang {
+        let (tag, posix) = tag.split_once('@').unwrap_or((tag, ""));
+        let tag = tag.split('.').next().unwrap_or("");
+        let variant = tag.split(['-', '_']).skip(1).take_while(|p| p.len() != 1).any(|p| p.eq_ignore_ascii_case("valencia"));
+        if variant || posix.eq_ignore_ascii_case("valencia") { ProofLang::CaValencia } else { ProofLang::Ca }
+    }
+
     /// Is this one of the Englishes ([`ProofLang::En`], [`ProofLang::EnGb`], [`ProofLang::EnCa`])?
     pub fn is_english(self) -> bool {
         matches!(self, ProofLang::En | ProofLang::EnGb | ProofLang::EnCa)
@@ -208,7 +223,7 @@ impl ProofLang {
             ProofLang::Id => "id",
             ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => "es",
             ProofLang::Uk => "uk",
-            ProofLang::Ca => "ca",
+            ProofLang::Ca | ProofLang::CaValencia => "ca",
             ProofLang::Gl => "gl",
             ProofLang::Eu => "eu",
             ProofLang::De => "de",
@@ -421,7 +436,12 @@ mod tests {
     fn tags_resolve_the_tinta_languages() {
         for (lang, code, tags) in [
             (ProofLang::Uk, "uk", &["uk", "uk-UA", "UK_ua", "uk_UA.UTF-8", " ukr "][..]),
-            (ProofLang::Ca, "ca", &["ca", "ca-ES", "ca-ES-valencia", "ca-AD", "CAT", "ca_ES@valencia"][..]),
+            (ProofLang::Ca, "ca", &["ca", "ca-ES", "ca-AD", "CAT", "ca_ES.UTF-8", "ca-x-valencia", "ca_ES@euro", "cat-FR"][..]),
+            (
+                ProofLang::CaValencia,
+                "ca",
+                &["ca-ES-valencia", "CA-es-VALENCIA", "ca-valencia", "ca_ES@valencia", "ca_ES.UTF-8@valencia", "cat-ES-valencia"][..],
+            ),
             (ProofLang::Gl, "gl", &["gl", "gl-ES", "GL_es", "glg"][..]),
             (ProofLang::Eu, "eu", &["eu", "eu-ES", "eus", "baq", "eu-FR"][..]),
         ] {

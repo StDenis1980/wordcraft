@@ -38,8 +38,14 @@ fn sources() -> Vec<Source> {
 }
 
 /// The dictionaries shipped, by the language each serves.
-const SHIPPED: [(&str, ProofLang); 5] =
-    [("es_ES", ProofLang::Es), ("ca", ProofLang::Ca), ("gl_ES", ProofLang::Gl), ("uk_UA", ProofLang::Uk), ("eu", ProofLang::Eu)];
+const SHIPPED: [(&str, ProofLang); 6] = [
+    ("es_ES", ProofLang::Es),
+    ("ca", ProofLang::Ca),
+    ("ca-valencia", ProofLang::CaValencia),
+    ("gl_ES", ProofLang::Gl),
+    ("uk_UA", ProofLang::Uk),
+    ("eu", ProofLang::Eu),
+];
 
 #[test]
 fn the_manifest_pins_every_file_and_licence() {
@@ -79,9 +85,10 @@ fn the_manifest_pins_every_file_and_licence() {
 }
 
 /// Words a business letter in each language uses, and a misspelling of one of them.
-const SAMPLES: [(ProofLang, &[&str], &str); 5] = [
+const SAMPLES: [(ProofLang, &[&str], &str); 6] = [
     (ProofLang::Es, &["factura", "presupuesto", "señor", "envío", "también", "Estimado"], "facturra"),
     (ProofLang::Ca, &["factura", "pressupost", "l'empresa", "col·laboradora", "envieu-me", "també"], "facturra"),
+    (ProofLang::CaValencia, &["factura", "pressupost", "servix", "meua", "treballe", "conéixer", "l'empresa", "també"], "facturra"),
     (ProofLang::Gl, &["factura", "orzamento", "envíame", "tamén", "por", "favor"], "facturra"),
     (ProofLang::Uk, &["рахунок", "договір", "п'ятниці", "п’ятниці", "мʼясо", "будь-який", "Україна", "заплати\u{301}ть"], "рахунак"),
     (ProofLang::Eu, &["faktura", "aurrekontua", "mesedez", "bidali", "eskolara", "etxea"], "fakturra"),
@@ -110,11 +117,19 @@ fn the_shipped_dictionaries_load_and_check_real_words() {
             assert!(wordcraft_proof::is_correct_in(w, lang), "{lang:?}: {w}");
         }
         assert!(!wordcraft_proof::is_correct_in(wrong, lang), "{lang:?}: {wrong}");
+        let dic = wordcraft_proof::installed_dictionaries().into_iter().find(|(l, _)| *l == lang).and_then(|(_, p)| p);
+        let name = SHIPPED.iter().find(|(_, l)| *l == lang).map(|(n, _)| *n);
+        assert_eq!(dic.as_deref().and_then(Path::file_stem).and_then(|s| s.to_str()), name, "{lang:?} reads its own dictionary");
         let right = words.first().copied().unwrap_or_default();
         assert!(
             wordcraft_proof::suggest_in(wrong, 8, lang).iter().any(|s| s == right),
             "{lang:?}: {wrong} → {:?}",
             wordcraft_proof::suggest_in(wrong, 8, lang)
         );
+    }
+    // The central dictionary marks the Valencian demonstratives, verbs and accents (`café`,
+    // `anglés`), which is why Valencian text reads its own.
+    for w in ["este", "estos", "vore", "conéixer", "anglés", "café"] {
+        assert!(!wordcraft_proof::is_correct_in(w, ProofLang::Ca) && wordcraft_proof::is_correct_in(w, ProofLang::CaValencia), "{w}");
     }
 }
