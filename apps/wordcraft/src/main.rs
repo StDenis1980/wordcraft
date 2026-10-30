@@ -22,6 +22,7 @@ mod logging;
 mod print;
 mod region;
 mod tinta_report;
+mod tinta_words;
 #[cfg(target_os = "macos")]
 mod traffic_lights;
 
@@ -56,6 +57,7 @@ impl eframe::App for App {
         apple_events::poll(&self.5, &mut self.0, ctx);
         self.0.logic(ctx);
         tinta_report::tick(&mut self.0);
+        tinta_words::tick(&mut self.0);
         self.3.show(frame);
         let window = self.4;
         // A window that doesn't fit on its screen (the default size on a laptop) shrinks to fit
@@ -420,6 +422,8 @@ fn main() -> eframe::Result {
     if let Some(dir) = tinta_report::dir(wordcraft_control_key::settings_dir(), prefs_enabled()) {
         tinta_report::install(dir, log_dir().map(|d| d.join(logging::LOG_FILE)), build_sha());
     }
+    // Tinta Office: suggested words, sent only while both of their consents are on.
+    tinta_words::install(prefs_enabled());
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
             .with_title(wordcraft_engine::brand::NAME)

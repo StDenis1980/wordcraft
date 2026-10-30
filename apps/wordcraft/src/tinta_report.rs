@@ -24,7 +24,7 @@ pub const ENDPOINT: Option<&str> = match option_env!("TINTA_REPORT_URL") {
     _ => None,
 };
 /// Sent as `x-tinta-report`, so stray traffic is turned away before it costs anything.
-const KEY: &str = match option_env!("TINTA_REPORT_KEY") {
+pub(crate) const KEY: &str = match option_env!("TINTA_REPORT_KEY") {
     Some(v) => v,
     None => "",
 };
@@ -358,7 +358,7 @@ pub fn tick(app: &mut WordApp) {
         .is_ok();
 }
 
-fn agent() -> ureq::Agent {
+pub(crate) fn agent() -> ureq::Agent {
     ureq::Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(20)))
         .http_status_as_error(false)

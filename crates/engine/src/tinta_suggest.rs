@@ -1,11 +1,17 @@
-//! Tinta Office: "Suggest my words for Tinta's dictionaries" (roadmap priority 9, stage 2).
+//! Tinta Office: "Suggest my words for Tinta's dictionaries" (roadmap priority 9, stages 2 and 3).
 //!
 //! While the option is on (File › Options › Proofing, off by default), each word added to the
-//! custom dictionary is listed with its language, on this computer only. Nothing is sent by
-//! itself: the user reviews the list and sends it by email ([`mailto`]) or copies it ([`text`]).
-//! Words that may be personal data are never listed ([`eligible`]): anything with digits, `@` or
-//! other non-letters, and anything with a capital inside the word. Turning the option off deletes
-//! the list.
+//! custom dictionary is listed with its language, on this computer only. The user reviews the list
+//! and sends it by email ([`mailto`]) or copies it ([`text`]). Words that may be personal data are
+//! never listed ([`eligible`]): anything with digits, `@` or other non-letters, and anything with
+//! a capital inside the word. Turning the option off deletes the list.
+//!
+//! Stage 3: a second consent, "Send them automatically" ([`SuggestPrefs::auto`], off by default
+//! too), lets the desktop app send the listed words in the languages Tinta's server checks
+//! ([`AUTO_LANGS`]) once a day, under a random installation id ([`SuggestPrefs::install_id`]), and
+//! mark them sent ([`mark_sent`]). Turning it off (or the option) asks the server to remove this
+//! installation's words from its counts ([`SuggestPrefs::forget_pending`]). This module only keeps
+//! the state; `apps/wordcraft/src/tinta_words.rs` talks to the server.
 
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
@@ -25,34 +31,92 @@ pub const MAX_MAILTO_BYTES: usize = 1900;
 /// Most words one `review.suggestedWords` call removes.
 const MAX_REMOVE_PER_CALL: usize = 1000;
 
+/// The languages Tinta's server checks words in (the dictionaries Tinta ships); words in other
+/// languages are only ever sent by email.
+pub const AUTO_LANGS: [&str; 5] = ["es", "ca", "gl", "eu", "uk"];
+
 /// The saved state: whether the option is on and the words listed so far.
 #[derive(Clone, Debug, Default, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SuggestPrefs {
     pub enabled: bool,
     pub words: Vec<SuggestedWord>,
+    /// "Send them automatically": the second consent, only while `enabled`.
+    pub auto: bool,
+    /// The random id the words are counted under on the server (made by the desktop app when
+    /// automatic sending first runs; a new one after each withdrawal). Not tied to the person and
+    /// not the error reports' id.
+    pub install_id: String,
+    /// An id whose words the server should remove from its counts; the desktop app clears it once
+    /// the server confirmed, so a withdrawal made offline happens at the next start.
+    pub forget_pending: Option<String>,
 }
 
-/// A listed word and the primary subtag of the language it was added in (`es`, `uk`, `und`).
+/// A listed word, the primary subtag of the language it was added in (`es`, `uk`, `und`), and
+/// whether automatic sending already sent it.
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct SuggestedWord {
     pub word: String,
     pub lang: String,
+    pub sent: bool,
 }
 
 /// A damaged saved value reads as off with no words; saved words go through the same filters as
-/// new ones, so a hand-edited file can't list what the app would refuse.
+/// new ones, so a hand-edited file can't list what the app would refuse. Malformed ids are
+/// dropped, and automatic sending is off unless the option is on.
 pub fn lenient<'de, D: serde::Deserializer<'de>>(d: D) -> Result<SuggestPrefs, D::Error> {
     let value = Value::deserialize(d)?;
     let saved: SuggestPrefs = serde_json::from_value(value).unwrap_or_default();
-    let mut out = SuggestPrefs { enabled: saved.enabled, words: Vec::new() };
+    let id_ok = crate::tinta_reports::id_ok;
+    let mut out = SuggestPrefs {
+        enabled: saved.enabled,
+        auto: saved.enabled && saved.auto,
+        install_id: if id_ok(&saved.install_id) { saved.install_id } else { String::new() },
+        forget_pending: saved.forget_pending.filter(|id| id_ok(id)),
+        ..SuggestPrefs::default()
+    };
     if out.enabled {
         for w in saved.words {
-            push(&mut out, &w.word, &w.lang);
+            if push(&mut out, &w.word, &w.lang)
+                && let Some(last) = out.words.last_mut()
+            {
+                last.sent = w.sent;
+            }
         }
     }
+    if !out.auto && !out.install_id.is_empty() {
+        withdraw(&mut out);
+    }
     Ok(out)
+}
+
+/// Stop automatic sending: the server is asked to forget the current id, and words sent later go
+/// under a new one.
+fn withdraw(p: &mut SuggestPrefs) {
+    p.auto = false;
+    if !p.install_id.is_empty() {
+        p.forget_pending = Some(std::mem::take(&mut p.install_id));
+    }
+}
+
+/// The words automatic sending has yet to send: unsent ones in [`AUTO_LANGS`], none unless it is
+/// on.
+pub fn unsent(p: &SuggestPrefs) -> Vec<SuggestedWord> {
+    if !p.enabled || !p.auto {
+        return Vec::new();
+    }
+    p.words.iter().filter(|w| !w.sent && AUTO_LANGS.contains(&w.lang.as_str())).cloned().collect()
+}
+
+/// Mark these words sent (after the server took them). Words removed or re-added meanwhile are
+/// left as they are.
+pub fn mark_sent(p: &mut SuggestPrefs, sent: &[SuggestedWord]) {
+    for w in &mut p.words {
+        if sent.iter().any(|x| x.lang == w.lang && x.word == w.word) {
+            w.sent = true;
+        }
+    }
 }
 
 /// May this word be suggested? Letters only (with the apostrophe, hyphen and Catalan middle dot
@@ -109,7 +173,7 @@ fn push(list: &mut SuggestPrefs, word: &str, lang: &str) -> bool {
     if list.words.iter().any(|w| w.lang == lang && w.word.to_lowercase() == key) {
         return false;
     }
-    list.words.push(SuggestedWord { word: word.to_string(), lang });
+    list.words.push(SuggestedWord { word: word.to_string(), lang, sent: false });
     true
 }
 
@@ -170,8 +234,10 @@ fn state(s: &Session) -> Value {
     let (link, in_mail) = mailto(&list.words);
     json!({
         "value": list.enabled,
+        "auto": list.auto,
+        "forgetPending": list.forget_pending.is_some(),
         "to": TO,
-        "words": list.words.iter().map(|w| json!({"word": w.word, "lang": w.lang})).collect::<Vec<_>>(),
+        "words": list.words.iter().map(|w| json!({"word": w.word, "lang": w.lang, "sent": w.sent})).collect::<Vec<_>>(),
         "mailto": link,
         "inMail": in_mail,
         "text": text(&list.words),
@@ -187,13 +253,33 @@ pub fn specs() -> Vec<CommandSpec> {
                 Some(_) => return Err(CmdError::Params("`value` must be true or false".into())),
             };
             s.prefs.tinta_suggest.enabled = on;
-            // Turning it off withdraws: the list is deleted.
+            // Turning it off withdraws: the list is deleted, and so are the server's counts.
             if !on {
                 s.prefs.tinta_suggest.words.clear();
+                withdraw(&mut s.prefs.tinta_suggest);
             }
             Ok(state(s))
         })
         .params(r#"{"value"?: bool (omit to toggle; off deletes the list)} → the list, a mailto link to send it and its text"#)
+        .pure(),
+        CommandSpec::new("review.suggestWordsAuto", "Send My Words Automatically", "File › Options › Proofing", |s, v| {
+            let p = &mut s.prefs.tinta_suggest;
+            let on = match v.get("value") {
+                None | Some(Value::Null) => !p.auto,
+                Some(Value::Bool(b)) => *b,
+                Some(_) => return Err(CmdError::Params("`value` must be true or false".into())),
+            };
+            if on && !p.enabled {
+                return Err(CmdError::Params("turn on Suggest My Words first".into()));
+            }
+            if on {
+                p.auto = true;
+            } else {
+                withdraw(p);
+            }
+            Ok(state(s))
+        })
+        .params(r#"{"value"?: bool (omit to toggle; needs Suggest My Words on; off asks the server to forget this installation's words)} → as review.suggestedWords, with "auto""#)
         .pure(),
         CommandSpec::new("review.suggestedWords", "Suggested Words", "File › Options › Proofing", |s, v| {
             if let Some(x) = v.get("remove").filter(|x| !x.is_null()) {
@@ -214,7 +300,7 @@ pub fn specs() -> Vec<CommandSpec> {
             }
             Ok(state(s))
         })
-        .params(r#"{"remove"?: [string], "clear"?: bool} → {"value", "words": [{"word", "lang"}], "mailto", "inMail": n, "text"}"#)
+        .params(r#"{"remove"?: [string], "clear"?: bool} → {"value", "auto", "forgetPending", "words": [{"word", "lang", "sent"}], "mailto", "inMail": n, "text"}"#)
         .pure(),
     ]
 }
