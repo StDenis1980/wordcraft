@@ -357,7 +357,11 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                     }
                     ui.add_space(8.0);
                     if app.ui.show_discord {
-                        let (r, resp) = ui.allocate_exact_size(vec2(84.0, 22.0), Sense::click());
+                        // As wide as its label needs: "Підтримка" (Ukrainian) ran into the edge of
+                        // a fixed 84 px pill.
+                        let label = ui.painter().layout_no_wrap(community_label().to_owned(), medium(11.5), t.on_accent);
+                        let width = (24.0 + label.size().x + 10.0).max(84.0);
+                        let (r, resp) = ui.allocate_exact_size(vec2(width, 22.0), Sense::click());
                         ui.painter().rect_filled(r, 11.0, if resp.hovered() { t.accent_text } else { t.accent });
                         icons::paint(
                             ui.painter(),
@@ -366,7 +370,8 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                             t.on_accent,
                             t.on_accent,
                         );
-                        ui.painter().text(pos2(r.min.x + 24.0, r.center().y), Align2::LEFT_CENTER, community_label(), medium(11.5), t.on_accent);
+                        let top = r.center().y - label.size().y / 2.0;
+                        ui.painter().galley(pos2(r.min.x + 24.0, top), label, t.on_accent);
                         let hover = if wordcraft_engine::brand::REBRANDED {
                             tl!("Get help and support")
                         } else {

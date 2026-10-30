@@ -307,3 +307,41 @@ fn clicking_the_autosave_label_toggles_autosave() {
     assert!(h.state().autosaves(), "and clicking it again turns it back on");
     let _ = std::fs::remove_dir_all(dir);
 }
+
+/// Tinta: the Support pill is as wide as its label, so Ukrainian "Підтримка" stays inside it.
+#[test]
+fn the_support_pill_fits_its_translated_label() {
+    if !wordcraft_engine::brand::REBRANDED {
+        return;
+    }
+    let ctx = ctx();
+    let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), crate::Services::default());
+    a.ui.show_discord = true;
+    let shapes = |a: &mut WordApp| {
+        let mut out = Vec::new();
+        for _ in 0..2 {
+            crate::i18n::set_current(crate::i18n::Lang::from_code("uk").unwrap());
+            let mut o = ctx.run_ui(egui::RawInput::default(), |ui| title_bar(a, ui));
+            o.textures_delta.clear();
+            out = o.shapes;
+        }
+        crate::i18n::set_current(crate::i18n::Lang::EN);
+        out
+    };
+    let shapes = shapes(&mut a);
+    let text = shapes
+        .iter()
+        .find_map(|c| match &c.shape {
+            egui::Shape::Text(t) if t.galley.job.text == "Підтримка" => Some(t.galley.rect.translate(t.pos.to_vec2())),
+            _ => None,
+        })
+        .expect("the Support label is drawn");
+    let pill = shapes
+        .iter()
+        .find_map(|c| match &c.shape {
+            egui::Shape::Rect(r) if r.rect.height() == 22.0 && r.rect.contains(text.left_center()) => Some(r.rect),
+            _ => None,
+        })
+        .expect("the pill behind it");
+    assert!(text.right() + 4.0 <= pill.right(), "label {text:?} runs to the edge of the pill {pill:?}");
+}
