@@ -396,6 +396,7 @@ impl WordApp {
         } else {
             self.window_ui(ui);
         }
+        crate::tinta_reports_ui::first_start(self, ui.ctx());
     }
 
     /// Lay out the drawn window. A command that brings another window's state in (New, Open,

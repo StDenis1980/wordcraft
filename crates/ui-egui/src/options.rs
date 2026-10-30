@@ -260,6 +260,7 @@ fn general(app: &mut WordApp, ui: &mut Ui) {
         ui.end_row();
     });
     note(ui, "New comments and tracked changes are recorded under this name and these initials.");
+    crate::tinta_reports_ui::options(app, ui, section);
 }
 
 fn display(app: &mut WordApp, ui: &mut Ui) {

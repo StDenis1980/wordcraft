@@ -24,6 +24,11 @@ egui = { workspace = true }
 serde_json = { workspace = true }
 log = { workspace = true }
 chrono = { workspace = true }
+# Tinta Office: error reports (`src/tinta_report.rs`) go to report.tintaoffice.com over HTTPS with
+# the system's certificates, and the installation id comes from the system's randomness. Both are
+# already in the build (craft-update, the recovery files).
+ureq = { version = "3.4", default-features = false, features = ["rustls-no-provider", "_ring", "gzip", "platform-verifier"] }
+getrandom = { workspace = true }
 
 [build-dependencies]
 # Icon + VERSIONINFO for wordcraft.exe; build.rs only uses it when the target is Windows.

@@ -60,6 +60,10 @@ pub struct Prefs {
     /// listed while it is on ([`crate::tinta_suggest`]).
     #[serde(deserialize_with = "crate::tinta_suggest::lenient")]
     pub tinta_suggest: crate::tinta_suggest::SuggestPrefs,
+    /// Tinta Office: whether error reports are sent automatically, asked at the first start
+    /// ([`crate::tinta_reports`]).
+    #[serde(deserialize_with = "crate::tinta_reports::lenient")]
+    pub tinta_reports: crate::tinta_reports::ReportsPrefs,
 }
 
 impl Default for Prefs {
@@ -85,6 +89,7 @@ impl Default for Prefs {
             default_language: None,
             autocorrect: Default::default(),
             tinta_suggest: Default::default(),
+            tinta_reports: Default::default(),
         }
     }
 }

@@ -21,6 +21,7 @@ mod graphics;
 mod logging;
 mod print;
 mod region;
+mod tinta_report;
 #[cfg(target_os = "macos")]
 mod traffic_lights;
 
@@ -50,9 +51,11 @@ impl eframe::App for App {
     /// fits or rescues the window and maximizes it after opening, then gates a close or quit request
     /// on unsaved changes and active printing.
     fn logic(&mut self, ctx: &egui::Context, frame: &mut eframe::Frame) {
+        tinta_report::busy();
         #[cfg(target_os = "macos")]
         apple_events::poll(&self.5, &mut self.0, ctx);
         self.0.logic(ctx);
+        tinta_report::tick(&mut self.0);
         self.3.show(frame);
         let window = self.4;
         // A window that doesn't fit on its screen (the default size on a laptop) shrinks to fit
@@ -103,6 +106,7 @@ impl eframe::App for App {
                 ctx.send_viewport_cmd(egui::ViewportCommand::Close);
             }
         }
+        tinta_report::idle();
     }
     /// Records this frame's native window state before forwarding the hook, so logic never reads a
     /// stale inner rectangle from a hidden tick.
@@ -113,8 +117,10 @@ impl eframe::App for App {
         self.0.raw_input_hook(ctx, raw);
     }
     fn ui(&mut self, ui: &mut egui::Ui, frame: &mut eframe::Frame) {
+        tinta_report::busy();
         self.0.ui(ui);
         self.3.show(frame);
+        tinta_report::idle();
     }
     fn on_exit(&mut self) {
         print::finish_pending_jobs();
@@ -278,6 +284,7 @@ fn services(file_dialog: file_dialogs::Hook, ctx: &egui::Context) -> Services {
         set_clipboard_html: Some(Box::new(clipboard::set_html)),
         clipboard_rtf: Some(Box::new(clipboard::rtf)),
         clipboard_formats: Some(Box::new(clipboard::formats)),
+        error_reports_dir: tinta_report::dir(wordcraft_control_key::settings_dir(), prefs_enabled()),
         ..Default::default()
     }
 }
@@ -408,6 +415,10 @@ fn main() -> eframe::Result {
             },
             None => logger.no_file(),
         }
+    }
+    // Tinta Office: error reports, after the logger's panic hook so the log already holds the panic.
+    if let Some(dir) = tinta_report::dir(wordcraft_control_key::settings_dir(), prefs_enabled()) {
+        tinta_report::install(dir, log_dir().map(|d| d.join(logging::LOG_FILE)), build_sha());
     }
     let mut options = eframe::NativeOptions {
         viewport: egui::ViewportBuilder::default()
