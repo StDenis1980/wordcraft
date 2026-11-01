@@ -633,6 +633,12 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                 if app.session.prefs.overtype && st(ui, tl!("Overtype")).on_hover_text(tl!("Click to switch back to inserting")).clicked() {
                     let _ = app.run("text.overtype", json!({"value": false}));
                 }
+                // Tinta Office: a document set in Aptos on a computer without it.
+                if !crate::tinta_fonts_ui::missing(app).is_empty()
+                    && st(ui, tl!(crate::tinta_fonts_ui::LABEL)).on_hover_text(tl!(crate::tinta_fonts_ui::TIP)).clicked()
+                {
+                    crate::tinta_fonts_ui::open_download(app);
+                }
                 // The message is drawn where the row is now; the controls on the right are laid
                 // out first, so the message can be shortened to the space they leave (#2402): a
                 // long one (the path of a file that isn't there) must not be drawn over the
