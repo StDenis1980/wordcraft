@@ -30,5 +30,10 @@ while IFS=$'\t' read -r file url sha _langs _licence; do
   cp "$cached" "$DEST/$file"
   chmod 644 "$DEST/$file"
 done <"$HERE/sources.tsv"
+# Tinta's accepted words (tinta-words/, committed) go beside the dictionaries.
+for list in "$HERE"/tinta-words/*.txt; do
+  cp "$list" "$DEST/tinta-words-$(basename "$list")"
+  chmod 644 "$DEST/tinta-words-$(basename "$list")"
+done
 cp "$HERE/README.md" "$DEST/licences/README.md"
 echo "dictionaries: $(find "$DEST" -maxdepth 1 -name '*.dic' | wc -l) in $DEST"

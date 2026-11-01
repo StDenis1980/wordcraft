@@ -71,6 +71,7 @@ pub mod pl;
 pub mod plain;
 pub mod pt;
 pub mod ru;
+pub mod tinta_words;
 pub mod tr;
 pub mod vi;
 
@@ -178,6 +179,7 @@ pub fn set_dictionaries_folder(dir: Option<std::path::PathBuf>) {
     id::reload_dictionary();
     es::reload_dictionary();
     plain::ALL.iter().for_each(|l| l.reload_dictionary());
+    tinta_words::reload();
     DICTIONARY_GENERATION.fetch_add(1, Ordering::Relaxed);
 }
 
@@ -793,15 +795,17 @@ pub fn is_correct_in_with(word: &str, lang: ProofLang, opts: &Options) -> bool {
         ProofLang::Tr => accepted_by_options(word, opts) || tr::is_correct(word),
         ProofLang::Ru => accepted_by_options(word, opts) || ru::is_correct(word),
         ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => {
-            accepted_by_options(word, opts) || es::is_correct_with_options(word, lang, opts)
+            accepted_by_options(word, opts) || tinta_words::known(word, lang) || es::is_correct_with_options(word, lang, opts)
         }
         ProofLang::Cs => accepted_by_options(word, opts) || cs::is_correct_with_options(word, opts),
         ProofLang::Id => accepted_by_options(word, opts) || id::is_correct_with_options(word, opts),
-        ProofLang::Uk => accepted_by_options(word, opts) || plain::UK.is_correct_with_options(word, opts),
-        ProofLang::Ca => accepted_by_options(word, opts) || plain::CA.is_correct_with_options(word, opts),
-        ProofLang::CaValencia => accepted_by_options(word, opts) || plain::CA_VALENCIA.is_correct_with_options(word, opts),
-        ProofLang::Gl => accepted_by_options(word, opts) || plain::GL.is_correct_with_options(word, opts),
-        ProofLang::Eu => accepted_by_options(word, opts) || plain::EU.is_correct_with_options(word, opts),
+        ProofLang::Uk => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::UK.is_correct_with_options(word, opts),
+        ProofLang::Ca => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::CA.is_correct_with_options(word, opts),
+        ProofLang::CaValencia => {
+            accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::CA_VALENCIA.is_correct_with_options(word, opts)
+        }
+        ProofLang::Gl => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::GL.is_correct_with_options(word, opts),
+        ProofLang::Eu => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::EU.is_correct_with_options(word, opts),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => true,
     }
 }
@@ -1123,6 +1127,8 @@ mod tests {
             std::fs::write(dir.join(format!("{name}.aff")), aff).unwrap();
             std::fs::write(dir.join(format!("{name}.dic")), dic).unwrap();
         }
+        // Tinta's accepted words for Catalan sit next to the dictionaries.
+        std::fs::write(dir.join(tinta_words::file_name("ca")), "# Tinta Office: words added by Tinta Texto users, ca.\npressupostar\n").unwrap();
         // #3252 review: force Russian and Czech to cache whatever they find before the folder is
         // set (empty, with no folder and nothing installed on CI), so the folder change below has
         // a stale cache to actually invalidate, not just an untouched `None`.
@@ -1170,6 +1176,14 @@ mod tests {
         assert!(is_correct_in("chrząszcz", ProofLang::Pl) && !is_correct_in("chrzonszcz", ProofLang::Pl));
         assert!(is_correct_in("tenés", ProofLang::EsUy) && !is_correct_in("prueva", ProofLang::EsUy));
         assert!(is_correct_in("дом", ProofLang::Ru) && !is_correct_in("дум", ProofLang::Ru));
+        // Tinta's list adds words to Catalan and Valencian, also at the start of a sentence or in
+        // capitals, but not to other languages, and a word in odd capitals is still marked.
+        for w in ["pressupostar", "Pressupostar", "PRESSUPOSTAR"] {
+            assert!(is_correct_in(w, ProofLang::Ca) && is_correct_in(w, ProofLang::CaValencia), "{w}");
+        }
+        assert!(!is_correct_in("pressuPostar", ProofLang::Ca));
+        assert!(!is_correct_in("pressupostar", ProofLang::Gl) && !is_correct_in("pressupostr", ProofLang::Ca));
+        assert!(check_text("Cal pressupostar.", &[(0..17, ProofLang::Ca)]).iter().all(|i| i.kind != IssueKind::Spelling || i.start != 4));
     }
 
     /// #1741: a list item may be a fragment, so its first word needs no capital in any language

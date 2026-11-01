@@ -33,5 +33,9 @@ foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot 'sources.t
   New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
   Copy-Item -Force -LiteralPath $cached -Destination $target
 }
+# Tinta's accepted words (tinta-words\, committed) go beside the dictionaries.
+foreach ($list in Get-ChildItem -Path (Join-Path $PSScriptRoot 'tinta-words') -Filter *.txt) {
+  Copy-Item -Force -LiteralPath $list.FullName -Destination (Join-Path $Dest "tinta-words-$($list.Name)")
+}
 Copy-Item -Force (Join-Path $PSScriptRoot 'README.md') (Join-Path $Dest 'licences\README.md')
 Write-Output "dictionaries: $((Get-ChildItem -Path $Dest -Filter *.dic).Count) in $Dest"

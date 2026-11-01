@@ -1,0 +1,2 @@
+# Tinta Office: words added by Tinta Texto users and accepted by report.tintaoffice.com (gl).
+# Refreshed before each release with update-tinta-words.sh; CC0 1.0.
