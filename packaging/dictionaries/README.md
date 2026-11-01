@@ -34,6 +34,16 @@ form their authors publish and edit, and their sources are listed below.
 
 Licence texts: `MPL-1.1.txt`, `GPL-2.0.txt`, `GPL-3.0.txt`, `LGPL-2.1.txt`, `LGPL-3.0.txt`.
 
+## Tinta's own word lists
+
+`tinta-words/<lang>.txt` (es, ca, gl, eu, uk) hold the words Tinta Texto's users suggested with
+"Send them automatically" and Tinta's server accepted (each added by at least 5 installations, 10
+for Spanish, and listed by the English Wiktionary in that language). The fetch scripts copy them
+beside the dictionaries as `tinta-words-<lang>.txt`, and the spelling check accepts their words in
+that language (crate `proof`, module `tinta_words`). They are lists of words, released as CC0 1.0.
+Before a release, `update-tinta-words.sh` refreshes them from the server; review the diff (a word
+reported as wrong is rejected on the server and drops out at the next refresh) and commit it.
+
 ## Updating
 
 Change the commit in the URLs of `sources.tsv`, then the SHA-256 column (`sha256sum` of each
