@@ -3,6 +3,8 @@
 use crate::WordApp;
 
 #[cfg(not(target_arch = "wasm32"))]
+use craft_update::dialog::{CheckResultDialog, CheckResultResponse};
+#[cfg(not(target_arch = "wasm32"))]
 use craft_update::updater::{Action, Status, Updater};
 
 /// The app the update check works on: the release, or a rebranded build pointed at its own
@@ -13,7 +15,7 @@ pub fn update_app() -> &'static craft_update::App {
     use wordcraft_engine::brand;
     static APP: std::sync::OnceLock<craft_update::App> = std::sync::OnceLock::new();
     APP.get_or_init(|| {
-        let release = craft_update::suite::WORDCRAFT;
+        let release = crate::UPDATE_APP;
         if !brand::REBRANDED {
             return release;
         }
@@ -26,6 +28,8 @@ pub fn update_app() -> &'static craft_update::App {
 pub(crate) struct Runtime {
     #[cfg(not(target_arch = "wasm32"))]
     updater: Updater,
+    #[cfg(not(target_arch = "wasm32"))]
+    result_dialog: CheckResultDialog,
     /// The desktop app turns the check at start on; tests and the web build leave it off.
     #[cfg(not(target_arch = "wasm32"))]
     startup_check: bool,
@@ -35,6 +39,7 @@ pub(crate) struct Runtime {
     #[cfg(not(target_arch = "wasm32"))]
     repaint: Option<egui::Context>,
     pub(crate) manual_window_open: bool,
+    #[cfg(target_arch = "wasm32")]
     pub(crate) status_message: Option<String>,
 }
 
@@ -44,12 +49,15 @@ impl Default for Runtime {
             #[cfg(not(target_arch = "wasm32"))]
             updater: Updater::new(update_app(), env!("CARGO_PKG_VERSION")),
             #[cfg(not(target_arch = "wasm32"))]
+            result_dialog: CheckResultDialog::new(update_app(), env!("CARGO_PKG_VERSION")),
+            #[cfg(not(target_arch = "wasm32"))]
             startup_check: false,
             #[cfg(not(target_arch = "wasm32"))]
             check_requested: false,
             #[cfg(not(target_arch = "wasm32"))]
             repaint: None,
             manual_window_open: false,
+            #[cfg(target_arch = "wasm32")]
             status_message: None,
         }
     }
@@ -67,6 +75,7 @@ pub(crate) fn check(app: &mut WordApp) {
     #[cfg(not(target_arch = "wasm32"))]
     {
         app.updates_rt.check_requested = true;
+        app.updates_rt.manual_window_open = true;
         if let Some(ctx) = &app.updates_rt.repaint {
             ctx.request_repaint();
         }
@@ -104,21 +113,27 @@ pub(crate) fn show(app: &mut WordApp, ctx: &egui::Context) {
             Action::Close => ctx.send_viewport_cmd(egui::ViewportCommand::Close),
             Action::None => {}
         }
-        // The window answers Help ▸ Check for Updates, so it follows the updater's status.
+        // The dialog answers Help ▸ Check for Updates; a found update leaves the status idle and the prompt above takes over.
         let rt = &mut app.updates_rt;
-        (rt.manual_window_open, rt.status_message) = match rt.updater.status() {
-            Status::Idle => (false, None),
-            Status::Checking => (true, None),
-            Status::UpToDate => {
-                (true, Some(tl!("WordCraft {version} is currently the newest version available.").replace("{version}", env!("CARGO_PKG_VERSION"))))
+        if rt.manual_window_open {
+            match rt.result_dialog.show(ctx, rt.updater.status()) {
+                CheckResultResponse::None => {}
+                CheckResultResponse::Close => {
+                    rt.manual_window_open = false;
+                    rt.updater.dismiss_status();
+                }
+                CheckResultResponse::CheckAgain => rt.updater.check_now(ctx),
             }
-            Status::Failed(e) => (true, Some(tl!("Could not check for updates:\n{error}").replace("{error}", e))),
-        };
+            // An update was found: the prompt replaces the dialog.
+            if matches!(rt.updater.status(), Status::Idle) {
+                rt.manual_window_open = false;
+            }
+        }
     }
 
+    #[cfg(target_arch = "wasm32")]
     if app.updates_rt.manual_window_open {
         let mut open = true;
-        let mut close = false;
         egui::Window::new(tl!("Check for Updates"))
             .open(&mut open)
             .resizable(false)
@@ -127,25 +142,11 @@ pub(crate) fn show(app: &mut WordApp, ctx: &egui::Context) {
             .show(ctx, |ui| {
                 if let Some(msg) = &app.updates_rt.status_message {
                     ui.label(msg);
-                } else {
-                    ui.label(tl!("Checking for updates…"));
                 }
-                ui.add_space(8.0);
-                ui.with_layout(egui::Layout::right_to_left(egui::Align::Center), |ui| {
-                    if ui.button(tl!("Close")).clicked() {
-                        close = true;
-                    }
-                });
             });
-        if !open || close {
+        if !open {
             app.updates_rt.manual_window_open = false;
             app.updates_rt.status_message = None;
         }
-    }
-
-    // Closing the window dismisses the outcome it showed.
-    #[cfg(not(target_arch = "wasm32"))]
-    if !app.updates_rt.manual_window_open {
-        app.updates_rt.updater.dismiss_status();
     }
 }
