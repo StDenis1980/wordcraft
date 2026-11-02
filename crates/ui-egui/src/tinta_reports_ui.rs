@@ -123,6 +123,31 @@ mod tests {
         assert!(h.query_by_label(TITLE).is_none());
     }
 
+    /// On the Start screen no document is open, and the answer still closes the question: it
+    /// was refused as a document command and the question stayed up whatever was pressed.
+    #[test]
+    fn the_first_start_answer_works_on_the_start_screen() {
+        for (button, consent) in [(YES, true), (NO, false)] {
+            let services = Services { error_reports_dir: Some(std::env::temp_dir().join("tinta-reports-test")), ..Default::default() };
+            let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), services);
+            assert!(a.start_screen());
+            assert!(!a.has_document(), "no document behind the Start screen");
+            let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 1000.0)).build_ui_state(
+                |ui, app: &mut WordApp| {
+                    let ctx = ui.ctx().clone();
+                    app.logic(&ctx);
+                    app.ui(ui);
+                },
+                a,
+            );
+            h.run_steps(4);
+            h.get_by_label(button).click();
+            h.run_steps(3);
+            assert_eq!(h.state().session.prefs.tinta_reports.consent, Some(consent), "{button}");
+            assert!(h.query_by_label(TITLE).is_none(), "{button} closes the question");
+        }
+    }
+
     /// Without a report address (upstream builds, tests, the web) nothing asks.
     #[test]
     fn builds_that_cannot_send_never_ask() {

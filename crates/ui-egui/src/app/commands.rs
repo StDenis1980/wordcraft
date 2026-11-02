@@ -1041,6 +1041,11 @@ pub(crate) fn works_without_document(id: &str) -> bool {
             | "ui.caretAnimation"
             | "ui.startScreen"
             | "ui.checkForUpdates"
+            // Tinta Office settings: the first-start question about error reports shows over
+            // the Start screen, before any document is open.
+            | "tools.errorReports"
+            | "review.suggestWords"
+            | "review.suggestWordsAuto"
     ) || id.starts_with("help.")
 }
 
