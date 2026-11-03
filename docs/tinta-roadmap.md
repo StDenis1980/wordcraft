@@ -9,7 +9,7 @@
 > .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7);
 > 2026-10-28 Suggest my words option and list (priority 9, stage 2) done; priorities 5 and 6 checked against upstream;
 > 2026-10-28 the .odt importer reads paragraph spacing, indents, line height, tab stops, borderless and aligned tables (priority 7); then paragraph borders and common styles' spacing;
-> 2026-11-03 page-by-page comparison with Word on 26 Spanish administration documents; Noto Sans ships with the dictionaries and Office's cloud fonts (Aptos) are found (priority 5); 2026-11-03 French, Lithuanian, Czech and Romanian hyphenation (priority 1); 2026-11-03 Swiss German spelling (`de-CH`, priority 1); 2026-11-03 German spelling with compound words (priority 1); 2026-11-01 "Aptos not installed" notice with Microsoft's download (priority 5); 2026-11-01 accepted words ship beside the dictionaries (priority 9); 2026-10-30 automatic sending and validation of suggested words (priority 9, stage 3); 2026-10-30 Valencian `ca-valencia` dictionary in the pack and Catalan (Valencian) proofing (priority 1); hyphenation patterns for es/ca/gl/eu/uk (priority 1); .odt cell margins read and written (priority 7); 2026-11-03 Flatpak bundle manifest under the Tinta id; 2026-11-03 plan revision 2 (owner-approved): Preview 3 and a closed beta first, stage gates, next steps per stage.
+> 2026-11-03 page-by-page comparison with Word on 26 Spanish administration documents; Noto Sans ships with the dictionaries and Office's cloud fonts (Aptos) are found (priority 5); 2026-11-03 French, Lithuanian, Czech and Romanian hyphenation (priority 1); 2026-11-03 Swiss German spelling (`de-CH`, priority 1); 2026-11-03 German spelling with compound words (priority 1); 2026-11-01 "Aptos not installed" notice with Microsoft's download (priority 5); 2026-11-01 accepted words ship beside the dictionaries (priority 9); 2026-10-30 automatic sending and validation of suggested words (priority 9, stage 3); 2026-10-30 Valencian `ca-valencia` dictionary in the pack and Catalan (Valencian) proofing (priority 1); hyphenation patterns for es/ca/gl/eu/uk (priority 1); .odt cell margins read and written (priority 7); 2026-11-03 Flatpak bundle manifest under the Tinta id; 2026-11-03 plan revision 2 (owner-approved): Preview 3 and a closed beta first, stage gates, next steps per stage; 2026-11-03 owner decisions recorded: Preview 3 on 12 November, Certum signing from January, beta sign-up form on tintaoffice.com/beta.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -94,12 +94,12 @@ the last releases are from 2026-10-26/27. So November is about delivery, not new
 
 Suite priorities for November (stage 1), in order:
 
-1. **Preview 3 for all five apps, 10–14 November**, after the 9 November upstream sync: Windows MSI
+1. **Preview 3 for all five apps on 12 November**, after the 9 November upstream sync: Windows MSI
    and portable, Linux .deb, AppImage and .flatpak, the extra dictionary pack as its own file,
    release notes in es/uk/en, the site's Download section; every installer smoke-tested on the
    owner's PC first.
-2. **Closed beta in Spain** from Preview 3: a sign-up form on tintaoffice.com (none yet), a page for
-   testers (what to check, how to report), 20–50 autónomos and 1–2 gestorías, Ukrainians in Spain
+2. **Closed beta in Spain** from Preview 3: a sign-up form on tintaoffice.com/beta and a guide
+   for testers at /beta/testers/ (what to check, how to report), 20–50 autónomos and 1–2 gestorías, Ukrainians in Spain
    as testers; weekly triage of error reports and issues.
 3. **Tinta Presenta catches up** (it has barely moved since 2026-10-27): #74, a .pptx test set, #70/#77.
 4. **Tinta Correo finishes M5**: calendar and contacts from .pst, export, the Outlook migration guide.
@@ -125,8 +125,17 @@ This app's next steps:
 | 2 — December 2026 – January 2027 | Pagination like Word, checked on testers' documents; the first accepted words from "Suggest my words" in the pack |
 | 3 — 2027 | Editing Word's charts and SmartArt (upstream) |
 
-Owner decisions still open: the Preview 3 date, code signing for Windows by 1 December (Certum Open
-Source or Azure Trusted Signing), the beta sign-up channel, which apps enter the public beta, time
+Code signing for Windows, decided 2026-11-03: Certum Open Source, registered at the start of January
+2027 once the owner has his new ID card (December); Preview 3 and the closed beta stay unsigned.
+Certum's identity check takes days to two weeks, so signed installers are expected late January,
+before the public beta in February.
+
+Beta sign-up, decided 2026-11-03: a form on tintaoffice.com
+([tintaoffice.com/beta](https://tintaoffice.com/beta/), with a testers' guide at `/beta/testers/`).
+
+Preview 3 date, decided 2026-11-03: 12 November 2026.
+
+Owner decisions still open: which apps enter the public beta, time
 for the Ukrainian review, the video channel and playlists.
 
 ## Suite-wide work (all five Tinta Office apps)
@@ -143,7 +152,7 @@ the most ready apps), **3** = 2027 (1.0). Dates are indicative.
 | Linux | 1 | AppImage + .deb with Tinta names for all five (built in the cloud); Flatpak in stage 2. |
 | Flatpak | 2 | Bundle manifest under the Tinta id (`packaging/linux/flatpak/io.github.stdenis1980.tintatexto.bundle.yml`, generated from upstream's by `packaging/linux/tinta-flatpak.sh generate`; `tinta-flatpak.sh bundle` turns the Linux tarball into a `.flatpak`). Requested by Vilna OS (tintaoffice-web#14): bundles in releases by April 2027; Flathub only with Denys's approval. |
 | Windows installers | 1 | Desktop shortcuts for Texto and Calculo; Presenta registered for .pptx. |
-| Code signing | 2 | Windows (Certum Open Source or Azure Trusted Signing; scripts exist), macOS (Apple Developer + notarization). Owner decision and payment. |
+| Code signing | 2 | Windows: Certum Open Source (decided 2026-11-03), registration early January 2027, signed installers before the February public beta; scripts exist. macOS (Apple Developer + notarization) later. |
 | Automated tests | 1–2 | Coverage audit per app; tests for every fork change (brand, languages, installers); a smoke test of each release installer on Windows; investigate the flaky tests upstream. |
 | User guide | 2 | A short "first steps" guide per app in Spanish and Ukrainian on tintaoffice.com (Correo has one). |
 | Fork documentation | 1 | This file: what the fork changes, how to build a release, how to sync. |
