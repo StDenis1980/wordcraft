@@ -1,11 +1,11 @@
 # Tinta Office extra spelling dictionaries: a separate download (about 20 MB) for French,
-# Romanian, Lithuanian, Polish, Italian and Czech, so the main pack stays small. Same columns as
+# Romanian, Lithuanian, Polish, Italian, Czech and German, so the main pack stays small. Same columns as
 # sources.tsv: the file's path in the folder, its source (pinned to a commit), its SHA-256, the
 # languages it serves, and the licence of a dictionary file (- for a licence or readme text).
 # `fetch.sh DEST sources-extra.tsv` (or `fetch.ps1 -Dest DEST -Manifest sources-extra.tsv`) fills a
 # folder to zip; unzipped into the app's dictionaries folder or the user's, the languages work.
-licences/GPL-2.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/COPYING_GPLv2	e7431ac20e815b6797369e802f9e4bb1b0082485060d8b096235f035d741bd89	ro cs	-
-licences/GPL-3.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/COPYING_GPLv3	8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903	it	-
+licences/GPL-2.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/COPYING_GPLv2	e7431ac20e815b6797369e802f9e4bb1b0082485060d8b096235f035d741bd89	ro cs de	-
+licences/GPL-3.0.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/COPYING_GPLv3	8ceb4b9ee5adedde47b31e975c1d90c73ad27b6b165a1dcd80c7c545eb65b903	it de	-
 fr.aff	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/fr/index.aff	05a735d34c912e4e381ff08ee7c747923ccf5cf9dca81d8467982fa1ca51c2b7	fr	MPL-2.0
 fr.dic	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/fr/index.dic	984e933237bc1224a48f42828233be9b03228260ef67aa8e2bdddcd03a26230d	fr	MPL-2.0
 licences/fr-LICENSE.txt	https://raw.githubusercontent.com/wooorm/dictionaries/8cfea406b505e4d7df52d5a19bce525df98c54ab/dictionaries/fr/license	0c785aebc7aae8aa00b8163e9b3219a8785a9900b71e85475204e48a5651ced4	fr	-
@@ -27,3 +27,6 @@ licences/it-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionarie
 cs_CZ.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/cs_CZ/cs_CZ.aff	7ecb20620ecd46ebd9c36f3f33e69dd4eda385cba5b2bb4e6bc396d910e297f7	cs	GPL-2.0
 cs_CZ.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/cs_CZ/cs_CZ.dic	d8e8c88c006fdae72dac8c85df11b0c99a773e05a4ab0fcbe92244876668ca74	cs	GPL-2.0
 licences/cs-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/cs_CZ/README_cs.txt	24d1d07409b62e8e6f0ee114991d4749d3e97b05ea19feca835916af67312720	cs	-
+de_DE.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_DE_frami.aff	646bf3333ac69c23e9d794533ee5241d6f755c359e8fe10a648f87613743d594	de	GPL-2.0 OR GPL-3.0
+de_DE.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_DE_frami.dic	4ca3c958b0e5545910999bc246f668840bf8ede3df8e5e6790d05edd5a586c38	de	GPL-2.0 OR GPL-3.0
+licences/de-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/README_de_DE_frami.txt	c141f4f79c428b7348b5012836f4ad3db4d124f288f15effc22696dc876512ae	de	-

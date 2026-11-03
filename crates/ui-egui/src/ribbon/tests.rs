@@ -577,9 +577,10 @@ fn fit_tabs_keeps_the_kept_tabs_and_drops_from_the_end() {
 }
 
 /// #860: Review › Language (and the status bar) reach every proofing language, not just the
-/// short list: Set Proofing Language… opens the Language dialog (German, Set As Default),
-/// Language Preferences… opens Options › Language, and German text shows by name, checked
-/// (German has no spelling, so it is off the short list; French is on it in the Tinta fork).
+/// short list: Set Proofing Language… opens the Language dialog (Dutch, Set As Default),
+/// Language Preferences… opens Options › Language, and Dutch text shows by name, checked
+/// (Dutch has no spelling, so it is off the short list; French and German are on it in the
+/// Tinta fork).
 #[test]
 fn language_menu_reaches_every_language() {
     use egui_kittest::kittest::{By, NodeT, Queryable};
@@ -587,18 +588,19 @@ fn language_menu_reaches_every_language() {
     let app = WordApp::new(Session::new(wordcraft_doc::Document::from_text("Bonjour")), crate::Services::default());
     let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 800.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
     h.run();
-    assert!(h.query(item("German (Germany)")).is_none(), "the short list only, on an English document");
+    assert!(h.query(item("Dutch")).is_none(), "the short list only, on an English document");
+    assert!(h.query(item("German (Germany)")).is_some(), "Tinta: German is proofed, so on the short list");
     assert!(!h.get(item("Set Proofing Language…")).accesskit_node().is_disabled(), "never greyed out on a fresh document");
     assert!(!h.get(item("English (United States)")).accesskit_node().is_disabled());
     h.get(item("Set Proofing Language…")).click();
     h.run();
     assert_eq!(h.state().dialog.as_ref().map(crate::dialogs::Dialog::name), Some("language"));
     h.state_mut().dialog = None;
-    // German for the whole document: the menu and the status bar name it.
-    h.state_mut().run("review.language", json!({"lang": "de-DE", "default": true})).unwrap();
+    // Dutch for the whole document: the menu and the status bar name it.
+    h.state_mut().run("review.language", json!({"lang": "nl-NL", "default": true})).unwrap();
     h.run();
-    assert_eq!(caret_language(h.state()), "German (Germany)");
-    assert!(h.query(item("German (Germany)")).is_some(), "the current language is listed (only while it is the current one)");
+    assert_eq!(caret_language(h.state()), "Dutch");
+    assert!(h.query(item("Dutch")).is_some(), "the current language is listed (only while it is the current one)");
     h.get(item("Language Preferences…")).click();
     h.run();
     assert!(h.state().ui.backstage, "File › Options opened");
