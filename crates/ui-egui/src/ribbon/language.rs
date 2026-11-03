@@ -1,7 +1,7 @@
 use super::{Ui, Value, WordApp, json, vec2};
 
 /// The proofing languages the Language menu offers: tag and English name (translated when drawn).
-pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 21] = [
+pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 24] = [
     ("en-US", "English (United States)"),
     ("en-GB", "English (United Kingdom)"),
     ("en-AU", "English (Australia)"),
@@ -23,6 +23,9 @@ pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 21] = [
     ("ca-ES-valencia", "Catalan (Valencian)"),
     ("gl-ES", "Galician"),
     ("eu-ES", "Basque"),
+    ("fr-FR", "French (France)"),
+    ("ro-RO", "Romanian"),
+    ("lt-LT", "Lithuanian"),
 ];
 
 /// The English name of a proofing language tag, as the status bar shows it (no tag: WordCraft's
@@ -71,6 +74,9 @@ pub(crate) fn language_name(tag: Option<&str>) -> String {
             wordcraft_engine::proof::ProofLang::CaValencia => "Catalan (Valencian)".into(),
             wordcraft_engine::proof::ProofLang::Gl => "Galician".into(),
             wordcraft_engine::proof::ProofLang::Eu => "Basque".into(),
+            wordcraft_engine::proof::ProofLang::Fr => "French (France)".into(),
+            wordcraft_engine::proof::ProofLang::Ro => "Romanian".into(),
+            wordcraft_engine::proof::ProofLang::Lt => "Lithuanian".into(),
             wordcraft_engine::proof::ProofLang::En if tag.eq_ignore_ascii_case("en") => "English (United States)".into(),
             _ => tag.to_string(),
         },
@@ -216,6 +222,9 @@ pub(crate) fn language_menu(ui: &mut Ui, app: &mut WordApp) {
                 && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::CaValencia)
             || (tag == "gl-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Gl)
             || (tag == "eu-ES" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Eu)
+            || (tag == "fr-FR" && current.eq_ignore_ascii_case("fr"))
+            || (tag == "ro-RO" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Ro)
+            || (tag == "lt-LT" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Lt)
             || (tag == "en-US" && current.eq_ignore_ascii_case("en"))
     };
     let checks = language_checks(&current, listed);

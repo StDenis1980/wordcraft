@@ -16,7 +16,7 @@
 //! append and condition (`.`, letters, `[abc]`, `[^abc]`), cross products, continuation classes
 //! on suffixes (at most two suffixes in a row, as in Hunspell), `FULLSTRIP`, `FORBIDDENWORD`,
 //! `NOSUGGEST`, the input tables `IGNORE` and `ICONV` (Ukrainian ignores the stress mark and
-//! reads `’` as `'`), `NEEDAFFIX`, `KEEPCASE`, and the suggestion tables `TRY`, `KEY`, `MAP` and
+//! reads `’` as `'`), the output table `OCONV` (French shows `'` as `’`), `NEEDAFFIX`, `KEEPCASE`, and the suggestion tables `TRY`, `KEY`, `MAP` and
 //! `REP`. `COMPOUNDRULE` is read but builds no compounds (Galician's numerals stay unknown), and
 //! `ONLYINCOMPOUND` stems are never words. Rejected: the other compounding directives
 //! (`COMPOUNDFLAG`…) and the rest of those that change which words are correct.
@@ -112,7 +112,6 @@ const UNSUPPORTED: &[&str] = &[
     "AF",
     "AM",
     "CHECKSHARPS",
-    "CIRCUMFIX",
     "COMPLEXPREFIXES",
     "COMPOUNDBEGIN",
     "COMPOUNDEND",
@@ -120,7 +119,6 @@ const UNSUPPORTED: &[&str] = &[
     "COMPOUNDMIDDLE",
     "COMPOUNDPERMITFLAG",
     "LEMMA_PRESENT",
-    "OCONV",
     "PSEUDOROOT",
     "SUBSTANDARD",
 ];
@@ -274,6 +272,8 @@ pub struct AffixDict {
     ignore: Vec<char>,
     /// `ICONV`: replacements made in a word before it is looked up.
     iconv: Vec<(String, String)>,
+    /// `OCONV`: replacements made in a suggestion before it is shown (French writes `'` as `’`).
+    oconv: Vec<(String, String)>,
     /// `FULLSTRIP`: a rule may strip a whole stem, so a form may be all affix.
     fullstrip: bool,
     /// Provenance and licence lines, kept through [`AffixDict::to_bytes`].
@@ -356,6 +356,8 @@ struct Rules {
     ignore: Vec<char>,
     /// `ICONV`: replacements made in a word before it is looked up.
     iconv: Vec<(String, String)>,
+    /// `OCONV`: replacements made in a suggestion before it is shown.
+    oconv: Vec<(String, String)>,
     /// `FULLSTRIP`: a rule may strip a whole stem.
     fullstrip: bool,
 }
@@ -527,6 +529,10 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
     let mut map_header = false;
     let mut rep_header = false;
     let mut iconv_header = false;
+    let mut oconv_header = false;
+    // `CIRCUMFIX`'s flag and its line: harmless while no affix carries it (French declares one
+    // and never uses it), unsupported once one does.
+    let mut circumfix: Option<(char, usize)> = None;
     for (n, line) in aff.lines().enumerate() {
         let f: Vec<&str> = line.split_whitespace().collect();
         let Some(&dir) = f.first() else { continue };
@@ -555,6 +561,7 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
             // Compound rules only add words (Galician's build numerals like `1º`); without them
             // those words are flagged, and every other word is checked as before.
             "COMPOUNDRULE" | "COMPOUNDMIN" => {}
+            "CIRCUMFIX" => circumfix = Some((r.flags.one(at(1)).map_err(|e| format!("line {}: CIRCUMFIX: {e}", n + 1))?, n + 1)),
             "IGNORE" => r.ignore = at(1).chars().take(MAX_IGNORE).collect(),
             "FULLSTRIP" => r.fullstrip = true,
             "ICONV" => {
@@ -562,6 +569,13 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
                     iconv_header = true;
                 } else if f.len() >= 3 && r.iconv.len() < MAX_ICONV {
                     r.iconv.push((at(1).to_string(), at(2).to_string()));
+                }
+            }
+            "OCONV" => {
+                if !oconv_header && f.len() == 2 && at(1).parse::<usize>().is_ok() {
+                    oconv_header = true;
+                } else if f.len() >= 3 && r.oconv.len() < MAX_ICONV {
+                    r.oconv.push((at(1).to_string(), at(2).to_string()));
                 }
             }
             "TRY" => r.try_chars = cap_try(at(1)),
@@ -611,6 +625,11 @@ fn parse_aff(aff: &str) -> Result<Rules, String> {
             d if UNSUPPORTED.contains(&d) => return Err(format!("line {}: {d} is not supported", n + 1)),
             _ => {}
         }
+    }
+    if let Some((flag, line)) = circumfix
+        && r.prefixes.iter().chain(&r.suffixes).any(|rule| rule.4.contains(flag))
+    {
+        return Err(format!("line {line}: CIRCUMFIX is not supported"));
     }
     Ok(r)
 }
@@ -696,6 +715,7 @@ impl AffixDict {
             rep: rules.rep,
             ignore: rules.ignore,
             iconv: rules.iconv,
+            oconv: rules.oconv,
             fullstrip: rules.fullstrip,
             comments,
             ..AffixDict::default()
@@ -915,6 +935,14 @@ impl AffixDict {
     /// Flags whose stems are never words here: `FORBIDDENWORD` and `ONLYINCOMPOUND`.
     fn never(&self) -> Mask {
         self.forbidden | self.only_in_compound
+    }
+
+    /// A suggestion as shown: the `OCONV` table applied (French writes `'` as `’`).
+    pub fn output(&self, w: &str) -> String {
+        if w.len() > MAX_WORD_BYTES * 4 {
+            return w.to_string();
+        }
+        convert(w, &self.oconv).into_owned()
     }
 
     /// `w` as the dictionary spells its words: `ICONV` applied, `IGNORE` characters taken out.
@@ -1190,6 +1218,9 @@ impl AffixDict {
         for (from, to) in &self.iconv {
             out.push_str(&format!("ICONV {from} {to}\n"));
         }
+        for (from, to) in &self.oconv {
+            out.push_str(&format!("OCONV {from} {to}\n"));
+        }
         if self.fullstrip {
             out.push_str("FULLSTRIP\n");
         }
@@ -1266,6 +1297,7 @@ impl AffixDict {
                 "REP" => rules.rep.push((at(1).replace('_', " "), at(2).replace('_', " "))),
                 "IGNORE" => rules.ignore = at(1).chars().take(MAX_IGNORE).collect(),
                 "ICONV" if f.len() == 3 && rules.iconv.len() < MAX_ICONV => rules.iconv.push((at(1).to_string(), at(2).to_string())),
+                "OCONV" if f.len() == 3 && rules.oconv.len() < MAX_ICONV => rules.oconv.push((at(1).to_string(), at(2).to_string())),
                 "FULLSTRIP" => rules.fullstrip = true,
                 directive if FLAG_DIRECTIVES.contains(&directive) => {
                     let mut it = at(1).chars();
@@ -1561,6 +1593,18 @@ pub(crate) mod tests {
     }
 
     #[test]
+    fn oconv_changes_what_is_shown_and_survives_to_bytes() {
+        // French's tables: `’` is read as `'`, and suggestions are shown with `’`.
+        let aff = "SET UTF-8\nICONV 1\nICONV ’ '\nOCONV 1\nOCONV ' ’\n";
+        let d = AffixDict::from_hunspell(aff, "1\naujourd'hui\n", &[]).unwrap();
+        assert!(d.check("aujourd'hui") && d.check("aujourd’hui"));
+        assert_eq!(d.output("aujourd'hui"), "aujourd’hui");
+        assert_eq!(d.output("plain"), "plain");
+        let back = AffixDict::from_bytes(&d.to_bytes()).unwrap();
+        assert_eq!(back.output("l'été"), "l’été");
+    }
+
+    #[test]
     fn ignore_and_iconv_normalize_the_word_checked() {
         // Ukrainian's tables: the stress mark is ignored, typographic apostrophes read as `'`.
         let aff = "SET UTF-8\nIGNORE \u{301}\nICONV 3\nICONV ’ '\nICONV ʼ '\nICONV a 0\nSFX A Y 1\nSFX A о у о\n";
@@ -1759,6 +1803,9 @@ pub(crate) mod tests {
         assert!(AffixDict::from_hunspell("FLAG num\nSFX x1 Y 1\n", DIC, &[]).is_err(), "a numeric flag that isn't a number");
         assert!(AffixDict::from_hunspell("FLAG long\nFORBIDDENWORD ABC\n", DIC, &[]).is_err(), "two flags where one is named");
         assert!(AffixDict::from_hunspell("COMPOUNDFLAG X\n", DIC, &[]).is_err());
+        // A CIRCUMFIX no affix carries changes nothing (French declares one); a used one is refused.
+        assert!(AffixDict::from_hunspell("CIRCUMFIX X\nSFX A Y 1\nSFX A 0 s .\n", DIC, &[]).is_ok());
+        assert!(AffixDict::from_hunspell("CIRCUMFIX X\nSFX A Y 1\nSFX A 0 s/X .\n", DIC, &[]).is_err());
         assert!(AffixDict::from_hunspell("SFX a Y 1\nSFX a 0 y [ab\n", DIC, &[]).is_err());
         assert!(AffixDict::from_bytes(b"not deflate").is_err());
         let ok = dict().to_bytes();

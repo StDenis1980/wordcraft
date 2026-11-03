@@ -26,7 +26,11 @@ fn manifest_dir() -> PathBuf {
 }
 
 fn sources() -> Vec<Source> {
-    let text = std::fs::read_to_string(manifest_dir().join("sources.tsv")).expect("sources.tsv");
+    manifest("sources.tsv")
+}
+
+fn manifest(name: &str) -> Vec<Source> {
+    let text = std::fs::read_to_string(manifest_dir().join(name)).expect("manifest");
     text.lines()
         .filter(|l| !l.is_empty() && !l.starts_with('#'))
         .map(|l| {
@@ -47,11 +51,29 @@ const SHIPPED: [(&str, ProofLang); 6] = [
     ("eu", ProofLang::Eu),
 ];
 
+/// The extra pack, a separate download, by the language each serves.
+const EXTRA: [(&str, ProofLang); 6] = [
+    ("fr", ProofLang::Fr),
+    ("ro_RO", ProofLang::Ro),
+    ("lt_LT", ProofLang::Lt),
+    ("pl_PL", ProofLang::Pl),
+    ("it_IT", ProofLang::It),
+    ("cs_CZ", ProofLang::Cs),
+];
+
 #[test]
 fn the_manifest_pins_every_file_and_licence() {
-    let rows = sources();
+    check_manifest(&sources(), &SHIPPED);
+}
+
+#[test]
+fn the_extra_manifest_pins_every_file_and_licence() {
+    check_manifest(&manifest("sources-extra.tsv"), &EXTRA);
+}
+
+fn check_manifest(rows: &[Source], languages: &[(&str, ProofLang)]) {
     let readme = std::fs::read_to_string(manifest_dir().join("README.md")).expect("README.md");
-    for s in &rows {
+    for s in rows {
         // Pinned: a raw GitHub URL at a full commit hash, never a branch.
         let rest = s.url.strip_prefix("https://raw.githubusercontent.com/").unwrap_or_else(|| panic!("{}: not a raw GitHub URL", s.file));
         let commit = rest.split('/').nth(2).unwrap_or("");
@@ -62,7 +84,7 @@ fn the_manifest_pins_every_file_and_licence() {
         assert_eq!(dictionary, !s.file.starts_with("licences/"), "{}: dictionaries at the top, texts in licences/", s.file);
         assert_eq!(dictionary, s.licence != "-", "{}: each dictionary file names its licence", s.file);
     }
-    for (name, _) in SHIPPED {
+    for (name, _) in languages {
         for ext in ["aff", "dic"] {
             assert!(rows.iter().any(|s| s.file == format!("{name}.{ext}")), "{name}.{ext} is listed");
         }
@@ -75,6 +97,8 @@ fn the_manifest_pins_every_file_and_licence() {
         ("GPL-3.0", "GPL-3.0.txt"),
         ("LGPL-2.1", "LGPL-2.1.txt"),
         ("LGPL-3.0", "LGPL-3.0.txt"),
+        ("MPL-2.0", "fr-LICENSE.txt"),
+        ("BSD-3-Clause", "lt-COPYING.txt"),
     ] {
         if rows.iter().any(|s| s.licence.contains(id)) {
             assert!(rows.iter().any(|s| s.file == format!("licences/{text}")), "{text} ships with the {id} dictionaries");
@@ -94,6 +118,47 @@ const SAMPLES: [(ProofLang, &[&str], &str); 6] = [
     (ProofLang::Eu, &["faktura", "aurrekontua", "mesedez", "bidali", "eskolara", "etxea"], "fakturra"),
 ];
 
+/// Held while a test sets the process-wide dictionaries folder and checks words against it.
+static FOLDER: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// Words in each extra language, and a misspelling of the first.
+const EXTRA_SAMPLES: [(ProofLang, &[&str], &str); 6] = [
+    (ProofLang::Fr, &["facture", "été", "l'entreprise", "aujourd'hui", "merci"], "factrue"),
+    (ProofLang::Ro, &["factură", "țară", "mulțumesc", "întreprindere", "până"], "facturră"),
+    (ProofLang::Lt, &["sąskaita", "prašau", "įmonė", "ačiū", "laiškas"], "sąskaitta"),
+    (ProofLang::Pl, &["faktura", "dziękuję", "przedsiębiorstwo", "żółw"], "fakturra"),
+    (ProofLang::It, &["grazie", "fattura", "l'azienda", "perché"], "grazzie"),
+    (ProofLang::Cs, &["faktura", "děkuji", "podnik", "příliš"], "fakturra"),
+];
+
+#[test]
+#[ignore = "needs TINTA_EXTRA_DICTIONARIES_DIR, a folder `fetch.sh DIR sources-extra.tsv` filled"]
+fn the_extra_dictionaries_load_and_check_real_words() {
+    let Some(dir) = std::env::var_os("TINTA_EXTRA_DICTIONARIES_DIR").map(PathBuf::from) else {
+        panic!("set TINTA_EXTRA_DICTIONARIES_DIR to a folder filled by fetch.sh DIR sources-extra.tsv");
+    };
+    for (name, _) in EXTRA {
+        let (aff, dic) = hunspell::find_in(&dir, &[name]).unwrap_or_else(|| panic!("{name} in {}", dir.display()));
+        let d: AffixDict = hunspell::load(&aff, &dic).unwrap_or_else(|e| panic!("{name}: {e}"));
+        assert!(d.len() > 50_000, "{name}: {} stems", d.len());
+    }
+    // The dictionaries folder is global: the two tests that set it take turns.
+    let _turn = FOLDER.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    wordcraft_proof::set_dictionaries_folder(Some(dir.clone()));
+    for (lang, words, wrong) in EXTRA_SAMPLES {
+        for w in words {
+            assert!(wordcraft_proof::is_correct_in(w, lang), "{lang:?}: {w}");
+        }
+        assert!(!wordcraft_proof::is_correct_in(wrong, lang), "{lang:?}: {wrong}");
+        let right = words.first().copied().unwrap_or_default();
+        assert!(
+            wordcraft_proof::suggest_in(wrong, 8, lang).iter().any(|s| s == right),
+            "{lang:?}: {wrong} → {:?}",
+            wordcraft_proof::suggest_in(wrong, 8, lang)
+        );
+    }
+}
+
 #[test]
 #[ignore = "needs TINTA_DICTIONARIES_DIR (see the module docs)"]
 fn the_shipped_dictionaries_load_and_check_real_words() {
@@ -107,6 +172,8 @@ fn the_shipped_dictionaries_load_and_check_real_words() {
         assert!(d.len() > 50_000, "{name}: {} stems", d.len());
         assert!(started.elapsed().as_secs() < 20, "{name} loads in {:?}", started.elapsed());
     }
+    // The dictionaries folder is global: the two tests that set it take turns.
+    let _turn = FOLDER.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     wordcraft_proof::set_dictionaries_folder(Some(dir.clone()));
     for (lang, words, wrong) in SAMPLES {
         assert!(

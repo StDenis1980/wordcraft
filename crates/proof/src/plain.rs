@@ -1,9 +1,11 @@
-//! Languages proofed by their Hunspell dictionary alone: Ukrainian, Catalan, Galician and Basque.
+//! Languages proofed by their Hunspell dictionary alone: Ukrainian, Catalan, Galician, Basque,
+//! French, Romanian and Lithuanian.
 //!
 //! Each reads its installed `.aff`/`.dic` pair ([`crate::hunspell`]; nothing is bundled with the
 //! code): Ukrainian `uk_UA` (dict_uk, MPL), Catalan `ca` and Valencian `ca-valencia` (Softcatalà,
 //! GPL/LGPL), Galician `gl_ES`
-//! (Proxecto Trasno, GPL) and Basque `eu` (Xuxen, GPL). Suggestions use the dictionary's own
+//! (Proxecto Trasno, GPL), Basque `eu` (Xuxen, GPL), French `fr`, Romanian `ro_RO` and
+//! Lithuanian `lt_LT` (each under its own licence, as the system or the pack installs it). Suggestions use the dictionary's own
 //! MAP/REP/TRY/KEY tables ([`crate::cs::suggest::suggest_in`]), and grammar is the generic
 //! repeated-word and spacing checks, with messages in the language. Without a dictionary the
 //! language has no spelling marks, like the other Hunspell languages. Hyphenation keeps the
@@ -48,6 +50,11 @@ pub struct Lang {
     repeated: &'static str,
     space_before: &'static str,
     double_space: &'static str,
+    /// Whether a space before `;`, `:`, `!` and `?` is the language's typography (French), so not
+    /// a stray space.
+    spaced_punctuation: bool,
+    /// Words the language repeats on purpose (French `nous nous levons`), never a repeated word.
+    repeats: &'static [&'static str],
     /// `None` until first use, then the installed dictionary (or an empty one).
     dict: RwLock<Option<Arc<AffixDict>>>,
 }
@@ -61,6 +68,8 @@ pub static UK: Lang = Lang {
     misspelled: "Можлива орфографічна помилка",
     repeated: "Повторене слово: «{w}»",
     space_before: "Пробіл перед розділовим знаком",
+    spaced_punctuation: false,
+    repeats: &[],
     double_space: "Подвійний пробіл",
     dict: RwLock::new(None),
 };
@@ -74,6 +83,8 @@ pub static CA: Lang = Lang {
     misspelled: "Possible error ortogràfic",
     repeated: "Paraula repetida: «{w}»",
     space_before: "Espai abans d'un signe de puntuació",
+    spaced_punctuation: false,
+    repeats: &[],
     double_space: "Doble espai",
     dict: RwLock::new(None),
 };
@@ -88,6 +99,8 @@ pub static CA_VALENCIA: Lang = Lang {
     misspelled: "Possible error ortogràfic",
     repeated: "Paraula repetida: «{w}»",
     space_before: "Espai abans d'un signe de puntuació",
+    spaced_punctuation: false,
+    repeats: &[],
     double_space: "Doble espai",
     dict: RwLock::new(None),
 };
@@ -101,6 +114,8 @@ pub static GL: Lang = Lang {
     misspelled: "Posible erro ortográfico",
     repeated: "Palabra repetida: «{w}»",
     space_before: "Espazo antes dun signo de puntuación",
+    spaced_punctuation: false,
+    repeats: &[],
     double_space: "Dobre espazo",
     dict: RwLock::new(None),
 };
@@ -114,12 +129,59 @@ pub static EU: Lang = Lang {
     misspelled: "Ortografia-akats posiblea",
     repeated: "Errepikatutako hitza: «{w}»",
     space_before: "Zuriunea puntuazio-ikurraren aurretik",
+    spaced_punctuation: false,
+    repeats: &[],
     double_space: "Zuriune bikoitza",
     dict: RwLock::new(None),
 };
 
+/// French (`fr`, `fr-FR`, `fr-BE`, `fr-CA`…). French writes a space before `;:!?`.
+pub static FR: Lang = Lang {
+    lang: ProofLang::Fr,
+    names: &["fr", "fr_FR", "fr-FR", "fr-classique", "fr_BE", "fr_CA", "fr_CH"],
+    english: "French",
+    script: Script::Latin,
+    misspelled: "Faute d'orthographe possible",
+    repeated: "Mot répété : « {w} »",
+    space_before: "Espace avant un signe de ponctuation",
+    spaced_punctuation: true,
+    repeats: &["nous", "vous"],
+    double_space: "Double espace",
+    dict: RwLock::new(None),
+};
+
+/// Romanian (`ro`, `ro-RO`, `ro-MD`).
+pub static RO: Lang = Lang {
+    lang: ProofLang::Ro,
+    names: &["ro_RO", "ro-RO", "ro"],
+    english: "Romanian",
+    script: Script::Latin,
+    misspelled: "Posibilă greșeală de ortografie",
+    repeated: "Cuvânt repetat: „{w}”",
+    space_before: "Spațiu înaintea unui semn de punctuație",
+    spaced_punctuation: false,
+    repeats: &[],
+    double_space: "Spațiu dublu",
+    dict: RwLock::new(None),
+};
+
+/// Lithuanian (`lt`, `lt-LT`).
+pub static LT: Lang = Lang {
+    lang: ProofLang::Lt,
+    names: &["lt_LT", "lt-LT", "lt"],
+    english: "Lithuanian",
+    script: Script::Latin,
+    misspelled: "Galima rašybos klaida",
+    repeated: "Pakartotas žodis: „{w}“",
+    space_before: "Tarpas prieš skyrybos ženklą",
+    spaced_punctuation: false,
+    repeats: &[],
+    double_space: "Dvigubas tarpas",
+    dict: RwLock::new(None),
+};
+
 /// Every language of this module.
-pub const ALL: [&Lang; 5] = [&UK, &CA, &CA_VALENCIA, &GL, &EU];
+pub const ALL: [&Lang; 8] = [&UK, &CA, &CA_VALENCIA, &GL, &EU, &FR, &RO, &LT];
 
 /// The module's entry for `lang`, if it is one of its languages.
 pub fn of(lang: ProofLang) -> Option<&'static Lang> {
@@ -214,7 +276,8 @@ impl Lang {
 
     /// Spelling suggestions, best first, at most `max`, in the word's case.
     pub fn suggest(&self, word: &str, max: usize) -> Vec<String> {
-        crate::cs::suggest::suggest_in(&self.dictionary(), word, max)
+        let d = self.dictionary();
+        crate::cs::suggest::suggest_in(&d, word, max).iter().map(|s| d.output(s)).collect()
     }
 
     /// The message of a spelling mark.
@@ -240,6 +303,7 @@ impl Lang {
                 && gap.chars().all(char::is_whitespace)
                 && w0.chars().all(char::is_alphabetic)
                 && w0.to_lowercase() == w1.to_lowercase()
+                && !self.repeats.contains(&w1.to_lowercase().as_str())
             {
                 v.push(issue(*a0, *b1, self.repeated.replace("{w}", w1), vec![w0.to_string()]));
             }
@@ -258,6 +322,8 @@ impl Lang {
                 && it.next().is_some_and(|c| c.is_ascii_digit());
             let flag = !ratio
                 && match p {
+                    // French spaces these (`Bonjour !`, `Note : …`).
+                    ';' | ':' | '!' | '?' if self.spaced_punctuation => false,
                     ',' => true,
                     // `;)` and `;-)` are emoticons.
                     ';' => !matches!(after, Some(')' | '(' | '-' | 'P' | 'D')),
@@ -319,6 +385,18 @@ pub(crate) mod test_dict {
     pub const EU_AFF: &str = "SET UTF-8\nFLAG num\nTRY aeiournktzs\nSFX 1 Y 2\nSFX 1 0 a/2 [^a]\nSFX 1 0 k [a]\nSFX 2 Y 1\nSFX 2 0 k .\n";
     pub const EU_DIC: &str = "3\netxe/1\nfaktura/1\nkaixo\n";
 
+    /// French: a plural suffix and an elided article prefix, apostrophes converted.
+    pub const FR_AFF: &str = "SET UTF-8\nICONV 1\nICONV ’ '\nTRY esaitnrulodcpmévqfbghjàxèyêzçôùâûîœ\nSFX S Y 1\nSFX S 0 s .\n";
+    pub const FR_DIC: &str = "4\nfacture/S\nmaison/S\nété\nnous\n";
+
+    /// Romanian: comma-below letters and a feminine plural.
+    pub const RO_AFF: &str = "SET UTF-8\nTRY aeirtnulcsoămpdîvșțgbfzhâjxk\nSFX A Y 1\nSFX A ă i ă\n";
+    pub const RO_DIC: &str = "3\nfactură/A\ncasă/A\nțară\n";
+
+    /// Lithuanian: a masculine plural.
+    pub const LT_AFF: &str = "SET UTF-8\nTRY iasoetnukrlmvdpjgšėžybųčcįzūęą\nSFX A Y 1\nSFX A as ai as\n";
+    pub const LT_DIC: &str = "3\nnamas/A\nsąskaita\nprašau\n";
+
     /// Install them all.
     pub fn install() {
         for (l, aff, dic) in [
@@ -327,6 +405,9 @@ pub(crate) mod test_dict {
             (&super::CA_VALENCIA, CA_VALENCIA_AFF, CA_VALENCIA_DIC),
             (&super::GL, GL_AFF, GL_DIC),
             (&super::EU, EU_AFF, EU_DIC),
+            (&super::FR, FR_AFF, FR_DIC),
+            (&super::RO, RO_AFF, RO_DIC),
+            (&super::LT, LT_AFF, LT_DIC),
         ] {
             if let Err(e) = l.install_dictionary(aff, dic) {
                 panic!("{}: {e}", l.english);
@@ -420,6 +501,9 @@ mod tests {
             (ProofLang::CaValencia, "ca-ES-valencia", "factuar", "factura", "Possible error ortogràfic"),
             (ProofLang::Gl, "gl", "facturra", "factura", "Posible erro ortográfico"),
             (ProofLang::Eu, "eus", "faktuar", "faktura", "Ortografia-akats posiblea"),
+            (ProofLang::Fr, "fr-FR", "factre", "facture", "Faute d'orthographe possible"),
+            (ProofLang::Ro, "ro-RO", "factur", "factură", "Posibilă greșeală de ortografie"),
+            (ProofLang::Lt, "lt-LT", "sąskata", "sąskaita", "Galima rašybos klaida"),
         ] {
             assert_eq!(ProofLang::from_tag(Some(tag)), lang, "{tag}");
             assert!(lang.is_proofed() && crate::has_dictionary(Some(tag)), "{tag}");
@@ -450,6 +534,13 @@ mod tests {
         assert_eq!(issues.first().map(|i| i.message.as_str()), Some("Paraula repetida: «la»"));
         assert!(crate::check_grammar_in("Proba 3 : 1 :)", ProofLang::Gl).is_empty(), "scores and emoticons keep their spaces");
         assert_eq!(crate::check_grammar_in("etxea etxea", ProofLang::Eu).len(), 1);
+        // French typography spaces `;:!?`, and `nous nous` is a reflexive verb, not a repeat.
+        assert!(crate::check_grammar_in("Bonjour ! Note : nous nous levons ; oui ?", ProofLang::Fr).is_empty());
+        let issues = crate::check_grammar_in("la la maison , oui", ProofLang::Fr);
+        let messages: Vec<&str> = issues.iter().map(|i| i.message.as_str()).collect();
+        assert_eq!(messages, ["Mot répété : « la »", "Espace avant un signe de ponctuation"]);
+        assert_eq!(crate::check_grammar_in("Bună ziua !", ProofLang::Ro).len(), 1, "Romanian has no space before `!`");
+        assert_eq!(crate::check_grammar_in("Labas  rytas", ProofLang::Lt).first().map(|i| i.message.as_str()), Some("Dvigubas tarpas"));
     }
 
     #[test]

@@ -44,8 +44,11 @@
 //!   language's installed Hunspell dictionary (`uk_UA`, `ca`, `ca-valencia` else `ca`, `gl_ES`,
 //!   `eu`; not bundled), dictionary-driven suggestions and
 //!   generic checks with messages in the language. Hyphenation uses the English fallback.
+//! - **French, Romanian and Lithuanian** ([`ProofLang::Fr`], [`ProofLang::Ro`],
+//!   [`ProofLang::Lt`], module [`plain`]): the installed Hunspell dictionary (`fr`, `ro_RO`,
+//!   `lt_LT`; not bundled) and the same generic checks (French keeps its space before `;:!?`).
 //! - **German** ([`ProofLang::De`]): hyphenation by `hyph-utf8`'s German patterns (reformed
-//!   spelling, MIT); no spelling or grammar marks yet.
+//!   spelling, MIT); no spelling or grammar marks yet (German dictionaries need compounding).
 //! - **Other languages** ([`ProofLang::Other`]): no spelling or grammar marks, like Word without
 //!   the language's proofing tools.
 //! - **Hyphenation** ([`hyphen`]): dictionary, Liang patterns (English, Polish, Portuguese,
@@ -806,6 +809,9 @@ pub fn is_correct_in_with(word: &str, lang: ProofLang, opts: &Options) -> bool {
         }
         ProofLang::Gl => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::GL.is_correct_with_options(word, opts),
         ProofLang::Eu => accepted_by_options(word, opts) || tinta_words::known(word, lang) || plain::EU.is_correct_with_options(word, opts),
+        ProofLang::Fr => accepted_by_options(word, opts) || plain::FR.is_correct_with_options(word, opts),
+        ProofLang::Ro => accepted_by_options(word, opts) || plain::RO.is_correct_with_options(word, opts),
+        ProofLang::Lt => accepted_by_options(word, opts) || plain::LT.is_correct_with_options(word, opts),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => true,
     }
 }
@@ -830,6 +836,9 @@ pub fn suggest_in(word: &str, max: usize, lang: ProofLang) -> Vec<String> {
         ProofLang::CaValencia => plain::CA_VALENCIA.suggest(word, max),
         ProofLang::Gl => plain::GL.suggest(word, max),
         ProofLang::Eu => plain::EU.suggest(word, max),
+        ProofLang::Fr => plain::FR.suggest(word, max),
+        ProofLang::Ro => plain::RO.suggest(word, max),
+        ProofLang::Lt => plain::LT.suggest(word, max),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => Vec::new(),
     }
 }
@@ -865,6 +874,9 @@ fn grammar_in(text: &str, lang: ProofLang, capital_first: bool) -> Vec<Issue> {
         ProofLang::CaValencia => plain::CA_VALENCIA.grammar(text),
         ProofLang::Gl => plain::GL.grammar(text),
         ProofLang::Eu => plain::EU.grammar(text),
+        ProofLang::Fr => plain::FR.grammar(text),
+        ProofLang::Ro => plain::RO.grammar(text),
+        ProofLang::Lt => plain::LT.grammar(text),
         ProofLang::Bg | ProofLang::De | ProofLang::Other => Vec::new(),
     }
 }
@@ -1072,6 +1084,9 @@ mod tests {
             (ProofLang::CaValencia, "ca-valencia"),
             (ProofLang::Gl, "gl_ES"),
             (ProofLang::Eu, "eu"),
+            (ProofLang::Fr, "fr"),
+            (ProofLang::Ro, "ro_RO"),
+            (ProofLang::Lt, "lt_LT"),
         ] {
             assert_eq!(dictionary_needed(l, false), Some(name), "{l:?}");
             assert_eq!(dictionary_needed(l, true), None, "{l:?}");
@@ -1088,7 +1103,7 @@ mod tests {
         pl::test_dict::install();
         pt::test_dict::install();
         es::test_dict::install();
-        for tag in [Some("pl-PL"), Some("pt-BR"), Some("es-ES"), Some("es-MX"), Some("es-419"), Some("es-UY"), Some("en-US"), Some("fr-FR"), None] {
+        for tag in [Some("pl-PL"), Some("pt-BR"), Some("es-ES"), Some("es-MX"), Some("es-419"), Some("es-UY"), Some("en-US"), Some("ja-JP"), None] {
             assert_eq!(missing_dictionary(tag), None, "{tag:?}");
         }
     }
@@ -1154,6 +1169,10 @@ mod tests {
                 (ProofLang::CaValencia, Some(dir.join("ca.dic"))),
                 (ProofLang::Gl, Some(dir.join("gl_ES.dic"))),
                 (ProofLang::Eu, Some(dir.join("eu.dic"))),
+                // No French, Romanian or Lithuanian dictionary in the folder.
+                (ProofLang::Fr, None),
+                (ProofLang::Ro, None),
+                (ProofLang::Lt, None),
             ]
         );
         assert_eq!(
@@ -1738,7 +1757,7 @@ mod tests {
         for l in [None, Some(""), Some("  "), Some("en"), Some("en-US"), Some("en-GB"), Some("EN-us"), Some("en_US")] {
             assert!(has_dictionary(l), "{l:?}");
         }
-        for l in [Some("lt-LT"), Some("fr-FR"), Some("de"), Some("be"), Some("-US"), Some("e")] {
+        for l in [Some("ja-JP"), Some("ko"), Some("be"), Some("-US"), Some("e")] {
             assert!(!has_dictionary(l), "{l:?}");
         }
         // The gate follows the dictionaries, not English: every proofed language is proofed.
@@ -1967,9 +1986,9 @@ mod tests {
         }
 
         #[test]
-        fn ukrainian_catalan_galician_basque_never_panic(s in "[a-zçàèéíïòóúü·а-яґєіїА-ЯҐЄІЇ'’ʼ\u{301} -]{0,14}") {
+        fn ukrainian_catalan_galician_basque_never_panic(s in "[a-zçàèéíïòóúü·äößâêîôûœăîșțąčęėįšųūžа-яґєіїА-ЯҐЄІЇ'’ʼ\u{301} -]{0,14}") {
             plain::test_dict::install();
-            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu] {
+            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Fr, ProofLang::Ro, ProofLang::Lt] {
                 let _ = suggest_in(&s, 4, lang);
                 let _ = is_correct_in(&s, lang);
                 let _ = check_text(&s, &[(0..s.len(), lang)]);
