@@ -7258,6 +7258,41 @@ fn a_floating_table_in_the_footer_leaves_the_footer_where_it_is() {
     assert!(footer_y(true) >= footer_y(false) - 0.01, "footer text at {} with the float, {} without", footer_y(true), footer_y(false));
 }
 
+/// Tinta Office: a form's footer is a full-width floating table anchored just below the top of
+/// the empty paragraph that follows it (`tblpY=1`). Word sits the footer as low as that
+/// paragraph alone and hangs the table from it, so the body keeps the room above it.
+#[test]
+fn a_floating_table_above_the_footers_last_paragraph_doesnt_make_the_footer_taller() {
+    use wordcraft_doc::para::Anchor;
+    use wordcraft_doc::props::TableFloat;
+    let laid = |float: bool| {
+        let body = (1..=80).map(|i| format!("Line {i}")).collect::<Vec<_>>().join("\n");
+        let mut d = Document::from_text(&body);
+        let mut blocks = Vec::new();
+        if float {
+            let mut t = Table::new(1, 1, 468.0);
+            t.rows[0].cells[0].blocks = ["MINISTERIO", "DE EDUCACIÓN", "Y DEPORTES"]
+                .iter()
+                .map(|s| wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(s, Default::default())))
+                .collect();
+            t.props.float = Some(TableFloat { h_rel: Anchor::Margin, v_rel: Anchor::Paragraph, y: 0.05, ..Default::default() });
+            blocks.push(std::sync::Arc::new(wordcraft_doc::Block::Table(t)));
+        }
+        blocks.push(wordcraft_doc::para_block(wordcraft_doc::Paragraph::new()));
+        let id = d.add_part(wordcraft_doc::PartKind::Footer, blocks);
+        d.last_section.footers.default = Some(id);
+        lay(&d)
+    };
+    let body_lines = |l: &DocLayout| l.pages[0].items.iter().filter(|i| matches!(i, Placed::Lines { story: StoryRef::Body, .. })).count();
+    let (plain, with_table) = (laid(false), laid(true));
+    let para_top = plain.pages[0].footer.iter().find_map(|i| if let Placed::Lines { y, .. } = i { Some(*y) } else { None });
+    let table_top = with_table.pages[0].footer.iter().find_map(|i| if let Placed::Cell { rect, .. } = i { Some(rect.y) } else { None });
+    let (Some(para_top), Some(table_top)) = (para_top, table_top) else { panic!("both footers drawn") };
+    assert!((table_top - para_top).abs() < 1.0, "the table hangs from the paragraph at {para_top}, not from {table_top}");
+    assert!(plain.pages.len() > 1, "the body runs past page one");
+    assert_eq!(body_lines(&with_table), body_lines(&plain), "the body keeps the room above the footer");
+}
+
 #[test]
 fn a_split_row_moves_shading_below_the_cut_with_it() {
     use crate::table::{CellPart, RowLayout, split_row};

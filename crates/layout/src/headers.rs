@@ -314,9 +314,11 @@ pub(crate) fn headers_footers(ctx: &mut Ctx, pages: &mut [Page], sections: &[(us
         {
             let blocks = part.blocks.clone();
             let base = hf.defining_width(true, page.section, fid);
-            // The footer's height fixes where it sits, which page-relative floats need.
+            // The footer's height fixes where it sits, which page-relative floats need. Its
+            // floating tables don't count (`footer_flow_blocks`).
+            let flow = super::page::footer_flow_blocks(&blocks);
             let (h, ..) = with_pin(ctx, id, sect, page.number, None, |ctx| {
-                with_pct_base(ctx, base, |c| layout_box(c, BoxInput::other(StoryRef::Part(id), &blocks, w, 0, None)).height)
+                with_pct_base(ctx, base, |c| layout_box(c, BoxInput::other(StoryRef::Part(id), &flow, w, 0, None)).height)
             });
             let frame = PageFrame { sect, margin_top: None, origin: (x, sect.page_h - sect.footer - h), number: page.number, mirror: ctx.mirror };
             let (mut items, behind, front) = with_pin(ctx, id, sect, page.number, frame.margin_top, |ctx| {
