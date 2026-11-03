@@ -52,7 +52,7 @@ const SHIPPED: [(&str, ProofLang); 6] = [
 ];
 
 /// The extra pack, a separate download, by the language each serves.
-const EXTRA: [(&str, ProofLang); 7] = [
+const EXTRA: [(&str, ProofLang); 8] = [
     ("fr", ProofLang::Fr),
     ("ro_RO", ProofLang::Ro),
     ("lt_LT", ProofLang::Lt),
@@ -60,6 +60,7 @@ const EXTRA: [(&str, ProofLang); 7] = [
     ("it_IT", ProofLang::It),
     ("cs_CZ", ProofLang::Cs),
     ("de_DE", ProofLang::De),
+    ("de_CH", ProofLang::DeCh),
 ];
 
 #[test]
@@ -123,7 +124,7 @@ const SAMPLES: [(ProofLang, &[&str], &str); 6] = [
 static FOLDER: std::sync::Mutex<()> = std::sync::Mutex::new(());
 
 /// Words in each extra language, and a misspelling of the first.
-const EXTRA_SAMPLES: [(ProofLang, &[&str], &str); 7] = [
+const EXTRA_SAMPLES: [(ProofLang, &[&str], &str); 8] = [
     (ProofLang::Fr, &["facture", "été", "l'entreprise", "aujourd'hui", "merci"], "factrue"),
     (ProofLang::Ro, &["factură", "țară", "mulțumesc", "întreprindere", "până"], "facturră"),
     (ProofLang::Lt, &["sąskaita", "prašau", "įmonė", "ačiū", "laiškas"], "sąskaitta"),
@@ -132,6 +133,8 @@ const EXTRA_SAMPLES: [(ProofLang, &[&str], &str); 7] = [
     (ProofLang::Cs, &["faktura", "děkuji", "podnik", "příliš"], "fakturra"),
     // Compounds the dictionary doesn't list whole, and `ß` in capitals.
     (ProofLang::De, &["Rechnung", "Rechnungsnummer", "Krankenversicherungskarte", "Haustüren", "STRASSE", "schön"], "Rechnnung"),
+    // Switzerland writes `ss` for `ß`.
+    (ProofLang::DeCh, &["Strasse", "Fussball", "grüssen", "Rechnungsnummer", "Krankenversicherungskarte", "schön"], "Strase"),
 ];
 
 #[test]
@@ -160,6 +163,8 @@ fn the_extra_dictionaries_load_and_check_real_words() {
             wordcraft_proof::suggest_in(wrong, 8, lang)
         );
     }
+    // Each German reads its own dictionary: `ß` is Germany's, `ss` Switzerland's.
+    assert!(!wordcraft_proof::is_correct_in("Straße", ProofLang::DeCh) && !wordcraft_proof::is_correct_in("Strasse", ProofLang::De));
 }
 
 #[test]

@@ -181,11 +181,11 @@ pub static LT: Lang = Lang {
     dict: RwLock::new(None),
 };
 
-/// German (`de`, `de-DE`, `de-AT`, `de-CH`…): `de_DE` (in the pack, LibreOffice's `de_DE_frami`),
-/// else another installed German dictionary.
+/// German (`de`, `de-DE`, `de-AT`…): `de_DE` (in the pack, LibreOffice's `de_DE_frami`), else
+/// another installed German dictionary of Germany or Austria.
 pub static DE: Lang = Lang {
     lang: ProofLang::De,
-    names: &["de_DE", "de-DE", "de_DE_frami", "de", "de_AT", "de-AT", "de_CH", "de-CH"],
+    names: &["de_DE", "de-DE", "de_DE_frami", "de", "de_AT", "de-AT", "de_AT_frami"],
     english: "German",
     script: Script::Latin,
     misspelled: "Möglicher Rechtschreibfehler",
@@ -197,8 +197,24 @@ pub static DE: Lang = Lang {
     dict: RwLock::new(None),
 };
 
+/// Swiss German (`de-CH`, `de-LI`): `de_CH` (in the pack, LibreOffice's `de_CH_frami`, with `ss`
+/// for `ß`), else the German of Germany. Swiss quotation marks are guillemets.
+pub static DE_CH: Lang = Lang {
+    lang: ProofLang::DeCh,
+    names: &["de_CH", "de-CH", "de_CH_frami", "de_DE", "de-DE", "de_DE_frami", "de"],
+    english: "Swiss German",
+    script: Script::Latin,
+    misspelled: "Möglicher Rechtschreibfehler",
+    repeated: "Wiederholtes Wort: «{w}»",
+    space_before: "Leerzeichen vor einem Satzzeichen",
+    spaced_punctuation: false,
+    repeats: &[],
+    double_space: "Doppeltes Leerzeichen",
+    dict: RwLock::new(None),
+};
+
 /// Every language of this module.
-pub const ALL: [&Lang; 9] = [&UK, &CA, &CA_VALENCIA, &GL, &EU, &FR, &RO, &LT, &DE];
+pub const ALL: [&Lang; 10] = [&UK, &CA, &CA_VALENCIA, &GL, &EU, &FR, &RO, &LT, &DE, &DE_CH];
 
 /// The module's entry for `lang`, if it is one of its languages.
 pub fn of(lang: ProofLang) -> Option<&'static Lang> {
@@ -421,6 +437,8 @@ pub(crate) mod test_dict {
     /// homonym listed once for compounds only and once with NEEDAFFIX.
     pub const DE_AFF: &str = "SET UTF-8\nTRY esianrtolcdugmphbßäöü\nCHECKSHARPS\nCOMPOUNDBEGIN x\nCOMPOUNDMIDDLE y\nCOMPOUNDEND z\nCOMPOUNDPERMITFLAG c\nONLYINCOMPOUND o\nNEEDAFFIX h\nCOMPOUNDMIN 2\nSFX E Y 1\nSFX E 0 en .\nSFX N Y 1\nSFX N 0 n .\nSFX j Y 2\nSFX j 0 0/xoc .\nSFX j 0 s/xoc .\nPFX k Y 1\nPFX k 0 0/coy .\n";
     pub const DE_DIC: &str = "8\nHaus/Ej\nTür/E\ntür/Eoz\ntür/hk\nRechnung/j\nnummer/oz\nStraße/N\nschön\n";
+    /// Swiss German: the same rules, with `ss` where Germany writes `ß`.
+    pub const DE_CH_DIC: &str = "8\nHaus/Ej\nTür/E\ntür/Eoz\ntür/hk\nRechnung/j\nnummer/oz\nStrasse/N\nFussball\n";
 
     /// Install them all.
     pub fn install() {
@@ -434,6 +452,7 @@ pub(crate) mod test_dict {
             (&super::RO, RO_AFF, RO_DIC),
             (&super::LT, LT_AFF, LT_DIC),
             (&super::DE, DE_AFF, DE_DIC),
+            (&super::DE_CH, DE_AFF, DE_CH_DIC),
         ] {
             if let Err(e) = l.install_dictionary(aff, dic) {
                 panic!("{}: {e}", l.english);
@@ -538,6 +557,27 @@ mod tests {
         }
         assert_eq!(crate::check_grammar_in("das das Haus", ProofLang::De).first().map(|i| i.message.as_str()), Some("Wiederholtes Wort: „das“"));
         assert!(crate::suggest_in("Hauss", 4, ProofLang::De).iter().any(|s| s == "Haus"), "{:?}", crate::suggest_in("Hauss", 4, ProofLang::De));
+    }
+
+    /// Switzerland writes `ss` for `ß`, compounds the same way, and quotes with guillemets.
+    #[test]
+    fn swiss_german_writes_ss() {
+        test_dict::install();
+        for w in ["Strasse", "Strassen", "STRASSE", "Fussball", "Haustüren", "Rechnungsnummer"] {
+            assert!(crate::is_correct_in(w, ProofLang::DeCh), "{w}");
+        }
+        for w in ["Straße", "Fußball", "tür"] {
+            assert!(!crate::is_correct_in(w, ProofLang::DeCh), "{w}");
+        }
+        assert!(!crate::is_correct_in("Strasse", ProofLang::De) && crate::is_correct_in("Straße", ProofLang::De), "Germany keeps `ß`");
+        assert_eq!(ProofLang::from_tag(Some("de-CH")), ProofLang::DeCh);
+        assert!(
+            crate::suggest_in("Strase", 4, ProofLang::DeCh).iter().any(|s| s == "Strasse"),
+            "{:?}",
+            crate::suggest_in("Strase", 4, ProofLang::DeCh)
+        );
+        let issues = crate::check_grammar_in("das das Haus", ProofLang::DeCh);
+        assert_eq!(issues.first().map(|i| (i.message.as_str(), i.lang)), Some(("Wiederholtes Wort: «das»", ProofLang::DeCh)));
     }
 
     #[test]
