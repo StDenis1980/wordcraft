@@ -83,8 +83,10 @@ fn check_manifest(rows: &[Source], languages: &[(&str, ProofLang)]) {
         assert!(s.sha256.len() == 64 && s.sha256.bytes().all(|b| matches!(b, b'0'..=b'9' | b'a'..=b'f')), "{}: bad SHA-256", s.file);
         assert!(!s.file.contains("..") && !s.file.starts_with('/') && !s.file.contains('\\'), "{}: stays in the folder", s.file);
         let dictionary = s.file.ends_with(".aff") || s.file.ends_with(".dic");
-        assert_eq!(dictionary, !s.file.starts_with("licences/"), "{}: dictionaries at the top, texts in licences/", s.file);
-        assert_eq!(dictionary, s.licence != "-", "{}: each dictionary file names its licence", s.file);
+        let font = s.file.starts_with("fonts/") && (s.file.ends_with(".ttf") || s.file.ends_with(".otf"));
+        assert!(!(dictionary && font), "{}", s.file);
+        assert_eq!(dictionary || font, !s.file.starts_with("licences/"), "{}: dictionaries at the top, fonts in fonts/, texts in licences/", s.file);
+        assert_eq!(dictionary || font, s.licence != "-", "{}: each dictionary and font file names its licence", s.file);
     }
     for (name, _) in languages {
         for ext in ["aff", "dic"] {
@@ -101,6 +103,7 @@ fn check_manifest(rows: &[Source], languages: &[(&str, ProofLang)]) {
         ("LGPL-3.0", "LGPL-3.0.txt"),
         ("MPL-2.0", "fr-LICENSE.txt"),
         ("BSD-3-Clause", "lt-COPYING.txt"),
+        ("OFL-1.1", "OFL-NotoSans.txt"),
     ] {
         if rows.iter().any(|s| s.licence.contains(id)) {
             assert!(rows.iter().any(|s| s.file == format!("licences/{text}")), "{text} ships with the {id} dictionaries");
@@ -175,6 +178,27 @@ fn the_extra_dictionaries_load_and_check_real_words() {
     ] {
         assert_eq!(word_breaks_in(word, lang).1, Source::Patterns, "{lang:?}: {word}");
         assert_eq!(hyphen_points_in(word, &Limits::default(), lang), want, "{lang:?}: {word}");
+    }
+}
+
+/// The fonts beside the dictionaries (Noto Sans, for Spanish administrations' documents) are
+/// whole families: regular, bold, italic and bold italic, with Noto Sans's line height.
+#[test]
+#[ignore = "needs TINTA_DICTIONARIES_DIR (see the module docs)"]
+fn the_shipped_fonts_are_whole_families() {
+    let Some(dir) = std::env::var_os("TINTA_DICTIONARIES_DIR").map(PathBuf::from) else {
+        panic!("set TINTA_DICTIONARIES_DIR to a folder filled by packaging/dictionaries/fetch.sh");
+    };
+    let fonts = wordcraft_fonts::FontDb::with_font_dirs(vec![dir.join("fonts")]);
+    assert!(fonts.load_system_fonts() >= 2);
+    let styles = fonts.styles("Noto Sans");
+    for style in ["Regular", "Bold", "Italic", "Bold Italic"] {
+        assert!(styles.iter().any(|s| s == style), "Noto Sans {style}: {styles:?}");
+        let face = fonts.face("Noto Sans", style);
+        assert!(face.named("Noto Sans"), "{style}");
+        let (ascent, descent) = face.vertical_metrics();
+        let line = (ascent + descent) / face.units_per_em();
+        assert!((line - 1.362).abs() < 0.01, "{style}: {line}");
     }
 }
 

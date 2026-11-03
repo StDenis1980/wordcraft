@@ -21,6 +21,7 @@ mod fallback;
 mod fallback_data;
 mod lookup;
 mod names;
+mod tinta_dirs;
 
 use face::{BUNDLED, FontBytes};
 pub use face::{FALLBACK_FAMILY, FaceRef, FontFace, bundled};

@@ -15,3 +15,4 @@ unicode-normalization = "0.1"
 
 [dev-dependencies]
 proptest = { workspace = true }
+wordcraft-fonts = { workspace = true }
