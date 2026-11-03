@@ -489,18 +489,22 @@ pub(crate) fn body_top_for(ctx: &mut Ctx, sect: &SectionProps, header: Option<u3
     sect.margin_top.max(sect.header + h)
 }
 
-/// Tinta Office: the footer blocks that give the footer its height. Word measures a footer by
-/// its flow and hangs a floating table from its anchor without making the footer taller (a
-/// form's footer with a full-width floating table above its empty last paragraph sits as low as
-/// that paragraph alone), so the footer's place is worked out without its floating tables.
-pub(crate) fn footer_flow_blocks(blocks: &[std::sync::Arc<Block>]) -> Vec<std::sync::Arc<Block>> {
+/// Tinta Office: the footer blocks that give the footer its height. In documents laid out like
+/// Word 2010 and earlier (`compat_mode` below 15), Word measures a footer by its flow and hangs a
+/// floating table from its anchor without making the footer taller: a form's footer with a
+/// full-width floating table above its empty last paragraph sits as low as that paragraph alone.
+/// In Word 2013 mode the same table stacks above the paragraph and counts, so nothing is left out.
+pub(crate) fn footer_flow_blocks(blocks: &[std::sync::Arc<Block>], compat_mode: u32) -> Vec<std::sync::Arc<Block>> {
+    if compat_mode >= 15 {
+        return blocks.to_vec();
+    }
     blocks.iter().filter(|b| !matches!(&***b, Block::Table(t) if t.props.float.is_some())).cloned().collect()
 }
 
 /// Where the footer starts (as `headers_footers` places it), `f32::MAX` without one.
 pub(crate) fn foot_top_for(ctx: &mut Ctx, sect: &SectionProps, footer: Option<u32>) -> f32 {
     let Some(part) = footer.and_then(|id| ctx.doc.parts.get(&id).map(|p| (id, p))) else { return f32::MAX };
-    let (id, blocks) = (part.0, footer_flow_blocks(&part.1.blocks));
+    let (id, blocks) = (part.0, footer_flow_blocks(&part.1.blocks, ctx.doc.settings.compat_mode));
     // A page total in the footer is filled in after pagination, like the header's: it doesn't
     // make the body lay out again.
     let track = std::mem::replace(&mut ctx.track_totals, false);

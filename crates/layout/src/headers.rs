@@ -316,7 +316,7 @@ pub(crate) fn headers_footers(ctx: &mut Ctx, pages: &mut [Page], sections: &[(us
             let base = hf.defining_width(true, page.section, fid);
             // The footer's height fixes where it sits, which page-relative floats need. Its
             // floating tables don't count (`footer_flow_blocks`).
-            let flow = super::page::footer_flow_blocks(&blocks);
+            let flow = super::page::footer_flow_blocks(&blocks, ctx.doc.settings.compat_mode);
             let (h, ..) = with_pin(ctx, id, sect, page.number, None, |ctx| {
                 with_pct_base(ctx, base, |c| layout_box(c, BoxInput::other(StoryRef::Part(id), &flow, w, 0, None)).height)
             });

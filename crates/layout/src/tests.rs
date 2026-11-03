@@ -7259,15 +7259,18 @@ fn a_floating_table_in_the_footer_leaves_the_footer_where_it_is() {
 }
 
 /// Tinta Office: a form's footer is a full-width floating table anchored just below the top of
-/// the empty paragraph that follows it (`tblpY=1`). Word sits the footer as low as that
-/// paragraph alone and hangs the table from it, so the body keeps the room above it.
+/// the empty paragraph that follows it (`tblpY=1`). In Word 2003–2010 documents Word sits the
+/// footer as low as that paragraph alone and hangs the table from it, so the body keeps the room
+/// above it; in Word 2013 mode the table stacks above the paragraph (both seen in Word's PDFs of
+/// Spanish ministry forms).
 #[test]
 fn a_floating_table_above_the_footers_last_paragraph_doesnt_make_the_footer_taller() {
     use wordcraft_doc::para::Anchor;
     use wordcraft_doc::props::TableFloat;
-    let laid = |float: bool| {
+    let laid = |float: bool, compat: u32| {
         let body = (1..=80).map(|i| format!("Line {i}")).collect::<Vec<_>>().join("\n");
         let mut d = Document::from_text(&body);
+        d.settings.compat_mode = compat;
         let mut blocks = Vec::new();
         if float {
             let mut t = Table::new(1, 1, 468.0);
@@ -7284,13 +7287,15 @@ fn a_floating_table_above_the_footers_last_paragraph_doesnt_make_the_footer_tall
         lay(&d)
     };
     let body_lines = |l: &DocLayout| l.pages[0].items.iter().filter(|i| matches!(i, Placed::Lines { story: StoryRef::Body, .. })).count();
-    let (plain, with_table) = (laid(false), laid(true));
-    let para_top = plain.pages[0].footer.iter().find_map(|i| if let Placed::Lines { y, .. } = i { Some(*y) } else { None });
-    let table_top = with_table.pages[0].footer.iter().find_map(|i| if let Placed::Cell { rect, .. } = i { Some(rect.y) } else { None });
-    let (Some(para_top), Some(table_top)) = (para_top, table_top) else { panic!("both footers drawn") };
-    assert!((table_top - para_top).abs() < 1.0, "the table hangs from the paragraph at {para_top}, not from {table_top}");
+    let para_top = |l: &DocLayout| l.pages[0].footer.iter().find_map(|i| if let Placed::Lines { y, .. } = i { Some(*y) } else { None });
+    let table = |l: &DocLayout| l.pages[0].footer.iter().find_map(|i| if let Placed::Cell { rect, .. } = i { Some(*rect) } else { None });
+    let plain = laid(false, 11);
+    let (Some(para), Some(old), Some(new)) = (para_top(&plain), table(&laid(true, 11)), table(&laid(true, 15))) else { panic!("all footers drawn") };
+    assert!((old.y - para).abs() < 1.0, "Word 2010: the table hangs from the paragraph at {para}, not from {}", old.y);
     assert!(plain.pages.len() > 1, "the body runs past page one");
-    assert_eq!(body_lines(&with_table), body_lines(&plain), "the body keeps the room above the footer");
+    assert_eq!(body_lines(&laid(true, 11)), body_lines(&plain), "Word 2010: the body keeps the room above the footer");
+    assert!((new.bottom() - para).abs() < 1.0, "Word 2013: the table ends at the paragraph at {para}, not at {}", new.bottom());
+    assert!(body_lines(&laid(true, 15)) < body_lines(&plain), "Word 2013: the table takes room from the body");
 }
 
 #[test]

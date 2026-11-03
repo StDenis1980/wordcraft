@@ -49,7 +49,7 @@ pub(crate) fn footer_table_wraps(ctx: &mut Ctx, pb: &PageBuilder) -> Vec<WrapAre
     let areas = again(ctx, 0, |ctx| {
         with_pct_base(ctx, base, |ctx| {
             let story = StoryRef::Part(id);
-            let flow = super::page::footer_flow_blocks(&blocks);
+            let flow = super::page::footer_flow_blocks(&blocks, ctx.doc.settings.compat_mode);
             let h = layout_box(ctx, BoxInput::other(story, &flow, sect.text_width(), 0, None)).height;
             let y = sect.page_h - sect.footer - h;
             let frame = PageFrame { sect, margin_top: None, origin: (x, y), number: page.number, mirror: ctx.mirror };
