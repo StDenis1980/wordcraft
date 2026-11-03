@@ -274,6 +274,19 @@ fn english_dialects_are_in_the_language_menu() {
     assert_eq!(language_name(Some("en-SG")), "English (Singapore)");
 }
 
+/// Tinta: Swiss German (`ss` for `ß`) is on the short list beside Germany's, checked by its tag.
+#[test]
+fn swiss_german_is_in_the_language_menu() {
+    for (tag, name) in [("de-DE", "German (Germany)"), ("de-CH", "German (Switzerland)")] {
+        assert!(PROOFING_LANGUAGES.contains(&(tag, name)), "{tag}");
+        assert!(crate::dialogs_layout::LANGUAGES.contains(&(tag, name)), "{tag}");
+        assert_eq!(language_name(Some(tag)), name);
+        let c = language_checks(&tag.to_ascii_lowercase(), |t| t.eq_ignore_ascii_case(tag));
+        assert_eq!((c.extra, c.listed), (None, PROOFING_LANGUAGES.map(|(t, _)| t == tag)), "{tag}");
+    }
+    assert_eq!(language_name(Some("de_CH")), "German (Switzerland)");
+}
+
 #[test]
 fn indonesian_has_a_name_in_the_language_menu() {
     assert!(PROOFING_LANGUAGES.contains(&("id-ID", "Indonesian")));

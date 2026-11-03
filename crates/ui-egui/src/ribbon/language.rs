@@ -1,7 +1,7 @@
 use super::{Ui, Value, WordApp, json, vec2};
 
 /// The proofing languages the Language menu offers: tag and English name (translated when drawn).
-pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 25] = [
+pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 26] = [
     ("en-US", "English (United States)"),
     ("en-GB", "English (United Kingdom)"),
     ("en-AU", "English (Australia)"),
@@ -27,6 +27,7 @@ pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 25] = [
     ("ro-RO", "Romanian"),
     ("lt-LT", "Lithuanian"),
     ("de-DE", "German (Germany)"),
+    ("de-CH", "German (Switzerland)"),
 ];
 
 /// The English name of a proofing language tag, as the status bar shows it (no tag: WordCraft's

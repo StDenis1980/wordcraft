@@ -1,5 +1,5 @@
-# Tinta Office extra spelling dictionaries: a separate download (about 20 MB) for French,
-# Romanian, Lithuanian, Polish, Italian, Czech and German, so the main pack stays small. Same columns as
+# Tinta Office extra spelling dictionaries: a separate download (about 24 MB) for French,
+# Romanian, Lithuanian, Polish, Italian, Czech and German (Germany and Switzerland), so the main pack stays small. Same columns as
 # sources.tsv: the file's path in the folder, its source (pinned to a commit), its SHA-256, the
 # languages it serves, and the licence of a dictionary file (- for a licence or readme text).
 # `fetch.sh DEST sources-extra.tsv` (or `fetch.ps1 -Dest DEST -Manifest sources-extra.tsv`) fills a
@@ -30,3 +30,5 @@ licences/cs-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionarie
 de_DE.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_DE_frami.aff	646bf3333ac69c23e9d794533ee5241d6f755c359e8fe10a648f87613743d594	de	GPL-2.0 OR GPL-3.0
 de_DE.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_DE_frami.dic	4ca3c958b0e5545910999bc246f668840bf8ede3df8e5e6790d05edd5a586c38	de	GPL-2.0 OR GPL-3.0
 licences/de-README.txt	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/README_de_DE_frami.txt	c141f4f79c428b7348b5012836f4ad3db4d124f288f15effc22696dc876512ae	de	-
+de_CH.aff	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_CH_frami.aff	d86884be4c3f07e5e08057884856feabf2872b4e2f90a587a11376082bc4126b	de	GPL-2.0 OR GPL-3.0
+de_CH.dic	https://raw.githubusercontent.com/LibreOffice/dictionaries/4f1df64b2e8e14751aa7c2205d170ca016071315/de/de_CH_frami.dic	80a4df38cdc3e16d2f042f8eba4a99668ab9c075662e4262c62f8bba46c7bd16	de	GPL-2.0 OR GPL-3.0

@@ -47,9 +47,10 @@
 //! - **French, Romanian and Lithuanian** ([`ProofLang::Fr`], [`ProofLang::Ro`],
 //!   [`ProofLang::Lt`], module [`plain`]): the installed Hunspell dictionary (`fr`, `ro_RO`,
 //!   `lt_LT`; not bundled) and the same generic checks (French keeps its space before `;:!?`).
-//! - **German** ([`ProofLang::De`], module [`plain`]): the installed Hunspell `de_DE` dictionary
-//!   (not bundled) with its compound words, the same generic checks, and hyphenation by
-//!   `hyph-utf8`'s German patterns (reformed spelling, MIT).
+//! - **German** ([`ProofLang::De`], [`ProofLang::DeCh`], module [`plain`]): the installed
+//!   Hunspell `de_DE` dictionary, or `de_CH` (`ss` for `ß`) for Switzerland, with its compound
+//!   words (not bundled), the same generic checks, and hyphenation by `hyph-utf8`'s German
+//!   patterns (reformed spelling, MIT).
 //! - **Other languages** ([`ProofLang::Other`]): no spelling or grammar marks, like Word without
 //!   the language's proofing tools.
 //! - **Hyphenation** ([`hyphen`]): dictionary, Liang patterns (English, Polish, Portuguese,
@@ -814,6 +815,7 @@ pub fn is_correct_in_with(word: &str, lang: ProofLang, opts: &Options) -> bool {
         ProofLang::Ro => accepted_by_options(word, opts) || plain::RO.is_correct_with_options(word, opts),
         ProofLang::Lt => accepted_by_options(word, opts) || plain::LT.is_correct_with_options(word, opts),
         ProofLang::De => accepted_by_options(word, opts) || plain::DE.is_correct_with_options(word, opts),
+        ProofLang::DeCh => accepted_by_options(word, opts) || plain::DE_CH.is_correct_with_options(word, opts),
         ProofLang::Bg | ProofLang::Other => true,
     }
 }
@@ -842,6 +844,7 @@ pub fn suggest_in(word: &str, max: usize, lang: ProofLang) -> Vec<String> {
         ProofLang::Ro => plain::RO.suggest(word, max),
         ProofLang::Lt => plain::LT.suggest(word, max),
         ProofLang::De => plain::DE.suggest(word, max),
+        ProofLang::DeCh => plain::DE_CH.suggest(word, max),
         ProofLang::Bg | ProofLang::Other => Vec::new(),
     }
 }
@@ -881,6 +884,7 @@ fn grammar_in(text: &str, lang: ProofLang, capital_first: bool) -> Vec<Issue> {
         ProofLang::Ro => plain::RO.grammar(text),
         ProofLang::Lt => plain::LT.grammar(text),
         ProofLang::De => plain::DE.grammar(text),
+        ProofLang::DeCh => plain::DE_CH.grammar(text),
         ProofLang::Bg | ProofLang::Other => Vec::new(),
     }
 }
@@ -1092,6 +1096,7 @@ mod tests {
             (ProofLang::Ro, "ro_RO"),
             (ProofLang::Lt, "lt_LT"),
             (ProofLang::De, "de_DE"),
+            (ProofLang::DeCh, "de_CH"),
         ] {
             assert_eq!(dictionary_needed(l, false), Some(name), "{l:?}");
             assert_eq!(dictionary_needed(l, true), None, "{l:?}");
@@ -1179,6 +1184,7 @@ mod tests {
                 (ProofLang::Ro, None),
                 (ProofLang::Lt, None),
                 (ProofLang::De, None),
+                (ProofLang::DeCh, None),
             ]
         );
         assert_eq!(
@@ -1939,7 +1945,7 @@ mod tests {
             let _ = has_dictionary(Some(&s));
             let _ = is_correct_for(&s, Some(&s));
             let _ = hyphen::hyphen_points(&s, &hyphen::Limits::default());
-            for lang in [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Hr, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::De, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Other] {
+            for lang in [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Hr, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::De, ProofLang::DeCh, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Other] {
                 let _ = check_spelling_in(&s, lang);
                 let _ = check_grammar_in(&s, lang);
                 let _ = is_correct_in(&s, lang);
@@ -1994,7 +2000,7 @@ mod tests {
         #[test]
         fn ukrainian_catalan_galician_basque_never_panic(s in "[a-zçàèéíïòóúü·äößâêîôûœăîșțąčęėįšųūžа-яґєіїА-ЯҐЄІЇ'’ʼ\u{301} -]{0,14}") {
             plain::test_dict::install();
-            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Fr, ProofLang::Ro, ProofLang::Lt, ProofLang::De] {
+            for lang in [ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Fr, ProofLang::Ro, ProofLang::Lt, ProofLang::De, ProofLang::DeCh] {
                 let _ = suggest_in(&s, 4, lang);
                 let _ = is_correct_in(&s, lang);
                 let _ = check_text(&s, &[(0..s.len(), lang)]);
@@ -2003,7 +2009,7 @@ mod tests {
 
         #[test]
         fn mixed_spans_never_panic(s in "\\PC{0,60}", cuts in proptest::collection::vec((0usize..80, 0usize..80, 0u8..15), 0..6)) {
-            let langs = [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::Other];
+            let langs = [ProofLang::En, ProofLang::EnGb, ProofLang::EnCa, ProofLang::Pl, ProofLang::Pt, ProofLang::It, ProofLang::Tr, ProofLang::Ru, ProofLang::Cs, ProofLang::Id, ProofLang::Es, ProofLang::EsMx, ProofLang::Es419, ProofLang::EsUy, ProofLang::Uk, ProofLang::Ca, ProofLang::CaValencia, ProofLang::Gl, ProofLang::Eu, ProofLang::De, ProofLang::DeCh, ProofLang::Other];
             let spans: Vec<(Range<usize>, ProofLang)> = cuts.iter().map(|&(a, b, l)| (a.min(b)..a.max(b), langs[l as usize % langs.len()])).collect();
             for i in check_text(&s, &spans) {
                 proptest::prop_assert!(i.start <= i.end && i.end <= s.len());

@@ -84,10 +84,14 @@ pub enum ProofLang {
     /// Basque (`eu`, `eu-ES`; also `eus`, `baq`): the installed Hunspell `eu` dictionary and
     /// generic checks with Basque messages ([`crate::plain`]).
     Eu,
-    /// German (`de`, `de-DE`, `de-AT`, `de-CH`…; also `deu`, `ger`): the installed Hunspell `de_DE`
-    /// dictionary with its compound words, generic checks with German messages
-    /// ([`crate::plain`]), and hyphenation by the German patterns (reformed spelling).
+    /// German (`de`, `de-DE`, `de-AT` and every region but Switzerland and Liechtenstein; also
+    /// `deu`, `ger`): the installed Hunspell `de_DE` dictionary with its compound words, generic
+    /// checks with German messages ([`crate::plain`]), and hyphenation by the German patterns
+    /// (reformed spelling).
     De,
+    /// Swiss German (`de-CH`, `de-LI`): Tinta Office's [`ProofLang::De`] with the installed
+    /// `de_CH` dictionary, which writes `ss` for `ß` (`Strasse`, `Fussball`), else the `de_DE` one.
+    DeCh,
     /// French (`fr`, `fr-FR`, `fr-BE`…; also `fra`, `fre`): the installed Hunspell `fr` dictionary
     /// and generic checks with French messages, which keep the space French puts before `;:!?`
     /// ([`crate::plain`]).
@@ -107,7 +111,7 @@ pub enum ProofLang {
 
 impl ProofLang {
     /// Every language with a spelling dictionary, in display order.
-    pub const PROOFED: [ProofLang; 24] = [
+    pub const PROOFED: [ProofLang; 25] = [
         ProofLang::En,
         ProofLang::EnGb,
         ProofLang::EnCa,
@@ -132,11 +136,12 @@ impl ProofLang {
         ProofLang::Ro,
         ProofLang::Lt,
         ProofLang::De,
+        ProofLang::DeCh,
     ];
 
     /// The proofing language of a BCP 47 tag (`pl-PL`, `en_GB`, `PL`…). The primary subtag
-    /// counts, and for English and Spanish the region too ([`ProofLang::english`],
-    /// [`ProofLang::spanish`]). No tag (or an empty one) is English, WordCraft's default editing
+    /// counts, and for English, Spanish and German the region too ([`ProofLang::english`],
+    /// [`ProofLang::spanish`], [`ProofLang::german`]). No tag (or an empty one) is English, WordCraft's default editing
     /// language.
     pub fn from_tag(tag: Option<&str>) -> ProofLang {
         let Some(tag) = tag.map(str::trim).filter(|t| !t.is_empty()) else { return ProofLang::En };
@@ -172,7 +177,7 @@ impl ProofLang {
         } else if ["eu", "eus", "baq"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::Eu
         } else if ["de", "deu", "ger"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
-            ProofLang::De
+            ProofLang::german(tag)
         } else if ["fr", "fra", "fre"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::Fr
         } else if ["ro", "ron", "rum"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
@@ -204,6 +209,16 @@ impl ProofLang {
             Some(r) if r.eq_ignore_ascii_case("UY") => ProofLang::EsUy,
             Some(r) if LATIN_AMERICA.iter().any(|l| l.eq_ignore_ascii_case(r)) => ProofLang::Es419,
             _ => ProofLang::Es,
+        }
+    }
+
+    /// The German of a German tag, by its [`region`]: Switzerland and Liechtenstein, which write
+    /// `ss` for `ß`, are [`ProofLang::DeCh`]; Germany, Austria, any other region and no region
+    /// are [`ProofLang::De`].
+    fn german(tag: &str) -> ProofLang {
+        match region(tag) {
+            Some(r) if r.eq_ignore_ascii_case("CH") || r.eq_ignore_ascii_case("LI") => ProofLang::DeCh,
+            _ => ProofLang::De,
         }
     }
 
@@ -246,7 +261,7 @@ impl ProofLang {
             ProofLang::Ca | ProofLang::CaValencia => "ca",
             ProofLang::Gl => "gl",
             ProofLang::Eu => "eu",
-            ProofLang::De => "de",
+            ProofLang::De | ProofLang::DeCh => "de",
             ProofLang::Fr => "fr",
             ProofLang::Ro => "ro",
             ProofLang::Lt => "lt",
@@ -400,7 +415,7 @@ mod tests {
     fn tags_resolve_additional_locales_and_defaults() {
         assert_tags(&["bg", "bg-BG", "BG_bg", "bg_BG.UTF-8", "bul"], ProofLang::Bg);
         assert_tags(&["tr", "tr-TR", "tr-CY", "TR_tr", "tur"], ProofLang::Tr);
-        assert_tags(&["de", "de-DE", "de-CH", "DE_at", "deu", "ger"], ProofLang::De);
+        assert_tags(&["de", "de-DE", "de-AT", "DE_at", "de-BE", "deu", "ger"], ProofLang::De);
         assert_tags(&["ru", "ru-RU", "RU-ru", "ru_RU", "ru_RU.UTF-8", " ru-RU ", "rus"], ProofLang::Ru);
         assert!(ProofLang::De.is_proofed());
         assert!(!ProofLang::Bg.is_proofed());
@@ -470,7 +485,8 @@ mod tests {
             (ProofLang::Fr, "fr", &["fr", "fr-FR", "fr_BE.UTF-8", "FR-ca", "fra", "fre"][..]),
             (ProofLang::Ro, "ro", &["ro", "ro-RO", "ro_MD", "ron", "rum"][..]),
             (ProofLang::Lt, "lt", &["lt", "lt-LT", "lt_LT.UTF-8", "lit"][..]),
-            (ProofLang::De, "de", &["de", "de-DE", "de_AT.UTF-8", "DE-ch", "deu", "ger"][..]),
+            (ProofLang::De, "de", &["de", "de-DE", "de_AT.UTF-8", "de-LU", "deu", "ger", "de-x-ch", "de-1901"][..]),
+            (ProofLang::DeCh, "de", &["de-CH", "DE-ch", "de_CH.UTF-8", "de-LI", "deu-CH", "de-Latn-CH", "de-CH-1996"][..]),
         ] {
             assert_tags(tags, lang);
             assert_eq!(lang.code(), code);

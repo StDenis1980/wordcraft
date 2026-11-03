@@ -202,7 +202,7 @@ fn core_breaks(core: &[char], lang: ProofLang) -> (Vec<usize>, Source) {
     match lang {
         ProofLang::Pt => return core_breaks_patterns(Patterns::pt(), core),
         ProofLang::It => return core_breaks_patterns(Patterns::it(), core),
-        ProofLang::De => return core_breaks_patterns(Patterns::de(), core),
+        ProofLang::De | ProofLang::DeCh => return core_breaks_patterns(Patterns::de(), core),
         ProofLang::Es | ProofLang::EsMx | ProofLang::Es419 | ProofLang::EsUy => return core_breaks_patterns(Patterns::es(), core),
         ProofLang::Ca | ProofLang::CaValencia => return core_breaks_patterns(Patterns::ca(), core),
         ProofLang::Gl => return core_breaks_patterns(Patterns::gl(), core),
