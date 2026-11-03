@@ -1,6 +1,6 @@
 # Tinta Texto — Tinta Office roadmap
 
-> **Status:** 2026-11-01 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
+> **Status:** 2026-11-03 · approved by the owner (Denys) · **Revision history:** 2026-10-27 created;
 > 2026-10-27 dictionary pack and uk/ca/gl/eu spelling (priority 1) done; 2026-10-28 analysis of a
 > shared dictionary built from users' added words (priority 9); 2026-10-28 .docx test set
 > (priority 2) done; 2026-10-28 charts, SmartArt and OLE kept on save confirmed (priority 3); 2026-10-28 priority 9: automatic validation of users' words; owner chose button first, then
@@ -9,7 +9,7 @@
 > .odt export keeps headers, footers, page numbers, spacing, indents, tabs, borders (priority 7);
 > 2026-10-28 Suggest my words option and list (priority 9, stage 2) done; priorities 5 and 6 checked against upstream;
 > 2026-10-28 the .odt importer reads paragraph spacing, indents, line height, tab stops, borderless and aligned tables (priority 7); then paragraph borders and common styles' spacing;
-> 2026-11-01 "Aptos not installed" notice with Microsoft's download (priority 5); 2026-11-01 accepted words ship beside the dictionaries (priority 9); 2026-10-30 automatic sending and validation of suggested words (priority 9, stage 3); 2026-10-30 Valencian `ca-valencia` dictionary in the pack and Catalan (Valencian) proofing (priority 1); hyphenation patterns for es/ca/gl/eu/uk (priority 1); .odt cell margins read and written (priority 7).
+> 2026-11-01 "Aptos not installed" notice with Microsoft's download (priority 5); 2026-11-01 accepted words ship beside the dictionaries (priority 9); 2026-10-30 automatic sending and validation of suggested words (priority 9, stage 3); 2026-10-30 Valencian `ca-valencia` dictionary in the pack and Catalan (Valencian) proofing (priority 1); hyphenation patterns for es/ca/gl/eu/uk (priority 1); .odt cell margins read and written (priority 7); 2026-11-03 Flatpak bundle manifest under the Tinta id.
 
 Tinta Texto is the Tinta Office build of WordCraft and replaces Microsoft Word. Upstream keeps the
 feature-parity roadmap ([ROADMAP.md](../ROADMAP.md), [roadmap.md](roadmap.md),
@@ -99,6 +99,7 @@ the most ready apps), **3** = 2027 (1.0). Dates are indicative.
 | GitHub Actions | 1 | GitHub disabled Actions in pdfcraft, wordcraft and deckcraft; ask GitHub Support. Until then, run the gates locally. |
 | Releases | 1 | A preview every month for all five apps, release notes in es/uk/en, one build script. |
 | Linux | 1 | AppImage + .deb with Tinta names for all five (built in the cloud); Flatpak in stage 2. |
+| Flatpak | 2 | Bundle manifest under the Tinta id (`packaging/linux/flatpak/io.github.stdenis1980.tintatexto.bundle.yml`, generated from upstream's by `packaging/linux/tinta-flatpak.sh generate`; `tinta-flatpak.sh bundle` turns the Linux tarball into a `.flatpak`). Requested by Vilna OS (tintaoffice-web#14): bundles in releases by April 2027; Flathub only with Denys's approval. |
 | Windows installers | 1 | Desktop shortcuts for Texto and Calculo; Presenta registered for .pptx. |
 | Code signing | 2 | Windows (Certum Open Source or Azure Trusted Signing; scripts exist), macOS (Apple Developer + notarization). Owner decision and payment. |
 | Automated tests | 1–2 | Coverage audit per app; tests for every fork change (brand, languages, installers); a smoke test of each release installer on Windows; investigate the flaky tests upstream. |
