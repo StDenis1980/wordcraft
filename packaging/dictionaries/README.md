@@ -34,6 +34,21 @@ form their authors publish and edit, and their sources are listed below.
 
 Licence texts: `MPL-1.1.txt`, `GPL-2.0.txt`, `GPL-3.0.txt`, `LGPL-2.1.txt`, `LGPL-3.0.txt`.
 
+## Fonts
+
+Spanish public administrations set many documents in Noto Sans, which few computers have. Without
+it another font stands in, whose lines are about 18% lower and 5% narrower, so the text moves up and
+documents end a page early (measured on 18 forms from the Balearic government against Word's PDFs).
+So the pack also carries Noto Sans in `fonts/`, which the app reads like an installed font
+(`crates/fonts/src/fontdb/tinta_dirs.rs`; it isn't installed in the system):
+
+| File | Font | Source | Licence |
+|---|---|---|---|
+| `fonts/NotoSans-VF.ttf`, `fonts/NotoSans-Italic-VF.ttf` | Noto Sans (variable: every weight and width, upright and italic) | The Noto Project Authors, from [google/fonts](https://github.com/google/fonts/tree/main/ofl/notosans) | OFL-1.1 (`licences/OFL-NotoSans.txt`) |
+
+The app also reads the fonts Microsoft Office downloads on demand (Aptos and others), which Office
+keeps in its own cache without installing them, from where they are.
+
 ## The extra pack (separate download)
 
 French, Romanian, Lithuanian, Polish, Italian, Czech and German are a separate download of

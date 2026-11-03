@@ -238,6 +238,8 @@ pub fn system_font_dirs() -> Vec<std::path::PathBuf> {
         // 1.19.2 also mounts ~/.fonts, at user-fonts-legacy when the XDG user font folder exists too.
         dirs.extend(["/run/host/fonts", "/run/host/local-fonts", "/run/host/user-fonts", "/run/host/user-fonts-legacy"].map(Into::into));
     }
+    // Tinta Office: the fonts shipped with the dictionaries and Office's cloud fonts.
+    dirs.extend(super::tinta_dirs::dirs());
     dirs
 }
 
