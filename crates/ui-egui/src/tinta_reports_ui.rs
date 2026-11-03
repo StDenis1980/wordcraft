@@ -173,9 +173,9 @@ mod tests {
         let _ = h.get_by_label(PENDING);
     }
 
-    const LANGS: [&str; 29] = [
+    const LANGS: [&str; 30] = [
         "zh-hans", "zh-hant", "ja", "ko", "uk", "es", "pt-br", "sr", "sr-latn", "pl", "cs", "et", "de", "ru", "tr", "it", "hu", "fr", "bg", "vi",
-        "sv", "hr", "nl", "da", "ro", "sl", "ca", "gl", "eu",
+        "sv", "hr", "nl", "da", "ro", "sl", "ca", "gl", "eu", "lt",
     ];
 
     /// Every string is translated in every language the app offers.

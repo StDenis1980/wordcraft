@@ -71,7 +71,7 @@ pub struct LangInfo {
 
 /// The languages WordCraft offers, when their catalogs are embedded. English first: it is the
 /// fallback and the source language.
-pub static LANGUAGES: [LangInfo; 30] = [
+pub static LANGUAGES: [LangInfo; 31] = [
     LangInfo { code: "en", prefer_hans: false, editing_lang: None },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` resolve here (the crate's matching).
     LangInfo { code: "zh-hans", prefer_hans: true, editing_lang: None },
@@ -127,6 +127,9 @@ pub static LANGUAGES: [LangInfo; 30] = [
     LangInfo { code: "ro", prefer_hans: false, editing_lang: None },
     // Slovenian; `sl`, `sl-SI` and `sl_SI.UTF-8` resolve here.
     LangInfo { code: "sl", prefer_hans: false, editing_lang: None },
+    // Tinta Office: Lithuanian, for Vilna OS. Its catalog is in this fork's craft-i18n; `lt`,
+    // `lt-LT` and `lt_LT.UTF-8` resolve here.
+    LangInfo { code: "lt", prefer_hans: false, editing_lang: None },
     // Tinta Office: Spain's other official languages. Their catalogs are in this fork's craft-i18n
     // (StDenis1980/craft-i18n, offered upstream too). `ca-ES`, `ca-AD`, `ca-ES-valencia`, `gl-ES`,
     // `eu-ES` … resolve here.

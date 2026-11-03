@@ -212,14 +212,14 @@ mod tests {
         assert_eq!(b.session.prefs.tinta_suggest.words.iter().map(|w| w.word.as_str()).collect::<Vec<_>>(), ["tintareinicio"]);
     }
 
-    /// Every string of the option, its notice and its buttons is translated in all 29 languages.
+    /// Every string of the option, its notice and its buttons is translated in all 30 languages.
     #[test]
     fn every_string_is_translated() {
         let rows = include_str!("../i18n/tinta.tsv");
         for s in STRINGS {
             let langs =
                 rows.lines().filter(|l| l.split('\t').nth(1) == Some(s) && l.split('\t').nth(2).is_some_and(|t| !t.trim().is_empty())).count();
-            assert_eq!(langs, 29, "{s:?}");
+            assert_eq!(langs, 30, "{s:?}");
         }
     }
 }

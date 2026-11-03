@@ -1071,3 +1071,40 @@ zh-hans	Aptos not installed	未安装 Aptos
 zh-hans	This document uses Aptos, Word's default font, which isn't installed. Tinta Office can't include it, so another font stands in and lines and pages may break differently from Word. Click to download Aptos free from Microsoft, then restart Tinta Texto.	此文档使用 Word 的默认字体 Aptos，但它未安装。Tinta Office 不能附带该字体，因此会用其他字体代替，行和页的断开位置可能与 Word 不同。点击从 Microsoft 免费下载 Aptos，然后重新启动 Tinta Texto。
 zh-hant	Aptos not installed	未安裝 Aptos
 zh-hant	This document uses Aptos, Word's default font, which isn't installed. Tinta Office can't include it, so another font stands in and lines and pages may break differently from Word. Click to download Aptos free from Microsoft, then restart Tinta Texto.	此文件使用 Word 的預設字型 Aptos，但它未安裝。Tinta Office 不能附帶該字型，因此會以其他字型代替，行和頁的斷開位置可能與 Word 不同。按一下從 Microsoft 免費下載 Aptos，然後重新啟動 Tinta Texto。
+lt	Support	Pagalba
+lt	Get help and support	Gauti pagalbos ir paramos
+lt	A free, open-source word processor written from scratch in Rust.	Nemokama atvirojo kodo teksto rengyklė, nuo nulio parašyta Rust kalba.
+lt	Catalan	Katalonų
+lt	Catalan (Valencian)	Katalonų (valensiečių)
+lt	Galician	Galisų
+lt	Basque	Baskų
+lt	Invoice (Spain)	Sąskaita faktūra (Ispanija)
+lt	Quote (Spain)	Pasiūlymas (Ispanija)
+lt	Formal letter (Spain)	Oficialus laiškas (Ispanija)
+lt	CV (Spain)	Gyvenimo aprašymas (Ispanija)
+lt	Suggest my words	Siūlyti mano žodžius
+lt	Suggest my words for Tinta's dictionaries	Siūlyti mano žodžius Tinta žodynams
+lt	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Unless you also turn on sending them automatically, nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Pagal numatytuosius nustatymus išjungta. Kol įjungta, žodžiai, kuriuos įtraukiate į žodyną, čia rodomi kartu su jų kalba, tik šiame kompiuteryje. Jei neįjungsite ir automatinio siuntimo, niekas nesiunčiama savaime: peržiūrite sąrašą ir išsiunčiate jį el. paštu adresu hola@tintaoffice.com.
+lt	Send them automatically	Siųsti juos automatiškai
+lt	Off by default too. While it is on, the listed words in Spanish, Catalan, Galician, Basque and Ukrainian go once a day to report.tintaoffice.com (EU) with a random installation number; the server keeps only a fingerprint of it, never your IP address. A word joins Tinta's dictionaries once 5 installations (10 for Spanish) added it and Wiktionary lists it. Turning this off removes your words from the server's counts.	Taip pat pagal numatytuosius nustatymus išjungta. Kol įjungta, išvardyti ispanų, katalonų, galisų, baskų ir ukrainiečių kalbų žodžiai kartą per dieną siunčiami į report.tintaoffice.com (ES) su atsitiktiniu diegimo numeriu; serveris saugo tik jo kontrolinę sumą, niekada jūsų IP adreso. Žodis įtraukiamas į Tinta žodynus, kai jį įtraukė 5 diegimai (ispanų kalbai – 10) ir jis yra Vikižodyne. Išjungus šią parinktį, jūsų žodžiai pašalinami iš serverio skaičiavimų.
+lt	sent	išsiųsta
+lt	Removing your words from the server's counts…	Jūsų žodžiai šalinami iš serverio skaičiavimų…
+lt	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Siunčiami tik šie žodžiai ir jų kalba, niekada jūsų dokumentai; žodžiai su skaitmenimis, @ arba didžiąja raide viduryje praleidžiami. Tinta Office juos naudoja tik savo žodynams tobulinti ir ištrina per 12 mėnesių; jūsų el. pašto adresas naudojamas tik atsakymui. Norėdami atšaukti sutikimą, išjunkite šią parinktį (sąrašas ištrinamas) ir paprašykite hola@tintaoffice.com ištrinti tai, ką išsiuntėte.
+lt	No words listed yet.	Žodžių sąraše dar nėra.
+lt	Send by email	Siųsti el. paštu
+lt	Copy the list	Kopijuoti sąrašą
+lt	Clear the list	Išvalyti sąrašą
+lt	The email holds {n} of {total} words; send the rest next time, or copy the list.	Laiške yra {n} iš {total} žodžių; likusius išsiųskite kitą kartą arba nukopijuokite sąrašą.
+lt	Send error reports automatically?	Siųsti klaidų ataskaitas automatiškai?
+lt	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Kai programa užstringa arba nustoja reaguoti, ji gali išsiųsti ataskaitą, kad problema būtų ištaisyta jums nerašant mums. Ataskaitoje yra programos versija, sistema, kalba, vieta kode, kur įvyko klaida, ir paskutinės techninio žurnalo eilutės. Niekada – jūsų dokumentų tekstas, failų vardai, aplankai, el. pašto adresai ar slaptažodžiai.
+lt	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Ataskaitos siunčiamos Tinta Office (report.tintaoffice.com, saugoma ES) ir ištrinamos po 90 dienų. Tai bet kada galite pakeisti skiltyje Failas › Parinktys › Bendrosios ir ten pat ištrinti savo ataskaitas iš serverio. Daugiau: tintaoffice.com/en/legal
+lt	Yes, send reports	Taip, siųsti ataskaitas
+lt	No	Ne
+lt	Error reports	Klaidų ataskaitos
+lt	Send error reports automatically	Siųsti klaidų ataskaitas automatiškai
+lt	Installation id: {id}	Diegimo ID: {id}
+lt	Delete my reports from the server	Ištrinti mano ataskaitas iš serverio
+lt	Deletion requested: it completes the next time the app is online.	Ištrynimo užklausa pateikta: ji bus įvykdyta, kai programa kitą kartą prisijungs prie interneto.
+lt	Open the reports folder	Atidaryti ataskaitų aplanką
+lt	Aptos not installed	Aptos neįdiegtas
+lt	This document uses Aptos, Word's default font, which isn't installed. Tinta Office can't include it, so another font stands in and lines and pages may break differently from Word. Click to download Aptos free from Microsoft, then restart Tinta Texto.	Šiame dokumente naudojamas Aptos – numatytasis „Word“ šriftas, kuris neįdiegtas. Tinta Office negali jo pridėti, todėl naudojamas kitas šriftas, o eilutės ir puslapiai gali lūžti kitaip nei „Word“. Spustelėkite, kad nemokamai atsisiųstumėte Aptos iš Microsoft, tada iš naujo paleiskite Tinta Texto.
