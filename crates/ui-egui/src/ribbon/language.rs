@@ -1,7 +1,7 @@
 use super::{Ui, Value, WordApp, json, vec2};
 
 /// The proofing languages the Language menu offers: tag and English name (translated when drawn).
-pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 24] = [
+pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 25] = [
     ("en-US", "English (United States)"),
     ("en-GB", "English (United Kingdom)"),
     ("en-AU", "English (Australia)"),
@@ -26,6 +26,7 @@ pub(crate) const PROOFING_LANGUAGES: [(&str, &str); 24] = [
     ("fr-FR", "French (France)"),
     ("ro-RO", "Romanian"),
     ("lt-LT", "Lithuanian"),
+    ("de-DE", "German (Germany)"),
 ];
 
 /// The English name of a proofing language tag, as the status bar shows it (no tag: WordCraft's
@@ -225,6 +226,7 @@ pub(crate) fn language_menu(ui: &mut Ui, app: &mut WordApp) {
             || (tag == "fr-FR" && current.eq_ignore_ascii_case("fr"))
             || (tag == "ro-RO" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Ro)
             || (tag == "lt-LT" && wordcraft_engine::proof::ProofLang::from_tag(Some(&current)) == wordcraft_engine::proof::ProofLang::Lt)
+            || (tag == "de-DE" && current.eq_ignore_ascii_case("de"))
             || (tag == "en-US" && current.eq_ignore_ascii_case("en"))
     };
     let checks = language_checks(&current, listed);

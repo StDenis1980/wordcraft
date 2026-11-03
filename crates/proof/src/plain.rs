@@ -1,15 +1,16 @@
 //! Languages proofed by their Hunspell dictionary alone: Ukrainian, Catalan, Galician, Basque,
-//! French, Romanian and Lithuanian.
+//! French, Romanian, Lithuanian and German.
 //!
 //! Each reads its installed `.aff`/`.dic` pair ([`crate::hunspell`]; nothing is bundled with the
 //! code): Ukrainian `uk_UA` (dict_uk, MPL), Catalan `ca` and Valencian `ca-valencia` (Softcatalà,
 //! GPL/LGPL), Galician `gl_ES`
 //! (Proxecto Trasno, GPL), Basque `eu` (Xuxen, GPL), French `fr`, Romanian `ro_RO` and
-//! Lithuanian `lt_LT` (each under its own licence, as the system or the pack installs it). Suggestions use the dictionary's own
+//! Lithuanian `lt_LT` and German `de_DE` (each under its own licence, as the system or the pack
+//! installs it; German's compound words come from the dictionary's compound flags). Suggestions use the dictionary's own
 //! MAP/REP/TRY/KEY tables ([`crate::cs::suggest::suggest_in`]), and grammar is the generic
 //! repeated-word and spacing checks, with messages in the language. Without a dictionary the
 //! language has no spelling marks, like the other Hunspell languages. Hyphenation keeps the
-//! English fallback.
+//! English fallback, except German's own patterns ([`crate::hyphen`]).
 
 use std::sync::{Arc, RwLock};
 
@@ -180,8 +181,24 @@ pub static LT: Lang = Lang {
     dict: RwLock::new(None),
 };
 
+/// German (`de`, `de-DE`, `de-AT`, `de-CH`…): `de_DE` (in the pack, LibreOffice's `de_DE_frami`),
+/// else another installed German dictionary.
+pub static DE: Lang = Lang {
+    lang: ProofLang::De,
+    names: &["de_DE", "de-DE", "de_DE_frami", "de", "de_AT", "de-AT", "de_CH", "de-CH"],
+    english: "German",
+    script: Script::Latin,
+    misspelled: "Möglicher Rechtschreibfehler",
+    repeated: "Wiederholtes Wort: „{w}“",
+    space_before: "Leerzeichen vor einem Satzzeichen",
+    spaced_punctuation: false,
+    repeats: &[],
+    double_space: "Doppeltes Leerzeichen",
+    dict: RwLock::new(None),
+};
+
 /// Every language of this module.
-pub const ALL: [&Lang; 8] = [&UK, &CA, &CA_VALENCIA, &GL, &EU, &FR, &RO, &LT];
+pub const ALL: [&Lang; 9] = [&UK, &CA, &CA_VALENCIA, &GL, &EU, &FR, &RO, &LT, &DE];
 
 /// The module's entry for `lang`, if it is one of its languages.
 pub fn of(lang: ProofLang) -> Option<&'static Lang> {
@@ -277,7 +294,9 @@ impl Lang {
     /// Spelling suggestions, best first, at most `max`, in the word's case.
     pub fn suggest(&self, word: &str, max: usize) -> Vec<String> {
         let d = self.dictionary();
-        crate::cs::suggest::suggest_in(&d, word, max).iter().map(|s| d.output(s)).collect()
+        // A form made to join a hyphenated compound (German `-straße`) is no suggestion alone.
+        let edge = |s: &String| s.starts_with('-') || s.ends_with('-');
+        crate::cs::suggest::suggest_in(&d, word, max.saturating_add(2)).iter().filter(|s| !edge(s)).take(max).map(|s| d.output(s)).collect()
     }
 
     /// The message of a spelling mark.
@@ -397,6 +416,12 @@ pub(crate) mod test_dict {
     pub const LT_AFF: &str = "SET UTF-8\nTRY iasoetnukrlmvdpjgšėžybųčcįzūęą\nSFX A Y 1\nSFX A as ai as\n";
     pub const LT_DIC: &str = "3\nnamas/A\nsąskaita\nprašau\n";
 
+    /// German: compound parts by flags (`Haus` may begin a compound through a suffix's
+    /// continuation classes, lower-case `tür` only ends one), `ß` written `SS` in capitals, and a
+    /// homonym listed once for compounds only and once with NEEDAFFIX.
+    pub const DE_AFF: &str = "SET UTF-8\nTRY esianrtolcdugmphbßäöü\nCHECKSHARPS\nCOMPOUNDBEGIN x\nCOMPOUNDMIDDLE y\nCOMPOUNDEND z\nCOMPOUNDPERMITFLAG c\nONLYINCOMPOUND o\nNEEDAFFIX h\nCOMPOUNDMIN 2\nSFX E Y 1\nSFX E 0 en .\nSFX N Y 1\nSFX N 0 n .\nSFX j Y 2\nSFX j 0 0/xoc .\nSFX j 0 s/xoc .\nPFX k Y 1\nPFX k 0 0/coy .\n";
+    pub const DE_DIC: &str = "8\nHaus/Ej\nTür/E\ntür/Eoz\ntür/hk\nRechnung/j\nnummer/oz\nStraße/N\nschön\n";
+
     /// Install them all.
     pub fn install() {
         for (l, aff, dic) in [
@@ -408,6 +433,7 @@ pub(crate) mod test_dict {
             (&super::FR, FR_AFF, FR_DIC),
             (&super::RO, RO_AFF, RO_DIC),
             (&super::LT, LT_AFF, LT_DIC),
+            (&super::DE, DE_AFF, DE_DIC),
         ] {
             if let Err(e) = l.install_dictionary(aff, dic) {
                 panic!("{}: {e}", l.english);
@@ -480,6 +506,38 @@ mod tests {
         let marked = crate::check_text(text, &[(0..text.len(), ProofLang::from_tag(Some("ca-ES")))]);
         assert_eq!(marked.iter().filter_map(|i| text.get(i.start..i.end)).collect::<Vec<_>>(), ["Este", "café"]);
         assert_eq!(crate::check_grammar_in("la la casa", ProofLang::CaValencia).first().map(|i| i.lang), Some(ProofLang::CaValencia));
+    }
+
+    /// German: compounds from parts the dictionary marks, `ß` as `SS` in capitals, and compound
+    /// parts that are no words alone.
+    #[test]
+    fn german_compounds_and_sharp_s() {
+        test_dict::install();
+        for w in [
+            "Haus",
+            "Tür",
+            "Türen",
+            "Haustür",
+            "Haustüren",
+            "Rechnungsnummer",
+            "Haustürnummer",
+            "Straße",
+            "Straßen",
+            "STRASSE",
+            "STRASSEN",
+            "SCHÖN",
+            "schön",
+        ] {
+            assert!(ok(&DE, w), "{w}");
+            assert!(crate::is_correct_in(w, ProofLang::De), "{w}");
+        }
+        // `tür` and `nummer` only end compounds; a part must be marked for its place; `ss` is `ß`
+        // only in capitals.
+        for w in ["tür", "türen", "nummer", "Nummer", "Strasse", "strasse", "Türhaus", "HausHaus", "Rechnungsnumer", "Hausnummerr"] {
+            assert!(!ok(&DE, w), "{w}");
+        }
+        assert_eq!(crate::check_grammar_in("das das Haus", ProofLang::De).first().map(|i| i.message.as_str()), Some("Wiederholtes Wort: „das“"));
+        assert!(crate::suggest_in("Hauss", 4, ProofLang::De).iter().any(|s| s == "Haus"), "{:?}", crate::suggest_in("Hauss", 4, ProofLang::De));
     }
 
     #[test]

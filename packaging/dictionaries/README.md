@@ -36,16 +36,18 @@ Licence texts: `MPL-1.1.txt`, `GPL-2.0.txt`, `GPL-3.0.txt`, `LGPL-2.1.txt`, `LGP
 
 ## The extra pack (separate download)
 
-French, Romanian, Lithuanian, Polish, Italian and Czech are a separate download of about
-20 MB, so the main pack stays small. [`sources-extra.tsv`](sources-extra.tsv) lists them the same
+French, Romanian, Lithuanian, Polish, Italian, Czech and German are a separate download of
+about 20 MB, so the main pack stays small. [`sources-extra.tsv`](sources-extra.tsv) lists them the same
 way; `fetch.sh DEST sources-extra.tsv` (Windows: `fetch.ps1 -Dest DEST -Manifest
 sources-extra.tsv`) fills a folder to zip as a release asset. Unzipped into the app's
 `dictionaries` folder, or a folder set in File › Options › Proofing, the languages are checked. On
 Linux the distribution's `hunspell-fr`, `hunspell-ro`… packages work too: the app also reads
 `/usr/share/hunspell`.
 
-German spelling is not in it yet: the German dictionaries need Hunspell compounding, which the
-engine does not have, so German text gets hyphenation only.
+German is LibreOffice's `de_DE_frami` (igerman98 with additions), saved as `de_DE`: it builds
+compound words (`Rechnungsnummer`, `Krankenversicherungskarte`) from parts the dictionary marks,
+which the spelling engine reads. Swiss German writes `ss` for `ß`, which this dictionary flags;
+a system `de_CH` dictionary isn't used for it yet.
 
 | File | Language | Source | Licence |
 |---|---|---|---|
@@ -55,6 +57,7 @@ engine does not have, so German text gets hyphenation only.
 | `pl_PL.aff`, `pl_PL.dic` | Polish | [sjp.pl](https://sjp.pl), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/pl_PL) | GPL, LGPL, MPL, Apache-2.0 or CC BY-SA, at your option |
 | `it_IT.aff`, `it_IT.dic` | Italian | Italian dictionary project, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/it_IT) | GPL-3.0 |
 | `cs_CZ.aff`, `cs_CZ.dic` | Czech | Czech dictionary (from csTeX), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) | GPL-2.0 |
+| `de_DE.aff`, `de_DE.dic` | German (Germany, Austria) | `de_DE_frami`: igerman98 by Björn Jacke, extended by Franz Michael Baumann, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/de) | GPL-2.0 or GPL-3.0 |
 
 The extra pack carries its own copies of the licence texts it needs, so it stands alone.
 

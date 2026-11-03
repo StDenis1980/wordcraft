@@ -84,10 +84,9 @@ pub enum ProofLang {
     /// Basque (`eu`, `eu-ES`; also `eus`, `baq`): the installed Hunspell `eu` dictionary and
     /// generic checks with Basque messages ([`crate::plain`]).
     Eu,
-    /// German (`de`, `de-DE`, `de-AT`, `de-CH`…): hyphenation by the German patterns (reformed
-    /// spelling). There is no German spelling yet (German dictionaries need Hunspell compounding,
-    /// which the affix engine doesn't do), so, as for [`ProofLang::Other`], no spelling or
-    /// grammar marks.
+    /// German (`de`, `de-DE`, `de-AT`, `de-CH`…; also `deu`, `ger`): the installed Hunspell `de_DE`
+    /// dictionary with its compound words, generic checks with German messages
+    /// ([`crate::plain`]), and hyphenation by the German patterns (reformed spelling).
     De,
     /// French (`fr`, `fr-FR`, `fr-BE`…; also `fra`, `fre`): the installed Hunspell `fr` dictionary
     /// and generic checks with French messages, which keep the space French puts before `;:!?`
@@ -108,7 +107,7 @@ pub enum ProofLang {
 
 impl ProofLang {
     /// Every language with a spelling dictionary, in display order.
-    pub const PROOFED: [ProofLang; 23] = [
+    pub const PROOFED: [ProofLang; 24] = [
         ProofLang::En,
         ProofLang::EnGb,
         ProofLang::EnCa,
@@ -132,6 +131,7 @@ impl ProofLang {
         ProofLang::Fr,
         ProofLang::Ro,
         ProofLang::Lt,
+        ProofLang::De,
     ];
 
     /// The proofing language of a BCP 47 tag (`pl-PL`, `en_GB`, `PL`…). The primary subtag
@@ -402,7 +402,7 @@ mod tests {
         assert_tags(&["tr", "tr-TR", "tr-CY", "TR_tr", "tur"], ProofLang::Tr);
         assert_tags(&["de", "de-DE", "de-CH", "DE_at", "deu", "ger"], ProofLang::De);
         assert_tags(&["ru", "ru-RU", "RU-ru", "ru_RU", "ru_RU.UTF-8", " ru-RU ", "rus"], ProofLang::Ru);
-        assert!(!ProofLang::De.is_proofed());
+        assert!(ProofLang::De.is_proofed());
         assert!(!ProofLang::Bg.is_proofed());
         assert_eq!(ProofLang::Bg.code(), "bg");
         assert!(ProofLang::Pt.is_proofed() && !ProofLang::Other.is_proofed());
@@ -470,6 +470,7 @@ mod tests {
             (ProofLang::Fr, "fr", &["fr", "fr-FR", "fr_BE.UTF-8", "FR-ca", "fra", "fre"][..]),
             (ProofLang::Ro, "ro", &["ro", "ro-RO", "ro_MD", "ron", "rum"][..]),
             (ProofLang::Lt, "lt", &["lt", "lt-LT", "lt_LT.UTF-8", "lit"][..]),
+            (ProofLang::De, "de", &["de", "de-DE", "de_AT.UTF-8", "DE-ch", "deu", "ger"][..]),
         ] {
             assert_tags(tags, lang);
             assert_eq!(lang.code(), code);
