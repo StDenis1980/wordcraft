@@ -18,9 +18,12 @@
 //! **German**: the TeX German patterns for the reformed spelling ([`Patterns::de`]), also for
 //! Swiss text, whose `ss` the patterns split like any double consonant (`Stras-se`).
 //!
-//! **Tinta Office: Spanish, Catalan, Galician, Basque and Ukrainian**: hyph-utf8's patterns for
-//! each ([`Patterns::es`], [`Patterns::ca`], [`Patterns::gl`], [`Patterns::eu`], [`Patterns::uk`]),
-//! bundled unmodified. Latin words in Ukrainian text are hyphenated as English.
+//! **Tinta Office: Spanish, Catalan, Galician, Basque, Ukrainian, French and Lithuanian**:
+//! hyph-utf8's patterns for each ([`Patterns::es`], [`Patterns::ca`], [`Patterns::gl`],
+//! [`Patterns::eu`], [`Patterns::uk`], [`Patterns::fr`], [`Patterns::lt`]), bundled unmodified.
+//! Latin words in Ukrainian text are hyphenated as English. Czech and Romanian use an installed
+//! Hunspell hyphenation file (`hyph_cs_CZ.dic`, `hyph_ro_RO.dic`; [`crate::tinta_hyph`]), since
+//! their patterns are GPL-2 and can't be bundled; without one, the English fallback.
 //!
 //! Then the paragraph's limits ([`Limits`]) are applied.
 
@@ -58,6 +61,12 @@ static EU_PAT: &str = include_str!("../../../assets/hyphenation/eu.pat");
 /// Tinta Office: hyph-utf8's `hyph-uk.tex` (Maksym Polyakov), unmodified (offered under MIT or
 /// LPPL; WordCraft uses MIT).
 static UK_PAT: &str = include_str!("../../../assets/hyphenation/uk.pat");
+/// Tinta Office: hyph-utf8's `hyph-fr.tex` (Daniel Flipo, Bernard Gaulle, Arthur Reutenauer),
+/// unmodified (MIT; the notice is in the file's header).
+static FR_PAT: &str = include_str!("../../../assets/hyphenation/fr.pat");
+/// Tinta Office: hyph-utf8's `hyph-lt.tex` (Sigitas Tolušis, Yannis Haralambous), unmodified
+/// (MIT; the notice is in the file's header).
+static LT_PAT: &str = include_str!("../../../assets/hyphenation/lt.pat");
 
 impl Dictionary {
     /// The bundled US English dictionary (decoded on first use).
@@ -138,6 +147,19 @@ impl Patterns {
         static P: OnceLock<Patterns> = OnceLock::new();
         P.get_or_init(|| Patterns::parse(UK_PAT))
     }
+
+    /// Tinta Office: the bundled French patterns, which break after an elided article or pronoun
+    /// (`l'é-tat`) and keep `œ`, `æ` and the accents in their alphabet (parsed on first use).
+    pub fn fr() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| Patterns::parse(FR_PAT))
+    }
+
+    /// Tinta Office: the bundled Lithuanian patterns (parsed on first use).
+    pub fn lt() -> &'static Patterns {
+        static P: OnceLock<Patterns> = OnceLock::new();
+        P.get_or_init(|| Patterns::parse(LT_PAT))
+    }
 }
 
 /// `text`'s patterns with `letters` added to the alphabet, so a word with one of them is still
@@ -207,6 +229,13 @@ fn core_breaks(core: &[char], lang: ProofLang) -> (Vec<usize>, Source) {
         ProofLang::Ca | ProofLang::CaValencia => return core_breaks_patterns(Patterns::ca(), core),
         ProofLang::Gl => return core_breaks_patterns(Patterns::gl(), core),
         ProofLang::Eu => return core_breaks_patterns(Patterns::eu(), core),
+        ProofLang::Fr => return core_breaks_patterns(Patterns::fr(), core),
+        ProofLang::Lt => return core_breaks_patterns(Patterns::lt(), core),
+        ProofLang::Cs | ProofLang::Ro => {
+            if let Some(p) = crate::tinta_hyph::patterns(lang) {
+                return core_breaks_patterns(&p, core);
+            }
+        }
         // Latin-script words in Ukrainian text (`WordCraft`) are hyphenated as English below.
         ProofLang::Uk if core.iter().all(|&c| c == '\'' || crate::ru::is_cyrillic(c)) => {
             return core_breaks_patterns(Patterns::uk(), core);
@@ -1042,6 +1071,25 @@ mod tinta_tests {
         assert!(!hyphen_points_in("etxea", &lim, ProofLang::Eu).contains(&1));
     }
 
+    /// French breaks between syllables and after an elided `l'`, `d'`, `qu'`; Lithuanian keeps
+    /// its long vowels and digraphs together.
+    #[test]
+    fn french_and_lithuanian_words_break_at_syllables() {
+        for (lang, words) in [
+            (ProofLang::Fr, &["fac-ture", "en-tre-prise", "ad-mi-nis-tra-tion", "l'en-tre-prise", "au-jour-d'hui", "dé-ve-lop-pe-ment"][..]),
+            (ProofLang::Lt, &["są-skai-ta", "įmo-nė", "lie-tu-vių", "mo-kes-čių"][..]),
+        ] {
+            for want in words {
+                let word = want.replace('-', "");
+                assert_eq!(shown(&word, lang), *want, "{lang:?}");
+                let (_, src) = word_breaks_in(&word, lang);
+                assert_ne!(src, Source::Heuristic, "{lang:?}: {word}");
+            }
+        }
+        // The paragraph limits keep two letters at the end (`darba-s` isn't offered).
+        assert_eq!(hyphen_points_in("darbas", &Limits::default(), ProofLang::Lt), [3]);
+    }
+
     #[test]
     fn the_bundled_files_parse() {
         for (name, p, at_least) in [
@@ -1050,6 +1098,8 @@ mod tinta_tests {
             ("gl", Patterns::gl(), 2000),
             ("eu", Patterns::eu(), 150),
             ("uk", Patterns::uk(), 1900),
+            ("fr", Patterns::fr(), 1000),
+            ("lt", Patterns::lt(), 1500),
         ] {
             assert!(p.len() >= at_least, "{name}: {}", p.len());
         }

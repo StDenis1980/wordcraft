@@ -165,6 +165,17 @@ fn the_extra_dictionaries_load_and_check_real_words() {
     }
     // Each German reads its own dictionary: `ß` is Germany's, `ss` Switzerland's.
     assert!(!wordcraft_proof::is_correct_in("Straße", ProofLang::DeCh) && !wordcraft_proof::is_correct_in("Strasse", ProofLang::De));
+    // Czech and Romanian hyphenate with the pack's patterns, not the English fallback.
+    use wordcraft_proof::hyphen::{Limits, Source, hyphen_points_in, word_breaks_in};
+    for (lang, word, want) in [
+        (ProofLang::Cs, "podnikatel", &[3, 5, 7][..]),
+        (ProofLang::Cs, "příliš", &[3][..]),
+        (ProofLang::Ro, "întreprindere", &[2, 5, 9, 11][..]),
+        (ProofLang::Ro, "mulțumesc", &[3, 5][..]),
+    ] {
+        assert_eq!(word_breaks_in(word, lang).1, Source::Patterns, "{lang:?}: {word}");
+        assert_eq!(hyphen_points_in(word, &Limits::default(), lang), want, "{lang:?}: {word}");
+    }
 }
 
 #[test]
