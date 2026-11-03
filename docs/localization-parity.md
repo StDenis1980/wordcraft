@@ -21,8 +21,8 @@ native-speaker review (human).
 
 ## What WordCraft ships (measured)
 
-- **30 interface languages** (Tinta Office fork; upstream offers 27): English plus `zh-hans`, `zh-hant`, `ja`, Korean `ko` (#1216), `uk`, `es`, `pt-br`,
-  Serbian `sr`/`sr-latn` (#250), Estonian `et`, Turkish `tr`, Russian `ru`, Italian `it` (#594), German `de` (#574), Polish `pl`, Czech `cs`, Hungarian `hu`, French `fr`, Bulgarian `bg`, Vietnamese `vi` (#1434), Swedish `sv` (#1219), Croatian `hr` (#1271), Romanian `ro`, Slovenian `sl`, Dutch `nl`, Danish `da` (#2722), and in the Tinta Office fork Catalan `ca`, Galician `gl` and Basque `eu` (catalogs in StDenis1980/craft-i18n, AI-assisted, not yet native-reviewed). Catalogs have 2,061–2,674 entries
+- **31 interface languages** (Tinta Office fork; upstream offers 27): English plus `zh-hans`, `zh-hant`, `ja`, Korean `ko` (#1216), `uk`, `es`, `pt-br`,
+  Serbian `sr`/`sr-latn` (#250), Estonian `et`, Turkish `tr`, Russian `ru`, Italian `it` (#594), German `de` (#574), Polish `pl`, Czech `cs`, Hungarian `hu`, French `fr`, Bulgarian `bg`, Vietnamese `vi` (#1434), Swedish `sv` (#1219), Croatian `hr` (#1271), Romanian `ro`, Slovenian `sl`, Dutch `nl`, Danish `da` (#2722), and in the Tinta Office fork Catalan `ca`, Galician `gl`, Basque `eu` and Lithuanian `lt` (catalogs in StDenis1980/craft-i18n, AI-assisted, not yet native-reviewed). Catalogs have 2,061–2,674 entries
   each; Polish has every key of every other catalog, including the built-in style names and the equation gallery, except the citation style names only Hungarian, Bulgarian, Swedish, Romanian and Slovenian translate so far. A missing translation falls back to English and never fails a test or
   build. `cargo xtask i18n-report`, part of `cargo xtask ci`, prints per language the interface
   strings its catalog lacks: everything the interface audit saw looked up, the ribbon tabs, command
@@ -230,7 +230,7 @@ WordCraft keeps 2,54 cm).
 
 | Date | Change | Summary |
 |---|---|---|
-| 2026-11-03 | minor | Tinta Office fork: French, Romanian and Lithuanian proofing from installed Hunspell dictionaries, with generic checks in each language; the affix engine reads `OCONV` and an unused `CIRCUMFIX`; a separate extra dictionary pack (`sources-extra.tsv`: fr, ro, lt, pl, it, cs, about 16 MB) for Vilna OS; German still has no spelling (needs compounding) |
+| 2026-11-03 | minor | Tinta Office fork: Lithuanian interface (`lt`, catalogs in StDenis1980/craft-i18n, AI-assisted, not yet native-reviewed; Romanian and Czech catalogs completed); French, Romanian and Lithuanian proofing from installed Hunspell dictionaries, with generic checks in each language; the affix engine reads `OCONV` and an unused `CIRCUMFIX`; a separate extra dictionary pack (`sources-extra.tsv`: fr, ro, lt, pl, it, cs, about 16 MB) for Vilna OS; German still has no spelling (needs compounding) |
 | 2026-10-28 | trivial | Traditional Chinese interface: an installed Traditional Chinese font (PingFang TC, Microsoft JhengHei, Noto Sans CJK TC; the TC face of a pan-CJK collection) goes before the embedded Noto Sans CJK SC, whose mainland glyph shapes looked wrong to Taiwan readers; native only, wasm unchanged; estimates unchanged |
 | 2026-10-24 | minor | Preserved “Delete Around Caret in Equation” in all 27 shared WordCraft catalogs; the native/release pin and Flatpak source advance together. |
 | 2026-10-23 | minor | Interface catalogs moved to storytold/craft-i18n (`locales/<locale>/wordcraft.tsv`), looked up through craft-libs' `craft-i18n` crate and embedded from the pinned commit (`craft-i18n.rev`); strings other Crafting Apps already translate in the shared catalog now show translated; the "Open" paragraph-spacing preset no longer shows the file verb |
