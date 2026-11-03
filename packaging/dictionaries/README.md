@@ -49,6 +49,10 @@ compound words (`Rechnungsnummer`, `Krankenversicherungskarte`) from parts the d
 which the spelling engine reads. Swiss German (`de-CH`, `de-LI`) writes `ss` for `ß`, so it reads
 `de_CH_frami`, saved as `de_CH`: the same rules with Swiss spelling (`Strasse`, `Fussball`).
 
+Czech and Romanian hyphenation patterns are GPL-2, so the app can't bundle them as it bundles the
+other languages' (`assets/hyphenation`); the pack carries LibreOffice's `hyph_cs_CZ.dic` and
+`hyph_ro_RO.dic`, which the app reads from the same folders as the dictionaries.
+
 | File | Language | Source | Licence |
 |---|---|---|---|
 | `fr.aff`, `fr.dic` | French | Grammalecte's dictionary (Olivier R.), as packaged by [wooorm/dictionaries](https://github.com/wooorm/dictionaries/tree/main/dictionaries/fr) | MPL-2.0 |
@@ -59,6 +63,7 @@ which the spelling engine reads. Swiss German (`de-CH`, `de-LI`) writes `ss` for
 | `cs_CZ.aff`, `cs_CZ.dic` | Czech | Czech dictionary (from csTeX), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) | GPL-2.0 |
 | `de_DE.aff`, `de_DE.dic` | German (Germany, Austria) | `de_DE_frami`: igerman98 by Björn Jacke, extended by Franz Michael Baumann, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/de) | GPL-2.0 or GPL-3.0 |
 | `de_CH.aff`, `de_CH.dic` | German (Switzerland, Liechtenstein) | `de_CH_frami`: the same, with Swiss spelling, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/de) | GPL-2.0 or GPL-3.0 |
+| `hyph_cs_CZ.dic`, `hyph_ro_RO.dic` | Czech and Romanian hyphenation | Pavel Janík's conversion of the csTeX patterns; rospell's patterns (Adrian Stoica, Lucian Constantin); both from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries) | GPL-2.0 (or later for Romanian) |
 
 The extra pack carries its own copies of the licence texts it needs, so it stands alone.
 

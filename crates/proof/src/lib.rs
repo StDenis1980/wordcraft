@@ -54,7 +54,9 @@
 //! - **Other languages** ([`ProofLang::Other`]): no spelling or grammar marks, like Word without
 //!   the language's proofing tools.
 //! - **Hyphenation** ([`hyphen`]): dictionary, Liang patterns (English, Polish, Portuguese,
-//!   Italian, German), Bulgarian syllable rules, Russian word-division rules, heuristic.
+//!   Italian, German; in the Tinta Office fork also Spanish, Catalan, Galician, Basque, Ukrainian,
+//!   French and Lithuanian, and Czech and Romanian from installed files, [`tinta_hyph`]),
+//!   Bulgarian syllable rules, Russian word-division rules, heuristic.
 //!
 //! [`check_text`] checks a paragraph whose runs are in different languages.
 #![deny(clippy::unwrap_used, clippy::expect_used, clippy::panic, clippy::unimplemented, clippy::todo, clippy::unreachable)]
@@ -76,6 +78,7 @@ pub mod pl;
 pub mod plain;
 pub mod pt;
 pub mod ru;
+pub mod tinta_hyph;
 pub mod tinta_words;
 pub mod tr;
 pub mod vi;
