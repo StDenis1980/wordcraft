@@ -5869,6 +5869,45 @@ fn floating_tables_take_no_room_and_text_wraps_beside_them() {
     assert!(bx + bleft > nx + 200.0, "body text at {}, right of the narrow table", bx + bleft);
 }
 
+/// Tinta Office: a floating table placed a twip below the text (`w:tblpY="1"`, Spanish
+/// administrations' forms) and a table in the text right after it: the table starts below the
+/// floating one, as in Word, instead of being drawn over it.
+#[test]
+fn a_table_after_a_floating_table_just_below_it_starts_under_it() {
+    use wordcraft_doc::para::Anchor;
+    use wordcraft_doc::props::TableFloat;
+    let mut d = Document::from_text("");
+    let cell = |t: &mut Table, text: &str| {
+        t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(text, Default::default()))]
+    };
+    let mut form = Table::new(3, 1, 480.0);
+    cell(&mut form, "Persona física");
+    form.props.float =
+        Some(TableFloat { h_rel: Anchor::Column, v_rel: Anchor::Paragraph, y: 0.05, dist: [7.05, 0.0, 7.05, 0.0], ..Default::default() });
+    let mut next = Table::new(1, 1, 468.0);
+    cell(&mut next, "EXPÒS:");
+    d.insert_block(StoryRef::Body, &Path::top(0), wordcraft_doc::Block::Table(form)).unwrap();
+    d.insert_block(StoryRef::Body, &Path::top(1), wordcraft_doc::Block::Table(next)).unwrap();
+    let l = lay(&d);
+    let rows = |t: u32| -> Vec<(f32, f32)> {
+        l.pages[0]
+            .items
+            .iter()
+            .filter_map(|i| match i {
+                Placed::Cell { rect, table, .. } if table.0.first() == Some(&t) => Some((rect.y, rect.bottom())),
+                _ => None,
+            })
+            .collect()
+    };
+    let (form, next) = (rows(0), rows(1));
+    let float_bottom = form.iter().map(|r| r.1).fold(0.0f32, f32::max);
+    let form_y = form.iter().map(|r| r.0).fold(f32::MAX, f32::min);
+    let next_y = next.iter().map(|r| r.0).fold(f32::MAX, f32::min);
+    assert!(form.len() == 3 && !next.is_empty(), "both tables drawn");
+    assert!(float_bottom > form_y + 20.0, "three rows: {float_bottom}");
+    assert!(next_y >= float_bottom, "EXPÒS at {next_y}, the floating table ends at {float_bottom}");
+}
+
 /// A margin-anchored floating table is placed from the anchor page's margin even when a body
 /// paragraph keeps trailing empty lines: all 24 preceding paragraphs stay on page one and every
 /// table row is drawn exactly once there.

@@ -124,8 +124,10 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
         // own left edge.
         tl.x = float_table_x(pb, tl.width, &f, legacy, ctx.mirror) - pb.col_x();
     }
-    // A table in the text flow starts below the floating objects in its way.
-    below_floats(ctx, pb, pb.col_x() + tl.x, pb.col_x() + tl.x + tl.width);
+    // A table in the text flow starts below the floating objects in its way: those its first row
+    // would run into, also a floating table placed a little below where it starts.
+    let first_row = tl.rows.first().map_or(0.0, |r| r.height);
+    below_floats(ctx, pb, pb.col_x() + tl.x, pb.col_x() + tl.x + tl.width, first_row);
     let header_rows: Vec<usize> = (0..t.rows.len()).take_while(|r| t.rows.get(*r).is_some_and(|row| row.props.header)).collect();
     // Items repeated so far, and what one more repeat of the header rows costs (see
     // `MAX_HEADER_ITEMS`).
@@ -357,17 +359,20 @@ fn float_table_x(pb: &PageBuilder, w: f32, f: &TableFloat, legacy: f32, mirror: 
     if f.h_align.is_none() { x - legacy } else { x }
 }
 
-/// Move `pb.y` below the floating objects in the way of something spanning `x0..x1` that
-/// starts there (a table in the text flow doesn't wrap around them).
-fn below_floats(ctx: &mut Ctx, pb: &mut PageBuilder, x0: f32, x1: f32) {
-    pb.y = below(&body_wraps(ctx, pb), pb.y, x0, x1);
+/// Move `pb.y` below the floating objects in the way of something spanning `x0..x1` and `reach`
+/// tall that starts there (a table in the text flow doesn't wrap around them).
+fn below_floats(ctx: &mut Ctx, pb: &mut PageBuilder, x0: f32, x1: f32, reach: f32) {
+    pb.y = below(&body_wraps(ctx, pb), pb.y, x0, x1, reach);
 }
 
 /// `y`, moved below the wrap areas in `excl` in the way of something spanning `x0..x1` that
-/// starts there.
-pub(crate) fn below(excl: &[WrapArea], mut y: f32, x0: f32, x1: f32) -> f32 {
+/// starts there: areas it starts beside, or runs into within its first `reach` points (a table's
+/// first row: Tinta Office, a floating table placed a twip below the next table's top, as Spanish
+/// administrations' forms have it, was drawn over by that table).
+pub(crate) fn below(excl: &[WrapArea], mut y: f32, x0: f32, x1: f32, reach: f32) -> f32 {
+    let reach = if reach.is_finite() { reach.clamp(0.01, 100_000.0) } else { 0.01 };
     for _ in 0..64 {
-        let in_the_way = excl.iter().filter(|(r, ..)| r.y <= y + 0.01 && r.bottom() > y && r.x < x1 && r.right() > x0);
+        let in_the_way = excl.iter().filter(|(r, ..)| r.y <= y + reach && r.bottom() > y && r.x < x1 && r.right() > x0);
         let Some(bottom) = in_the_way.map(|(r, ..)| r.bottom()).reduce(f32::max) else { break };
         y = bottom;
     }
