@@ -85,9 +85,20 @@ pub enum ProofLang {
     /// generic checks with Basque messages ([`crate::plain`]).
     Eu,
     /// German (`de`, `de-DE`, `de-AT`, `de-CH`…): hyphenation by the German patterns (reformed
-    /// spelling). There is no German dictionary or grammar yet, so, as for [`ProofLang::Other`],
-    /// no spelling or grammar marks.
+    /// spelling). There is no German spelling yet (German dictionaries need Hunspell compounding,
+    /// which the affix engine doesn't do), so, as for [`ProofLang::Other`], no spelling or
+    /// grammar marks.
     De,
+    /// French (`fr`, `fr-FR`, `fr-BE`…; also `fra`, `fre`): the installed Hunspell `fr` dictionary
+    /// and generic checks with French messages, which keep the space French puts before `;:!?`
+    /// ([`crate::plain`]).
+    Fr,
+    /// Romanian (`ro`, `ro-RO`, `ro-MD`; also `ron`, `rum`): the installed Hunspell `ro_RO`
+    /// dictionary and generic checks with Romanian messages ([`crate::plain`]).
+    Ro,
+    /// Lithuanian (`lt`, `lt-LT`; also `lit`): the installed Hunspell `lt_LT` dictionary and generic
+    /// checks with Lithuanian messages ([`crate::plain`]).
+    Lt,
     /// A language without proofing tools here (`fr-FR`, `ja-JP`, `x-none`…). Like Word without
     /// the language's proofing tools: no spelling or grammar marks, so its words are never
     /// flagged as English misspellings. Hyphenation keeps using the English patterns, as before
@@ -97,7 +108,7 @@ pub enum ProofLang {
 
 impl ProofLang {
     /// Every language with a spelling dictionary, in display order.
-    pub const PROOFED: [ProofLang; 20] = [
+    pub const PROOFED: [ProofLang; 23] = [
         ProofLang::En,
         ProofLang::EnGb,
         ProofLang::EnCa,
@@ -118,6 +129,9 @@ impl ProofLang {
         ProofLang::CaValencia,
         ProofLang::Gl,
         ProofLang::Eu,
+        ProofLang::Fr,
+        ProofLang::Ro,
+        ProofLang::Lt,
     ];
 
     /// The proofing language of a BCP 47 tag (`pl-PL`, `en_GB`, `PL`…). The primary subtag
@@ -159,6 +173,12 @@ impl ProofLang {
             ProofLang::Eu
         } else if ["de", "deu", "ger"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
             ProofLang::De
+        } else if ["fr", "fra", "fre"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Fr
+        } else if ["ro", "ron", "rum"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Ro
+        } else if ["lt", "lit"].iter().any(|c| primary.eq_ignore_ascii_case(c)) {
+            ProofLang::Lt
         } else {
             ProofLang::Other
         }
@@ -227,6 +247,9 @@ impl ProofLang {
             ProofLang::Gl => "gl",
             ProofLang::Eu => "eu",
             ProofLang::De => "de",
+            ProofLang::Fr => "fr",
+            ProofLang::Ro => "ro",
+            ProofLang::Lt => "lt",
             ProofLang::Other => "",
         }
     }
@@ -403,7 +426,7 @@ mod tests {
 
     #[test]
     fn tags_reject_unknown_or_partial_language_codes() {
-        assert_tags(&["fr-FR", "dex", "x-none", "ja-JP", "plx", "bgx", "trx", "csx", "idx", "inx", "esx", "spax", "e", "-"], ProofLang::Other);
+        assert_tags(&["ja-JP", "dex", "x-none", "ja-JP", "plx", "bgx", "trx", "csx", "idx", "inx", "esx", "spax", "e", "-"], ProofLang::Other);
     }
 
     /// #3360, #3553: Spanish is proofed, by region: Spain (and no region), Mexico, Uruguay, and
@@ -444,6 +467,9 @@ mod tests {
             ),
             (ProofLang::Gl, "gl", &["gl", "gl-ES", "GL_es", "glg"][..]),
             (ProofLang::Eu, "eu", &["eu", "eu-ES", "eus", "baq", "eu-FR"][..]),
+            (ProofLang::Fr, "fr", &["fr", "fr-FR", "fr_BE.UTF-8", "FR-ca", "fra", "fre"][..]),
+            (ProofLang::Ro, "ro", &["ro", "ro-RO", "ro_MD", "ron", "rum"][..]),
+            (ProofLang::Lt, "lt", &["lt", "lt-LT", "lt_LT.UTF-8", "lit"][..]),
         ] {
             assert_tags(tags, lang);
             assert_eq!(lang.code(), code);

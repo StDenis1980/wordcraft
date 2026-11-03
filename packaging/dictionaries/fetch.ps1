@@ -9,7 +9,11 @@
 .EXAMPLE
   pwsh packaging/dictionaries/fetch.ps1 -Dest target\windows-package\x64\dictionaries
 #>
-param([Parameter(Mandatory)] [string] $Dest)
+param(
+  [Parameter(Mandatory)] [string] $Dest,
+  # sources.tsv (the shipped pack) or sources-extra.tsv (the separate download).
+  [ValidateSet('sources.tsv', 'sources-extra.tsv')] [string] $Manifest = 'sources.tsv'
+)
 $ErrorActionPreference = 'Stop'
 $Root = (Resolve-Path (Join-Path $PSScriptRoot '..\..')).Path
 $Cache = if ($env:TINTA_DICTIONARIES_CACHE) { $env:TINTA_DICTIONARIES_CACHE } else {
@@ -17,7 +21,7 @@ $Cache = if ($env:TINTA_DICTIONARIES_CACHE) { $env:TINTA_DICTIONARIES_CACHE } el
 }
 New-Item -ItemType Directory -Force -Path (Join-Path $Dest 'licences'), $Cache | Out-Null
 function Get-Sha256([string] $Path) { (Get-FileHash -Algorithm SHA256 -LiteralPath $Path).Hash.ToLowerInvariant() }
-foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot 'sources.tsv')) {
+foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot $Manifest)) {
   if (-not $line -or $line.StartsWith('#')) { continue }
   $file, $url, $sha = $line.Split("`t")[0..2]
   $cached = Join-Path $Cache $sha
@@ -25,7 +29,7 @@ foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot 'sources.t
     Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile "$cached.download"
     if ((Get-Sha256 "$cached.download") -ne $sha) {
       Remove-Item -Force "$cached.download"
-      throw "$url does not match its SHA-256 in sources.tsv"
+      throw "$url does not match its SHA-256 in $Manifest"
     }
     Move-Item -Force "$cached.download" $cached
   }
@@ -33,9 +37,11 @@ foreach ($line in Get-Content -Encoding UTF8 (Join-Path $PSScriptRoot 'sources.t
   New-Item -ItemType Directory -Force -Path (Split-Path $target) | Out-Null
   Copy-Item -Force -LiteralPath $cached -Destination $target
 }
-# Tinta's accepted words (tinta-words\, committed) go beside the dictionaries.
-foreach ($list in Get-ChildItem -Path (Join-Path $PSScriptRoot 'tinta-words') -Filter *.txt) {
-  Copy-Item -Force -LiteralPath $list.FullName -Destination (Join-Path $Dest "tinta-words-$($list.Name)")
+# Tinta's accepted words (tinta-words\, committed) go beside the shipped dictionaries.
+if ($Manifest -eq 'sources.tsv') {
+  foreach ($list in Get-ChildItem -Path (Join-Path $PSScriptRoot 'tinta-words') -Filter *.txt) {
+    Copy-Item -Force -LiteralPath $list.FullName -Destination (Join-Path $Dest "tinta-words-$($list.Name)")
+  }
 }
 Copy-Item -Force (Join-Path $PSScriptRoot 'README.md') (Join-Path $Dest 'licences\README.md')
 Write-Output "dictionaries: $((Get-ChildItem -Path $Dest -Filter *.dic).Count) in $Dest"

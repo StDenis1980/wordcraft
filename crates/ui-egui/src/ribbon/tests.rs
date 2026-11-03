@@ -577,27 +577,28 @@ fn fit_tabs_keeps_the_kept_tabs_and_drops_from_the_end() {
 }
 
 /// #860: Review › Language (and the status bar) reach every proofing language, not just the
-/// short list: Set Proofing Language… opens the Language dialog (French, Set As Default),
-/// Language Preferences… opens Options › Language, and French text shows by name, checked.
+/// short list: Set Proofing Language… opens the Language dialog (German, Set As Default),
+/// Language Preferences… opens Options › Language, and German text shows by name, checked
+/// (German has no spelling, so it is off the short list; French is on it in the Tinta fork).
 #[test]
 fn language_menu_reaches_every_language() {
     use egui_kittest::kittest::{By, NodeT, Queryable};
     let item = |label: &'static str| By::new().label_contains(label);
     let app = WordApp::new(Session::new(wordcraft_doc::Document::from_text("Bonjour")), crate::Services::default());
-    let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 600.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
+    let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 800.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
     h.run();
-    assert!(h.query(item("French (France)")).is_none(), "the short list only, on an English document");
+    assert!(h.query(item("German (Germany)")).is_none(), "the short list only, on an English document");
     assert!(!h.get(item("Set Proofing Language…")).accesskit_node().is_disabled(), "never greyed out on a fresh document");
     assert!(!h.get(item("English (United States)")).accesskit_node().is_disabled());
     h.get(item("Set Proofing Language…")).click();
     h.run();
     assert_eq!(h.state().dialog.as_ref().map(crate::dialogs::Dialog::name), Some("language"));
     h.state_mut().dialog = None;
-    // French for the whole document: the menu and the status bar name it.
-    h.state_mut().run("review.language", json!({"lang": "fr-FR", "default": true})).unwrap();
+    // German for the whole document: the menu and the status bar name it.
+    h.state_mut().run("review.language", json!({"lang": "de-DE", "default": true})).unwrap();
     h.run();
-    assert_eq!(caret_language(h.state()), "French (France)");
-    assert!(h.query(item("French (France)")).is_some(), "the current language is listed (only while it is the current one)");
+    assert_eq!(caret_language(h.state()), "German (Germany)");
+    assert!(h.query(item("German (Germany)")).is_some(), "the current language is listed (only while it is the current one)");
     h.get(item("Language Preferences…")).click();
     h.run();
     assert!(h.state().ui.backstage, "File › Options opened");
@@ -612,7 +613,7 @@ fn every_proofing_language_is_picked_from_the_language_menu() {
     use egui_kittest::kittest::{By, NodeT, Queryable};
     let mut app = WordApp::new(Session::new(wordcraft_doc::Document::from_text("Colour")), crate::Services::default());
     app.run("select.all", json!({})).unwrap();
-    let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 600.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
+    let mut h = egui_kittest::Harness::builder().with_size(vec2(400.0, 800.0)).build_ui_state(|ui, app: &mut WordApp| language_menu(ui, app), app);
     h.run();
     for (tag, name) in PROOFING_LANGUAGES {
         // Exact labels: "Catalan" is part of "Catalan (Valencian)".

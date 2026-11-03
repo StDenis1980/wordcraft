@@ -34,6 +34,30 @@ form their authors publish and edit, and their sources are listed below.
 
 Licence texts: `MPL-1.1.txt`, `GPL-2.0.txt`, `GPL-3.0.txt`, `LGPL-2.1.txt`, `LGPL-3.0.txt`.
 
+## The extra pack (separate download)
+
+French, Romanian, Lithuanian, Polish, Italian and Czech are a separate download of about
+20 MB, so the main pack stays small. [`sources-extra.tsv`](sources-extra.tsv) lists them the same
+way; `fetch.sh DEST sources-extra.tsv` (Windows: `fetch.ps1 -Dest DEST -Manifest
+sources-extra.tsv`) fills a folder to zip as a release asset. Unzipped into the app's
+`dictionaries` folder, or a folder set in File › Options › Proofing, the languages are checked. On
+Linux the distribution's `hunspell-fr`, `hunspell-ro`… packages work too: the app also reads
+`/usr/share/hunspell`.
+
+German spelling is not in it yet: the German dictionaries need Hunspell compounding, which the
+engine does not have, so German text gets hyphenation only.
+
+| File | Language | Source | Licence |
+|---|---|---|---|
+| `fr.aff`, `fr.dic` | French | Grammalecte's dictionary (Olivier R.), as packaged by [wooorm/dictionaries](https://github.com/wooorm/dictionaries/tree/main/dictionaries/fr) | MPL-2.0 |
+| `ro_RO.aff`, `ro_RO.dic` | Romanian | rospell (Lucian Constantin), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/ro) | GPL-2.0, LGPL-2.1 or MPL-1.1, at your option |
+| `lt_LT.aff`, `lt_LT.dic` | Lithuanian | [ispell-lt](https://github.com/ispell-lt/ispell-lt) by Albertas Agejevas and contributors, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/lt_LT) | BSD-3-Clause |
+| `pl_PL.aff`, `pl_PL.dic` | Polish | [sjp.pl](https://sjp.pl), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/pl_PL) | GPL, LGPL, MPL, Apache-2.0 or CC BY-SA, at your option |
+| `it_IT.aff`, `it_IT.dic` | Italian | Italian dictionary project, from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/it_IT) | GPL-3.0 |
+| `cs_CZ.aff`, `cs_CZ.dic` | Czech | Czech dictionary (from csTeX), from [LibreOffice dictionaries](https://github.com/LibreOffice/dictionaries/tree/master/cs_CZ) | GPL-2.0 |
+
+The extra pack carries its own copies of the licence texts it needs, so it stands alone.
+
 ## Tinta's own word lists
 
 `tinta-words/<lang>.txt` (es, ca, gl, eu, uk) hold the words Tinta Texto's users suggested with

@@ -105,7 +105,7 @@ mod tests {
         for s in STRINGS {
             let langs =
                 rows.lines().filter(|l| l.split('\t').nth(1) == Some(s) && l.split('\t').nth(2).is_some_and(|t| !t.trim().is_empty())).count();
-            assert_eq!(langs, 29, "{s:?}");
+            assert_eq!(langs, 30, "{s:?}");
         }
     }
 }

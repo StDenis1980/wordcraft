@@ -1284,3 +1284,39 @@ fn text_naming_the_product_carries_this_builds_name() {
         assert!(!wordcraft_engine::brand::REBRANDED || !text.contains("WordCraft"), "{}: {text}", lang.code());
     }
 }
+
+#[test]
+fn lithuanian_locales_and_saved_preference_work_without_changing_the_document() {
+    needs_catalogs!();
+    let lt = lang("lt");
+    for tag in ["lt", "lt-LT", "lt_LT.UTF-8", "LT-lt", "lt-Latn-LT"] {
+        assert_eq!(lang_from_tag(tag), Some(lt), "{tag}");
+    }
+    assert_eq!(first_supported([UNSUPPORTED, "lt-LT", "en-US"]), Some(lt));
+    let mut app = crate::WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Default::default());
+    let before = serde_json::to_value(&app.session.doc).unwrap();
+    let result = app.run("ui.language", serde_json::json!({"value": "LT"})).unwrap();
+    assert_eq!(result["effective"], "lt");
+    assert!(result["available"].as_array().unwrap().iter().any(|l| l["code"] == "lt" && l["name"] == "Lietuvių"));
+    assert_eq!(serde_json::to_value(&app.session.doc).unwrap(), before);
+    let restored: crate::UiState = serde_json::from_str(&serde_json::to_string(&app.ui).unwrap()).unwrap();
+    assert_eq!(Lang::from_pref(&restored.language), lt);
+    assert_eq!(tr(lt, "Support"), "Pagalba");
+    assert_eq!(tr(lt, "Page Color"), "Puslapio spalva");
+}
+
+#[test]
+fn bundled_interface_fonts_cover_lithuanian_without_system_fallbacks() {
+    let db = wordcraft_fonts::FontDb::with_font_dirs(Vec::new());
+    needs_catalogs!();
+    let entries = translations("lt");
+    let extra = ['ą', 'č', 'ę', 'ė', 'į', 'š', 'ų', 'ū', 'ž', 'Ą', 'Č', 'Ę', 'Ė', 'Į', 'Š', 'Ų', 'Ū', 'Ž', '„', '“'];
+    let chars: std::collections::HashSet<char> = entries.iter().flat_map(|e| e.chars()).filter(|c| extra.contains(c)).chain(extra).collect();
+    for (family, style) in [("Inter", "Regular"), ("Inter", "Medium"), ("Inter", "SemiBold"), ("JetBrains Mono", "Regular")] {
+        let face = db.face(family, style);
+        assert_eq!(face.family, family, "must use the bundled interface face");
+        for ch in &chars {
+            assert_ne!(face.glyph_for(*ch), 0, "{family} {style} lacks {ch}");
+        }
+    }
+}
