@@ -7322,6 +7322,34 @@ fn a_spanning_cell_takes_its_minimum_from_the_columns_with_room() {
     assert_eq!(cols.map(|c| c.0), [20.0, 20.0]);
 }
 
+/// Tinta Office: a table row whose first paragraph has "Page break before" starts the next page,
+/// as in Word (a Balearic form starts its data-protection row on a page of its own); the rows
+/// before it stay where they are.
+#[test]
+fn a_table_row_with_a_page_break_before_starts_the_next_page() {
+    let laid = |pbb: bool| {
+        let mut d = Document::from_text("Intro");
+        let mut t = Table::new(3, 1, 468.0);
+        for (i, row) in t.rows.iter_mut().enumerate() {
+            let mut p = wordcraft_doc::Paragraph::with_text(&format!("Row {i}"), Default::default());
+            p.props.page_break_before = Some(pbb && i == 2);
+            row.cells[0].blocks = vec![wordcraft_doc::para_block(p)];
+        }
+        d.insert_block(StoryRef::Body, &Path::top(1), wordcraft_doc::Block::Table(t)).unwrap();
+        let l = lay(&d);
+        let pages: Vec<Vec<usize>> = l
+            .pages
+            .iter()
+            .map(|pg| pg.items.iter().filter_map(|i| if let Placed::Cell { row, .. } = i { Some(*row) } else { None }).collect())
+            .collect();
+        pages
+    };
+    assert_eq!(laid(false), vec![vec![0, 1, 2]], "without the break the table stays on one page");
+    let pages = laid(true);
+    assert_eq!(pages.first(), Some(&vec![0, 1]), "rows 0 and 1 stay on page one: {pages:?}");
+    assert_eq!(pages.get(1), Some(&vec![2]), "row 2 starts page two: {pages:?}");
+}
+
 #[test]
 fn a_split_row_moves_shading_below_the_cut_with_it() {
     use crate::table::{CellPart, RowLayout, split_row};

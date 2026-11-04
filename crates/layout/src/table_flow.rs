@@ -71,6 +71,12 @@ pub(crate) fn footer_table_wraps(ctx: &mut Ctx, pb: &PageBuilder) -> Vec<WrapAre
     areas
 }
 
+/// Tinta Office: whether the first paragraph of `row`'s first cell asks for a page break before it.
+fn row_breaks_page(ctx: &Ctx, row: &wordcraft_doc::Row) -> bool {
+    let first = row.cells.first().and_then(|c| c.blocks.first());
+    first.is_some_and(|b| matches!(&**b, wordcraft_doc::Block::Para(p) if ctx.doc.styles.resolve_para(&p.props).page_break_before))
+}
+
 fn row_keeps_next(row: &table::RowLayout) -> bool {
     let Some(items) = row.cells.first().and_then(|cell| row.items.get(cell.items.clone())) else { return false };
     let Some((depth, story)) = items
@@ -182,6 +188,18 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
     // For the move-on rule, the table's own header rows at the top of a page leave it empty.
     let table_at_top = pb.at_top();
     for (ri, row) in tl.rows.iter().enumerate() {
+        // Tinta Office: a row whose first paragraph starts a new page (`w:pageBreakBefore`, as
+        // a form's "Informació sobre protecció de dades" row does) starts the next page, as in
+        // Word; the header rows repeat above it there.
+        if !header_rows.contains(&ri) && !pb.web && !pb.at_top() && t.rows.get(ri).is_some_and(|r| row_breaks_page(ctx, r)) {
+            pb.advance(block, body_top);
+            if header_repeats.saturating_add(header_cost) <= MAX_HEADER_ITEMS {
+                header_repeats += header_cost;
+                for h in header_rows.iter().filter_map(|hr| tl.rows.get(*hr)) {
+                    place(pb, h);
+                }
+            }
+        }
         // Word never splits a row of an exact height: it moves on whole.
         let splittable = !header_rows.contains(&ri)
             && !t
