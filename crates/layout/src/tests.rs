@@ -7298,6 +7298,30 @@ fn a_floating_table_above_the_footers_last_paragraph_doesnt_make_the_footer_tall
     assert!(body_lines(&laid(true, 15)) < body_lines(&plain), "Word 2013: the table takes room from the body");
 }
 
+/// Tinta Office: a cell spanning three columns that fits their preferred widths (a form's
+/// "Altres: ____" field over "Província", "Municipi" and "Codi postal") doesn't make the middle
+/// column, already at its own minimum, wider than its grid width; the room comes from the
+/// columns that have it, as Word keeps the form's grid.
+#[test]
+fn a_spanning_cell_takes_its_minimum_from_the_columns_with_room() {
+    use crate::table::share_span_min;
+    let grid = [38.0, 50.7, 112.75];
+    let mut cols = [(20.0, 30.0), (50.65, 60.0), (40.0, 90.0)];
+    share_span_min(&mut cols, Some(&grid), 152.6);
+    let mins = cols.map(|c| c.0);
+    assert!(mins[1] <= 50.7 + 0.01, "the middle column stays within its grid width: {mins:?}");
+    assert!((mins.iter().sum::<f32>() - 152.6).abs() < 0.01, "the span still gets its minimum: {mins:?}");
+    assert!(mins.iter().zip(grid).all(|(m, w)| *m <= w + 0.01), "every column within its grid width: {mins:?}");
+    // A span wider than its preferred widths spreads what is still missing by those widths.
+    let mut cols = [(38.0, 38.0), (50.7, 50.7), (112.75, 112.75)];
+    share_span_min(&mut cols, Some(&grid), 201.45 + 20.145);
+    assert!((cols[2].0 - (112.75 + 20.145 * 112.75 / 201.45)).abs() < 0.01, "{cols:?}");
+    // Automatic tables share it equally.
+    let mut cols = [(10.0, 10.0), (10.0, 10.0)];
+    share_span_min(&mut cols, None, 40.0);
+    assert_eq!(cols.map(|c| c.0), [20.0, 20.0]);
+}
+
 #[test]
 fn a_split_row_moves_shading_below_the_cut_with_it() {
     use crate::table::{CellPart, RowLayout, split_row};
@@ -11826,7 +11850,6 @@ fn caret_height_ignores_line_spacing() {
 enum SpanWidth {
     Preferred,
     Automatic,
-    TextOnly,
 }
 
 fn banner_layout(width: SpanWidth) -> DocLayout {
@@ -11836,21 +11859,19 @@ fn banner_layout(width: SpanWidth) -> DocLayout {
     t.grid = widths.to_vec();
     t.props.width = match width {
         SpanWidth::Preferred => Some(300.0),
-        SpanWidth::Automatic | SpanWidth::TextOnly => None,
+        SpanWidth::Automatic => None,
     };
     t.props.cell_margins = Some([0.0; 4]);
     t.rows[0].cells.truncate(1);
     t.rows[0].cells[0].props.span = 4;
     t.rows[0].cells[0].props.width = t.props.width;
     let mut banner = wordcraft_doc::Paragraph::new();
-    if !matches!(width, SpanWidth::TextOnly) {
-        banner.insert_object(0, picture(300.0, 30.0, Default::default()), &Default::default()).unwrap();
-    }
+    banner.insert_object(0, picture(300.0, 30.0, Default::default()), &Default::default()).unwrap();
     t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(banner)];
     for (i, cell) in t.rows[1].cells.iter_mut().enumerate() {
         cell.props.width = match width {
             SpanWidth::Preferred => Some(widths[i]),
-            SpanWidth::Automatic | SpanWidth::TextOnly => None,
+            SpanWidth::Automatic => None,
         };
         cell.blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("A", Default::default()))];
     }
@@ -11858,18 +11879,12 @@ fn banner_layout(width: SpanWidth) -> DocLayout {
     lay(&d)
 }
 
+/// A banner picture spanning the whole table fits the columns' preferred widths, so the grid
+/// stands. (Tinta Office: Word's PDFs of the Balearic forms keep such a grid exactly; sharing the
+/// span's extra minimum by preferred widths made the narrow columns wider than their grid width.)
 #[test]
 fn spanning_banner_uses_weights() {
-    let text = banner_layout(SpanWidth::TextOnly);
-    let minimum = text.pages[0]
-        .items
-        .iter()
-        .find_map(|item| match item {
-            Placed::Cell { rect, row: 1, .. } => Some(rect.w),
-            _ => None,
-        })
-        .unwrap();
-    let widths = [150.0 - minimum, 100.0 - minimum / 3.0, 25.0 + 2.0 * minimum / 3.0, 25.0 + 2.0 * minimum / 3.0];
+    let widths = [150.0, 100.0, 25.0, 25.0];
     let l = banner_layout(SpanWidth::Preferred);
     let actual: Vec<_> =
         l.pages[0].items.iter().filter_map(|it| if let Placed::Cell { rect, row: 1, .. } = it { Some(rect.w) } else { None }).collect();
