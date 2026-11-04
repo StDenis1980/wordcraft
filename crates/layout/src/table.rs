@@ -126,6 +126,17 @@ fn table_style(ctx: &Ctx, t: &Table) -> Option<TableStyleProps> {
     ctx.doc.styles.table_style(t.props.style.as_deref()?)
 }
 
+/// Tinta Office: the table's outer top border and its border between rows (its style's,
+/// overlaid by its own), for a row that starts a page in the middle of the table.
+pub(crate) fn top_and_between(ctx: &Ctx, t: &Table) -> (Option<Border>, Option<Border>) {
+    let style = table_style(ctx, t);
+    let mut b = style.and_then(|s| s.parts.borders).unwrap_or_default();
+    if let Some(own) = t.props.borders {
+        b.overlay(&own);
+    }
+    (b.top, b.between)
+}
+
 /// The table's default cell margins: its own, else its style's, else Word's.
 fn default_margins(t: &Table, style: Option<&TableStyleProps>) -> [f32; 4] {
     t.props.cell_margins.or(style.and_then(|s| s.parts.cell_margins)).unwrap_or(DEFAULT_MARGINS)

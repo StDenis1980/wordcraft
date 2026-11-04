@@ -11025,6 +11025,41 @@ fn a_kept_row_keeping_its_lines_moves_on_whole() {
     assert_eq!(row_keep_pages(&d), [0, 1], "without keep lines together it splits");
 }
 
+/// Tinta Office: a row that starts a page in the middle of a table gets the table's outer top
+/// border there, as in Word's PDFs of the Balearic forms (a 2.25 pt top border, 0.75 pt between
+/// rows): the border is drawn at the top of the page, and the row's text sits 1.5 pt lower.
+#[test]
+fn a_row_starting_a_page_mid_table_gets_the_outer_top_border() {
+    use wordcraft_doc::props::{Border, Borders};
+    let laid = |top: f32| {
+        let mut d = Document::new();
+        let mut t = Table::new(80, 1, 468.0);
+        let mut b = Borders::all(Border::single(0.75));
+        b.top = Some(Border::single(top));
+        b.between = Some(Border::single(0.75));
+        t.props.borders = Some(b);
+        for (i, row) in t.rows.iter_mut().enumerate() {
+            row.cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
+        }
+        d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::new())];
+        lay(&d)
+    };
+    let page_two = |l: &DocLayout| {
+        let page = l.pages.get(1).expect("the table runs onto page two");
+        let text = page.items.iter().find_map(|i| if let Placed::Lines { y, .. } = i { Some(*y) } else { None });
+        let rule = page
+            .items
+            .iter()
+            .filter_map(|i| if let Placed::Rule { y0, y1, border, .. } = i { ((y0 - y1).abs() < 0.01).then_some((*y0, border.width)) } else { None })
+            .fold(None, |m: Option<(f32, f32)>, r| if m.is_none_or(|m| r.0 < m.0) { Some(r) } else { m });
+        (text, rule)
+    };
+    let (thin, thick) = (laid(0.75), laid(2.25));
+    let ((Some(y_thin), _), (Some(y_thick), Some((_, width)))) = (page_two(&thin), page_two(&thick)) else { panic!("page two drawn") };
+    assert!((y_thick - y_thin - 1.5).abs() < 0.01, "the text moves down by 2.25 - 0.75: {y_thin} vs {y_thick}");
+    assert!((width - 2.25).abs() < 0.01, "the top rule on page two is the outer border: {width}");
+}
+
 #[test]
 fn kept_row_can_split_itself() {
     let mut d = row_keep_doc();
