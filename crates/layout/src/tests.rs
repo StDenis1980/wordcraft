@@ -11031,7 +11031,7 @@ fn a_kept_row_keeping_its_lines_moves_on_whole() {
 #[test]
 fn a_row_starting_a_page_mid_table_gets_the_outer_top_border() {
     use wordcraft_doc::props::{Border, Borders};
-    let laid = |top: f32| {
+    let laid = |top: f32, own_top: Option<f32>| {
         let mut d = Document::new();
         let mut t = Table::new(80, 1, 468.0);
         let mut b = Borders::all(Border::single(0.75));
@@ -11039,6 +11039,9 @@ fn a_row_starting_a_page_mid_table_gets_the_outer_top_border() {
         b.between = Some(Border::single(0.75));
         t.props.borders = Some(b);
         for (i, row) in t.rows.iter_mut().enumerate() {
+            if let Some(w) = own_top {
+                row.cells[0].props.borders = Some(Borders { top: Some(Border::single(w)), ..Default::default() });
+            }
             row.cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(&format!("Row {i}"), Default::default()))];
         }
         d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::new())];
@@ -11054,10 +11057,17 @@ fn a_row_starting_a_page_mid_table_gets_the_outer_top_border() {
             .fold(None, |m: Option<(f32, f32)>, r| if m.is_none_or(|m| r.0 < m.0) { Some(r) } else { m });
         (text, rule)
     };
-    let (thin, thick) = (laid(0.75), laid(2.25));
+    let (thin, thick) = (laid(0.75, None), laid(2.25, None));
     let ((Some(y_thin), _), (Some(y_thick), Some((_, width)))) = (page_two(&thin), page_two(&thick)) else { panic!("page two drawn") };
     assert!((y_thick - y_thin - 1.5).abs() < 0.01, "the text moves down by 2.25 - 0.75: {y_thin} vs {y_thick}");
     assert!((width - 2.25).abs() < 0.01, "the top rule on page two is the outer border: {width}");
+    // A cell with a top border of its own keeps it there, thin (doc 08) or thick (docs 16, 19).
+    for own in [0.75, 2.25] {
+        let (Some(y_own), Some((_, w))) = page_two(&laid(2.25, Some(own))) else { panic!("page two drawn") };
+        let (Some(y_ref), _) = page_two(&laid(own, Some(own))) else { panic!("page two drawn") };
+        assert!((y_own - y_ref).abs() < 0.01, "a cell's own top border is not added to: {y_ref} vs {y_own}");
+        assert!((w - own).abs() < 0.01, "the cell's own top border stays: {w}");
+    }
 }
 
 #[test]
