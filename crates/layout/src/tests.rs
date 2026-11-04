@@ -7327,12 +7327,21 @@ fn a_spanning_cell_takes_its_minimum_from_the_columns_with_room() {
 /// before it stay where they are.
 #[test]
 fn a_table_row_with_a_page_break_before_starts_the_next_page() {
-    let laid = |pbb: bool| {
+    let laid = |pbb: bool, float: bool| {
         let mut d = Document::from_text("Intro");
         let mut t = Table::new(3, 1, 468.0);
+        if float {
+            t.props.float = Some(wordcraft_doc::props::TableFloat {
+                h_rel: wordcraft_doc::para::Anchor::Margin,
+                v_rel: wordcraft_doc::para::Anchor::Paragraph,
+                y: 22.55,
+                ..Default::default()
+            });
+        }
+        let breaking = if float { 0 } else { 2 };
         for (i, row) in t.rows.iter_mut().enumerate() {
             let mut p = wordcraft_doc::Paragraph::with_text(&format!("Row {i}"), Default::default());
-            p.props.page_break_before = Some(pbb && i == 2);
+            p.props.page_break_before = Some(pbb && i == breaking);
             row.cells[0].blocks = vec![wordcraft_doc::para_block(p)];
         }
         d.insert_block(StoryRef::Body, &Path::top(1), wordcraft_doc::Block::Table(t)).unwrap();
@@ -7344,10 +7353,13 @@ fn a_table_row_with_a_page_break_before_starts_the_next_page() {
             .collect();
         pages
     };
-    assert_eq!(laid(false), vec![vec![0, 1, 2]], "without the break the table stays on one page");
-    let pages = laid(true);
+    assert_eq!(laid(false, false), vec![vec![0, 1, 2]], "without the break the table stays on one page");
+    let pages = laid(true, false);
     assert_eq!(pages.first(), Some(&vec![0, 1]), "rows 0 and 1 stay on page one: {pages:?}");
     assert_eq!(pages.get(1), Some(&vec![2]), "row 2 starts page two: {pages:?}");
+    // A floating table whose first row breaks the page starts the next page.
+    assert_eq!(laid(false, true), vec![vec![0, 1, 2]], "without the break the floating table stays on page one");
+    assert_eq!(laid(true, true), vec![vec![], vec![0, 1, 2]], "the floating table starts page two");
 }
 
 #[test]
@@ -10990,6 +11002,27 @@ fn oversized_kept_rows_finish() {
     let l = lay(&d);
     assert!(l.pages.len() <= 4, "{} pages", l.pages.len());
     assert_eq!(row_keep_pages(&d), [1, 2], "Word starts the oversized kept group on a fresh page");
+}
+
+/// Tinta Office: a row whose first paragraph keeps with the next and keeps its lines together
+/// moves on whole rather than split (Word moves such a Balearic form row, and the kept rows
+/// before it, to the next page); without `keepLines` it splits (`kept_row_can_split_itself`).
+#[test]
+fn a_kept_row_keeping_its_lines_moves_on_whole() {
+    let mut d = row_keep_doc();
+    let t = d.table_mut(StoryRef::Body, &Path::top(1)).unwrap();
+    t.rows[0].props.height = None;
+    t.rows[0].props.height_rule = wordcraft_doc::props::HeightRule::Auto;
+    t.rows[1].props.height = Some(20.0);
+    let plain = t.rows[1].cells[0].blocks[0].as_para().unwrap().props.clone();
+    for i in 0..9 {
+        let mut p = Paragraph::with_text(&format!("Line {i}"), Default::default());
+        p.props = plain.clone();
+        t.rows[0].cells[0].blocks.push(wordcraft_doc::para_block(p));
+    }
+    assert_eq!(row_keep_pages(&d), [1, 1], "the kept row moves on whole with its follower");
+    d.para_mut(StoryRef::Body, &Path(vec![1, 0, 0, 0])).unwrap().props.keep_lines = Some(false);
+    assert_eq!(row_keep_pages(&d), [0, 1], "without keep lines together it splits");
 }
 
 #[test]
