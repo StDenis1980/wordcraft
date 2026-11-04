@@ -99,6 +99,14 @@ fn page_top_row(
     Some(table::RowLayout { height: row.height + delta, items, bottom: row.bottom, edge: row.edge, cells: Vec::new() })
 }
 
+/// Tinta Office: whether `row` sets its own top border, in a cell (`w:tcBorders`) or in its table
+/// property exceptions. Word then keeps that border at the top of a page instead of the table's
+/// outer one (docs 08, 16 and 19 of the comparison corpus).
+fn row_has_own_top(row: &wordcraft_doc::Row) -> bool {
+    row.props.exceptions.as_ref().and_then(|e| e.borders).is_some_and(|b| b.between.is_some())
+        || row.cells.iter().any(|c| c.props.borders.is_some_and(|b| b.top.is_some()))
+}
+
 /// Tinta Office: whether the first paragraph of `row`'s first cell asks for a page break before it.
 fn row_breaks_page(ctx: &Ctx, row: &wordcraft_doc::Row) -> bool {
     let first = row.cells.first().and_then(|c| c.blocks.first());
@@ -327,6 +335,7 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             && rest.is_none()
             && pb.at_top()
             && !pb.web
+            && t.rows.get(ri).is_some_and(|r| !row_has_own_top(r))
             && let Some(moved) = page_top_row(last, page_top)
         {
             place(pb, &moved);
