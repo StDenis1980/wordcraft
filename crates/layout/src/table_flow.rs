@@ -78,7 +78,12 @@ fn row_breaks_page(ctx: &Ctx, row: &wordcraft_doc::Row) -> bool {
 }
 
 fn row_keeps_next(row: &table::RowLayout) -> bool {
-    let Some(items) = row.cells.first().and_then(|cell| row.items.get(cell.items.clone())) else { return false };
+    first_para_keeps(row).0
+}
+
+/// The keep flags (`keep_next`, `keep_lines`) of the first paragraph of `row`'s first cell.
+fn first_para_keeps(row: &table::RowLayout) -> (bool, bool) {
+    let Some(items) = row.cells.first().and_then(|cell| row.items.get(cell.items.clone())) else { return (false, false) };
     let Some((depth, story)) = items
         .iter()
         .filter_map(|item| match item {
@@ -87,18 +92,18 @@ fn row_keeps_next(row: &table::RowLayout) -> bool {
         })
         .min_by_key(|(depth, _)| *depth)
     else {
-        return false;
+        return (false, false);
     };
     // Word takes the row's keep flag from the first paragraph of its first cell.
     items
         .iter()
         .find_map(|item| match item {
             Placed::Lines { path, story: own, para, .. } if path.0.len() == depth && path.0.last() == Some(&0) && *own == story => {
-                Some(para.rp.keep_next)
+                Some((para.rp.keep_next, para.rp.keep_lines))
             }
             _ => None,
         })
-        .unwrap_or(false)
+        .unwrap_or((false, false))
 }
 
 fn row_can_start(row: &wordcraft_doc::Row, laid: &table::RowLayout, room: f32, page_height: f32) -> bool {
@@ -111,7 +116,19 @@ fn row_can_start(row: &wordcraft_doc::Row, laid: &table::RowLayout, room: f32, p
     if row.props.height_rule == HeightRule::AtLeast && row.props.height.is_some_and(|h| h > room + 0.01 && h <= page_height + 0.01) {
         return false;
     }
+    // Tinta Office: a row kept with the next one doesn't split when a page can hold it.
+    if kept_whole(laid, page_height) {
+        return false;
+    }
     table::split_row_keeping_cells(laid, room).is_some()
+}
+
+/// Tinta Office: a row whose first paragraph keeps with the next and keeps its lines together
+/// (`w:keepNext` and `w:keepLines`) moves on whole instead of splitting, unless it is taller
+/// than a page. Word moves such a form row, and the kept rows before it, to the next page (seen
+/// in Word's PDF of a Balearic form); a kept row without `w:keepLines` still splits.
+fn kept_whole(laid: &table::RowLayout, page_height: f32) -> bool {
+    first_para_keeps(laid) == (true, true) && laid.height <= page_height + 0.01
 }
 
 pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc::Table, block: usize, body_top: f32) {
@@ -124,6 +141,11 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
         let legacy = if ctx.doc.settings.compat_mode < 15 { table::first_cell_left_margin(ctx, t) } else { 0.0 };
         let h: f32 = tl.rows.iter().map(|r| r.height).sum();
         if h <= pb.uncapped_bottom() - pb.top + 0.01 {
+            // Tinta Office: a floating table whose first row starts with a page break before
+            // starts the next page, with its anchor, as in Word.
+            if !pb.at_top() && t.rows.first().is_some_and(|r| row_breaks_page(ctx, r)) {
+                pb.advance(block, body_top);
+            }
             place_floating_table(ctx, pb, &tl, &f, legacy, block, body_top);
             return;
         }
@@ -202,6 +224,7 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
         }
         // Word never splits a row of an exact height: it moves on whole.
         let splittable = !header_rows.contains(&ri)
+            && !kept_whole(row, pb.bottom - body_top - repeated_height)
             && !t
                 .rows
                 .get(ri)
