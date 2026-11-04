@@ -71,6 +71,34 @@ pub(crate) fn footer_table_wraps(ctx: &mut Ctx, pb: &PageBuilder) -> Vec<WrapAre
     areas
 }
 
+/// Tinta Office: `row` as it is drawn at the top of a page in the middle of its table: the rules
+/// along its top that use the border between rows (`top_between.1`) use the table's outer top
+/// border (`top_between.0`) instead, and everything moves down by how much wider that is. `None`
+/// when the outer border is no wider (nothing changes).
+fn page_top_row(
+    row: &table::RowLayout,
+    top_between: (Option<wordcraft_doc::props::Border>, Option<wordcraft_doc::props::Border>),
+) -> Option<table::RowLayout> {
+    let (Some(top), between) = top_between else { return None };
+    let width = |b: Option<wordcraft_doc::props::Border>| b.filter(|b| b.is_visible()).map_or(0.0, |b| b.width.clamp(0.0, 12.0));
+    let delta = width(Some(top)) - width(between);
+    if !top.is_visible() || delta <= 0.01 {
+        return None;
+    }
+    let mut items = row.items.clone();
+    for it in &mut items {
+        if let Placed::Rule { y0, y1, border, .. } = it
+            && y0.abs() < 0.01
+            && y1.abs() < 0.01
+            && between.is_none_or(|b| *border == b)
+        {
+            *border = top;
+        }
+        it.translate(0.0, delta);
+    }
+    Some(table::RowLayout { height: row.height + delta, items, bottom: row.bottom, edge: row.edge, cells: Vec::new() })
+}
+
 /// Tinta Office: whether the first paragraph of `row`'s first cell asks for a page break before it.
 fn row_breaks_page(ctx: &Ctx, row: &wordcraft_doc::Row) -> bool {
     let first = row.cells.first().and_then(|c| c.blocks.first());
@@ -207,6 +235,7 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             pb.advance(block, body_top);
         }
     }
+    let page_top = table::top_and_between(ctx, t);
     // For the move-on rule, the table's own header rows at the top of a page leave it empty.
     let table_at_top = pb.at_top();
     for (ri, row) in tl.rows.iter().enumerate() {
@@ -291,6 +320,19 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             fresh = true;
         }
         let last = rest.as_ref().unwrap_or(row);
+        // Tinta Office: a whole row starting a page in the middle of the table gets the table's
+        // outer top border there, and its text moves down by how much wider that border is
+        // than the one between rows (Word's PDFs of the Balearic forms).
+        if ri > 0
+            && rest.is_none()
+            && pb.at_top()
+            && !pb.web
+            && let Some(moved) = page_top_row(last, page_top)
+        {
+            place(pb, &moved);
+            table_notes(ctx, pb, &moved.items);
+            continue;
+        }
         place(pb, last);
         table_notes(ctx, pb, &last.items);
     }
