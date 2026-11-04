@@ -295,6 +295,17 @@ impl Reader<'_> {
         let mut table = Table::default();
         if let Some(p) = t.child("w:tblPr") {
             table.props = self.pc.tblpr(p);
+            // Tinta Office: sides `w:tblCellMar` leaves out keep the style's (or Word's) margins.
+            if let Some(m) = p.child("w:tblCellMar") {
+                let base = table
+                    .props
+                    .style
+                    .as_deref()
+                    .and_then(|id| self.doc.styles.table_style(id))
+                    .and_then(|st| st.parts.cell_margins)
+                    .unwrap_or(crate::read::props::WORD_CELL_MARGINS);
+                table.props.cell_margins = Some(crate::read::props::margins_over(m, base));
+            }
             if let Some(ch) = p.child("w:tblPrChange") {
                 let old = ch.child("w:tblPr").map(|o| self.pc.tblpr(o)).unwrap_or_default();
                 table.props.fmt_change = PropChange::boxed(self.revision(RevisionKind::Format, ch), old);
