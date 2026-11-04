@@ -1346,14 +1346,29 @@ fn column_content(ctx: &mut Ctx, t: &Table, style: Option<&TableStyleProps>, dep
 
 // Share a span's extra minimum in preferred-column proportions. Each column keeps
 // its own text minimum; automatic tables share the extra equally.
-fn share_span_min(cols: &mut [(f32, f32)], grid: Option<&[f32]>, need: f32) {
+// Tinta Office: with preferred widths, the extra goes first to the columns whose preferred width
+// leaves room above their own minimum, up to that room, and only what is still missing in
+// preferred-width proportions. A span that fits its columns' preferred widths doesn't push a
+// column already at its minimum wider than its grid width (Word keeps such a grid as it is).
+pub(crate) fn share_span_min(cols: &mut [(f32, f32)], grid: Option<&[f32]>, need: f32) {
     let extra = (need - cols.iter().map(|c| c.0).sum::<f32>()).max(0.0);
+    if extra <= 0.0 || !extra.is_finite() {
+        return;
+    }
     let weight = |w: &f32| if w.is_finite() { w.clamp(0.0, UNBOUNDED) } else { 0.0 };
     let total = grid.map_or(0.0, |grid| grid.iter().take(cols.len()).map(weight).sum::<f32>());
     if total > 0.0 {
         if let Some(grid) = grid {
+            let room = |c: &(f32, f32), w: &f32| (weight(w) - c.0).max(0.0);
+            let rooms: f32 = cols.iter().zip(grid).map(|(c, w)| room(c, w)).sum();
+            let from_room = extra.min(rooms);
+            let rest = extra - from_room;
             for (c, w) in cols.iter_mut().zip(grid) {
-                c.0 += extra * weight(w) / total;
+                let r = room(c, w);
+                if rooms > 0.0 {
+                    c.0 += from_room * r / rooms;
+                }
+                c.0 += rest * weight(w) / total;
             }
         }
         return;
