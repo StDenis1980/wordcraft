@@ -98,6 +98,7 @@ impl WordApp {
             services,
             printing: Default::default(),
             print_feedback_seen: None,
+            tinta_feedback: Default::default(),
             integrated_titlebar: false,
             mac_titlebar: chrome::MacTitleBar::default(),
             updates_rt: updates_ui::Runtime::default(),
@@ -398,6 +399,7 @@ impl WordApp {
             self.window_ui(ui);
         }
         crate::tinta_reports_ui::first_start(self, ui.ctx());
+        self.tinta_feedback.show(ui.ctx(), crate::i18n::current().code());
     }
 
     /// Lay out the drawn window. A command that brings another window's state in (New, Open,

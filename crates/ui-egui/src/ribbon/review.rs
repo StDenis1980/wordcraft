@@ -177,6 +177,10 @@ pub(super) fn help(app: &mut WordApp, ui: &mut Ui) {
         big(ui, app, "checkForUpdates", "Check for\nUpdates…", "ui.checkForUpdates", json!({}), false);
         let (icon, label) = if wordcraft_engine::brand::REBRANDED { ("help", "Support") } else { ("discord", "Community\nDiscord") };
         big(ui, app, icon, label, "ui.discord", json!({}), false);
+        if app.tinta_feedback.available {
+            let feedback = crate::tinta_feedback::tr(crate::i18n::current().code(), crate::tinta_feedback::BUTTON);
+            big(ui, app, "comment", feedback, "ui.feedback", json!({}), false);
+        }
     });
     group(ui, "Agents", None, app, |ui, app| {
         big(ui, app, "macros", "Commands", "ui.dialog", json!({"name": "commands"}), false);

@@ -72,6 +72,7 @@ pub mod table_pen;
 pub mod table_resize;
 pub mod table_ruler;
 pub mod theme;
+pub mod tinta_feedback;
 mod tinta_fonts_ui;
 mod tinta_reports_ui;
 pub mod updates_ui;
@@ -470,6 +471,8 @@ pub struct WordApp {
     pub services: Services,
     pub printing: printing::State,
     print_feedback_seen: Option<printing::Feedback>,
+    /// Tinta Office: the Send feedback dialog ([`tinta_feedback`]); the desktop app sends.
+    pub tinta_feedback: tinta_feedback::Feedback,
     pub canvas: canvas::CanvasState,
     /// Content control frames, check boxes and lists on the page.
     pub controls: content_controls::ControlUi,

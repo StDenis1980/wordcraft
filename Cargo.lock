@@ -6938,6 +6938,7 @@ dependencies = [
  "image",
  "js-sys",
  "log",
+ "png",
  "serde",
  "serde_json",
  "sys-locale",
