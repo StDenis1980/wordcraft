@@ -116,14 +116,15 @@ enum Sent {
     Taken(Option<String>),
     /// Refused for good (malformed, too large): retrying would not help.
     Refused,
-    /// No connection, a server error or too busy: try again later.
+    /// No connection, a server error, too busy, or a server that has no feedback endpoint yet
+    /// (404): try again later.
     NotNow,
 }
 
 fn send(endpoint: &str, body: &Value) -> Sent {
     match report::post_json(endpoint, "/v1/feedback", body) {
         Some((s, reply)) if (200..300).contains(&s) => Sent::Taken(reply.get("id").and_then(Value::as_str).map(|id| id.chars().take(36).collect())),
-        Some((s, _)) if (400..500).contains(&s) && s != 429 => Sent::Refused,
+        Some((s, _)) if (400..500).contains(&s) && s != 429 && s != 404 => Sent::Refused,
         _ => Sent::NotNow,
     }
 }
@@ -218,5 +219,31 @@ mod tests {
         let mut fb = Feedback::default();
         tick(&mut fb, "es");
         assert_eq!(fb.available, report::ENDPOINT.is_some());
+    }
+
+    /// A server answering every request with `status`, for `n` requests.
+    fn server(status: u16, n: usize) -> String {
+        use std::io::{Read, Write};
+        let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+        let addr = listener.local_addr().unwrap();
+        std::thread::spawn(move || {
+            for stream in listener.incoming().take(n) {
+                let mut s = stream.unwrap();
+                let mut buf = [0u8; 65536];
+                let _ = s.read(&mut buf);
+                let _ = write!(s, "HTTP/1.1 {status} X\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}");
+            }
+        });
+        format!("http://{addr}")
+    }
+
+    #[test]
+    fn a_server_without_the_endpoint_keeps_it_queued_and_a_refusal_drops_it() {
+        let body = body(&draft(), "es");
+        assert!(matches!(send(&server(404, 1), &body), Sent::NotNow));
+        assert!(matches!(send(&server(503, 1), &body), Sent::NotNow));
+        assert!(matches!(send(&server(429, 1), &body), Sent::NotNow));
+        assert!(matches!(send(&server(400, 1), &body), Sent::Refused));
+        assert!(matches!(send(&server(200, 1), &body), Sent::Taken(None)));
     }
 }
