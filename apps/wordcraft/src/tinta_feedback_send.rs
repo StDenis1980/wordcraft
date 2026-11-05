@@ -30,6 +30,7 @@ struct State {
 static STATE: OnceLock<Mutex<State>> = OnceLock::new();
 
 /// Each frame, from the desktop app's `logic`.
+#[allow(clippy::disallowed_methods)] // `Instant::now`: the desktop app only, never wasm.
 pub fn tick(feedback: &mut Feedback, locale: &str) {
     feedback.available = report::ENDPOINT.is_some();
     let Some(endpoint) = report::ENDPOINT else { return };
@@ -136,6 +137,7 @@ fn queued(dir: &Path) -> Vec<PathBuf> {
 }
 
 /// Keep the body for later; `false` when it could not be written.
+#[allow(clippy::disallowed_methods)] // `SystemTime::now`: the desktop app only, never wasm.
 fn queue(dir: &Path, body: &Value) -> bool {
     if std::fs::create_dir_all(dir).is_err() {
         return false;
