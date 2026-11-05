@@ -21,6 +21,7 @@ mod graphics;
 mod logging;
 mod print;
 mod region;
+mod tinta_feedback_send;
 mod tinta_report;
 mod tinta_words;
 #[cfg(target_os = "macos")]
@@ -57,6 +58,7 @@ impl eframe::App for App {
         apple_events::poll(&self.5, &mut self.0, ctx);
         self.0.logic(ctx);
         tinta_report::tick(&mut self.0);
+        tinta_feedback_send::tick(&mut self.0.tinta_feedback, wordcraft_ui_egui::i18n::current().code());
         tinta_words::tick(&mut self.0);
         self.3.show(frame);
         let window = self.4;

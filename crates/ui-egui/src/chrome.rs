@@ -356,6 +356,10 @@ pub fn title_bar(app: &mut WordApp, ui: &mut Ui) {
                         let _ = app.run("ui.backstage", json!({"value": true, "page": "options", "pane": "general"}));
                     }
                     ui.add_space(8.0);
+                    let lang = crate::i18n::current().code();
+                    if crate::tinta_feedback::button(ui, &mut app.tinta_feedback, lang).is_some() {
+                        ui.add_space(6.0);
+                    }
                     if app.ui.show_discord {
                         // As wide as its label needs: "Підтримка" (Ukrainian) ran into the edge of
                         // a fixed 84 px pill.

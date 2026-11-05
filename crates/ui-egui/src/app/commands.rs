@@ -502,6 +502,11 @@ impl WordApp {
     pub(crate) fn ui_command(&mut self, id: &str, p: &Value) -> Option<Result<Value, String>> {
         let s = |k: &str| p.get(k).and_then(Value::as_str);
         Some(Ok(match id {
+            "ui.feedback" | "help.feedback" => {
+                // Tinta Office: Help › Send feedback (the dialog opens on the next frame).
+                self.tinta_feedback.request();
+                Value::Null
+            }
             "ui.checkForUpdates" | "help.checkForUpdates" => {
                 crate::updates_ui::check(self);
                 Value::Null
@@ -1041,6 +1046,7 @@ pub(crate) fn works_without_document(id: &str) -> bool {
             | "ui.caretAnimation"
             | "ui.startScreen"
             | "ui.checkForUpdates"
+            | "ui.feedback"
             // Tinta Office settings: the first-start question about error reports shows over
             // the Start screen, before any document is open.
             | "tools.errorReports"
