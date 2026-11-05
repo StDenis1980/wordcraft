@@ -221,16 +221,39 @@ mod tests {
         assert_eq!(fb.available, report::ENDPOINT.is_some());
     }
 
+    /// Read one whole request (headers, then a `Content-Length` or chunked body), so the reply
+    /// never races the client still sending.
+    fn read_request(s: &mut std::net::TcpStream) {
+        use std::io::Read;
+        let mut got = Vec::new();
+        let mut buf = [0u8; 8192];
+        loop {
+            let Ok(n) = s.read(&mut buf) else { return };
+            if n == 0 {
+                return;
+            }
+            got.extend_from_slice(&buf[..n]);
+            let Some(end) = got.windows(4).position(|w| w == b"\r\n\r\n") else { continue };
+            let head = String::from_utf8_lossy(&got[..end]).to_ascii_lowercase();
+            let body = got.len() - end - 4;
+            let length = head.lines().find_map(|l| l.strip_prefix("content-length:")).and_then(|v| v.trim().parse::<usize>().ok());
+            match length {
+                Some(len) if body >= len => return,
+                None if !head.contains("chunked") || got.ends_with(b"0\r\n\r\n") => return,
+                _ => {}
+            }
+        }
+    }
+
     /// A server answering every request with `status`, for `n` requests.
     fn server(status: u16, n: usize) -> String {
-        use std::io::{Read, Write};
+        use std::io::Write;
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let addr = listener.local_addr().unwrap();
         std::thread::spawn(move || {
             for stream in listener.incoming().take(n) {
                 let mut s = stream.unwrap();
-                let mut buf = [0u8; 65536];
-                let _ = s.read(&mut buf);
+                read_request(&mut s);
                 let _ = write!(s, "HTTP/1.1 {status} X\r\nContent-Type: application/json\r\nContent-Length: 2\r\nConnection: close\r\n\r\n{{}}");
             }
         });
