@@ -6,7 +6,7 @@ use crate::Session;
 
 fn spanish() -> Session {
     let mut s = Session::new(Document::new());
-    s.doc.styles.default_chr.lang = Some("es-ES".into());
+    std::sync::Arc::make_mut(&mut s.doc.styles).default_chr.lang = Some("es-ES".into());
     s
 }
 
@@ -39,7 +39,7 @@ fn while_on_added_words_are_listed_once_with_their_language() {
     s.run("review.addToDictionary", &json!({"word": "Tintapalabra"})).unwrap();
     assert_eq!(listed(&s), vec![pair("es", "tintapalabra"), pair("es", "tintaotra")]);
     // Ukrainian text lists under `uk`.
-    s.doc.styles.default_chr.lang = Some("uk-UA".into());
+    std::sync::Arc::make_mut(&mut s.doc.styles).default_chr.lang = Some("uk-UA".into());
     s.run("review.addToDictionary", &json!({"word": "п'ятничка"})).unwrap();
     assert_eq!(listed(&s).last(), Some(&pair("uk", "п'ятничка")));
     let r = s.run("review.suggestedWords", &json!({})).unwrap();

@@ -73,17 +73,17 @@ mod tests {
         // A new document is set in Aptos already (Word's default); start from one without it.
         let plain = || {
             let mut doc = Document::new();
-            doc.styles.default_chr.font = Some("Calibri".into());
-            doc.styles.styles.iter_mut().for_each(|s| s.chr.font = None);
+            std::sync::Arc::make_mut(&mut doc.styles).default_chr.font = Some("Calibri".into());
+            std::sync::Arc::make_mut(&mut doc.styles).styles.iter_mut().for_each(|s| s.chr.font = None);
             doc
         };
         let mut doc = plain();
         assert!(aptos_families(&doc).is_empty());
-        doc.styles.default_chr.font = Some("Aptos".into());
-        if let Some(s) = doc.styles.styles.first_mut() {
+        std::sync::Arc::make_mut(&mut doc.styles).default_chr.font = Some("Aptos".into());
+        if let Some(s) = std::sync::Arc::make_mut(&mut doc.styles).styles.first_mut() {
             s.chr.font = Some("Aptos Display".into());
         }
-        doc.styles
+        std::sync::Arc::make_mut(&mut doc.styles)
             .styles
             .push(wordcraft_doc::styles::Style { chr: CharProps { font: Some("aptos".into()), ..Default::default() }, ..Default::default() });
         assert_eq!(aptos_families(&doc), ["Aptos", "Aptos Display"], "one entry per family, any case");

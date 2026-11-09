@@ -1168,3 +1168,42 @@ uk	German (Switzerland)	Німецька (Швейцарія)
 vi	German (Switzerland)	Tiếng Đức (Thụy Sĩ)
 zh-hans	German (Switzerland)	德语（瑞士）
 zh-hant	German (Switzerland)	德文（瑞士）
+ar	Support	الدعم
+ar	Get help and support	الحصول على المساعدة والدعم
+ar	A free, open-source word processor written from scratch in Rust.	معالج نصوص مجاني ومفتوح المصدر، مكتوب من الصفر بلغة Rust.
+ar	Catalan	الكتالونية
+ar	Catalan (Valencian)	الكتالونية (البلنسية)
+ar	Galician	الجاليكية
+ar	Basque	الباسكية
+ar	Lithuanian	الليتوانية
+ar	German (Switzerland)	الألمانية (سويسرا)
+ar	Invoice (Spain)	فاتورة (إسبانيا)
+ar	Quote (Spain)	عرض سعر (إسبانيا)
+ar	Formal letter (Spain)	رسالة رسمية (إسبانيا)
+ar	CV (Spain)	سيرة ذاتية (إسبانيا)
+ar	Suggest my words	اقتراح كلماتي
+ar	Suggest my words for Tinta's dictionaries	اقتراح كلماتي لقواميس Tinta
+ar	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Unless you also turn on sending them automatically, nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	متوقف افتراضيًا. ما دام مفعّلًا، تُدرج هنا الكلمات التي تضيفها إلى القاموس مع لغتها، على هذا الحاسوب فقط. ما لم تفعّل إرسالها تلقائيًا أيضًا، لا يُرسل شيء من تلقاء نفسه: تراجع القائمة وترسلها بالبريد الإلكتروني إلى hola@tintaoffice.com.
+ar	Send them automatically	إرسالها تلقائيًا
+ar	Off by default too. While it is on, the listed words in Spanish, Catalan, Galician, Basque and Ukrainian go once a day to report.tintaoffice.com (EU) with a random installation number; the server keeps only a fingerprint of it, never your IP address. A word joins Tinta's dictionaries once 5 installations (10 for Spanish) added it and Wiktionary lists it. Turning this off removes your words from the server's counts.	متوقف افتراضيًا أيضًا. ما دام مفعّلًا، تُرسل الكلمات المدرجة بالإسبانية والكتالونية والجاليكية والباسكية والأوكرانية مرة واحدة يوميًا إلى report.tintaoffice.com (الاتحاد الأوروبي) مع رقم تثبيت عشوائي؛ لا يحتفظ الخادم إلا ببصمة له، ولا يحتفظ أبدًا بعنوان IP الخاص بك. تنضم الكلمة إلى قواميس Tinta بعد أن تضيفها 5 عمليات تثبيت (10 للإسبانية) ويدرجها ويكاموس. يؤدي إيقاف هذا الخيار إلى إزالة كلماتك من إحصاءات الخادم.
+ar	sent	أُرسلت
+ar	Removing your words from the server's counts…	جارٍ إزالة كلماتك من إحصاءات الخادم…
+ar	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	لا تُرسل إلا هذه الكلمات ولغتها، ولا تُرسل مستنداتك أبدًا؛ وتُستبعد الكلمات التي تحتوي على أرقام أو @ أو حرف كبير في وسطها. لا تستخدمها Tinta Office إلا لتحسين قواميسها وتحذفها خلال 12 شهرًا؛ ولا يُستخدم عنوان بريدك الإلكتروني إلا للرد عليك. للانسحاب، أوقف هذا الخيار (تُحذف القائمة) واطلب من hola@tintaoffice.com حذف ما أرسلته.
+ar	No words listed yet.	لا توجد كلمات مدرجة بعد.
+ar	Send by email	إرسال بالبريد الإلكتروني
+ar	Copy the list	نسخ القائمة
+ar	Clear the list	مسح القائمة
+ar	The email holds {n} of {total} words; send the rest next time, or copy the list.	تحتوي الرسالة على {n} من {total} كلمة؛ أرسل الباقي في المرة القادمة، أو انسخ القائمة.
+ar	Send error reports automatically?	إرسال تقارير الأخطاء تلقائيًا؟
+ar	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	عندما يتعطل التطبيق أو يتوقف عن الاستجابة، يمكنه إرسال تقرير كي تُصلح المشكلة دون أن تكتب إلينا. يحتوي التقرير على إصدار التطبيق والنظام واللغة وموضع الخطأ في الشيفرة وآخر أسطر السجل التقني. ولا يحتوي أبدًا على نص مستنداتك أو أسماء الملفات أو المجلدات أو عناوين البريد الإلكتروني أو كلمات المرور.
+ar	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	تُرسل التقارير إلى Tinta Office (report.tintaoffice.com، مخزنة في الاتحاد الأوروبي) وتُحذف بعد 90 يومًا. يمكنك تغيير ذلك في أي وقت من ملف › خيارات › عام وحذف تقاريرك من الخادم هناك. التفاصيل: tintaoffice.com/aviso-legal
+ar	Yes, send reports	نعم، أرسل التقارير
+ar	No	لا
+ar	Error reports	تقارير الأخطاء
+ar	Send error reports automatically	إرسال تقارير الأخطاء تلقائيًا
+ar	Installation id: {id}	معرّف التثبيت: {id}
+ar	Delete my reports from the server	حذف تقاريري من الخادم
+ar	Deletion requested: it completes the next time the app is online.	طُلب الحذف: سيكتمل في المرة القادمة التي يتصل فيها التطبيق بالإنترنت.
+ar	Open the reports folder	فتح مجلد التقارير
+ar	Aptos not installed	الخط Aptos غير مثبّت
+ar	This document uses Aptos, Word's default font, which isn't installed. Tinta Office can't include it, so another font stands in and lines and pages may break differently from Word. Click to download Aptos free from Microsoft, then restart Tinta Texto.	يستخدم هذا المستند الخط Aptos، وهو الخط الافتراضي في Word، وهو غير مثبّت. لا يمكن لـ Tinta Office تضمينه، لذا يحل محله خط آخر وقد تنقسم الأسطر والصفحات بشكل مختلف عن Word. انقر لتنزيل Aptos مجانًا من Microsoft، ثم أعد تشغيل Tinta Texto.

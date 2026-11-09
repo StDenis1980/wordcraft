@@ -506,6 +506,9 @@ mod tests {
                 || path.strip_prefix(&src).is_ok_and(|rel| rel.components().any(|c| c.as_os_str() == "tests"))
                 || path.starts_with(src.join("io"))
                 || path == src.join("recovery/desktop.rs")
+                // Tinta Office fork: start-up writes the shipped dictionaries into the packs
+                // folder; no command runs it, so no agent's path reaches it.
+                || path == src.join("tinta_packs.rs")
             {
                 continue;
             }

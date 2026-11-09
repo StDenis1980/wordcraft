@@ -12,9 +12,14 @@ packaging scripts put them in the app's `dictionaries` folder:
 | .deb, .rpm, .tar.gz, AppImage | `/usr/share/wordcraft/dictionaries/` (`share/wordcraft/dictionaries` beside `bin`) |
 | macOS app | `Tinta Texto.app/Contents/Resources/dictionaries/` |
 
-The app looks there after the user's own dictionary folders (File › Options › Proofing, and
-`WORDCRAFT_DICTIONARIES`), so a dictionary the user installs always wins. A language whose
-dictionary is missing simply has no spelling marks.
+At start-up the app copies each of them, with its accepted words (`tinta-words/`) and the
+fork's hyphenation patterns, into a Language pack in the suite's packs folder
+(`<font store>/language-packs/<locale>`, `crates/engine/src/tinta_packs.rs`): proofing then reads
+them as it reads any pack, and File › Options › Language lists them. A pack is written again only
+when the shipped files change; a pack of the same language installed from the store is left alone,
+and one the person removed stays removed. A dictionary the user installs in their own dictionary
+folder (File › Options › Proofing, and `WORDCRAFT_DICTIONARIES`) is still searched first. A
+language whose dictionary is missing simply has no spelling marks.
 
 ## The dictionaries and their licences
 

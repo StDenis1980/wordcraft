@@ -31,7 +31,7 @@ fn base(title: &str) -> Document {
     let mut d = Document::new();
     d.core.title = title.into();
     d.core.language = "es-ES".into();
-    d.styles.default_chr.lang = Some("es-ES".into());
+    std::sync::Arc::make_mut(&mut d.styles).default_chr.lang = Some("es-ES".into());
     let s = &mut d.last_section;
     (s.page_w, s.page_h) = (595.3, 841.9);
     (s.margin_left, s.margin_right, s.margin_top, s.margin_bottom) = (70.9, 70.9, 56.7, 56.7);
@@ -270,9 +270,7 @@ pub fn presupuesto() -> Document {
     b.push(Block::Para(para("")));
     b.push(Block::Table(totals(&[("Base imponible", "0,00 €"), ("IVA (21 %)", "0,00 €"), ("TOTAL", "0,00 €")])));
     b.push(Block::Para(heading("Condiciones")));
-    let mut num = d.numbering.clone();
-    let list = num.add_list(ListKind::Bullet);
-    d.numbering = num;
+    let list = std::sync::Arc::make_mut(&mut d.numbering).add_list(ListKind::Bullet);
     for line in [
         "Plazo de entrega: [n] días desde la aceptación.",
         "Forma de pago: [50 % a la aceptación y 50 % a la entrega].",

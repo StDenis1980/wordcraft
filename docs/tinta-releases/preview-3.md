@@ -1,12 +1,12 @@
 # Tinta Texto — Preview 3
 
-> **Status:** 2026-11-05 · draft for the Preview 3 release (12 November 2026), to be finished
-> after the 9 November upstream sync · **Revision history:** 2026-11-05 created (changes from
-> Preview 2, 27 October, to #55).
+> **Status:** 2026-11-09 · for the Preview 3 release (12 November 2026), with the 9 November
+> upstream sync · **Revision history:** 2026-11-05 created (changes from Preview 2, 27 October, to
+> #55); 2026-11-09 the upstream sync (spelling now through Language packs, Arabic interface) and
+> the feedback button.
 
 Release notes for the GitHub release and the site, in Spanish, Ukrainian and English. Changes since
-Preview 2 (v0.11.0, 27 October 2026). Before publishing: add what the 9 November upstream sync
-brings and set the version.
+Preview 2 (v0.11.0, 27 October 2026). Before publishing: set the version.
 
 ## Español
 
@@ -30,7 +30,12 @@ Novedades:
   diccionario para mejorar los de Tinta. Nada sale de su equipo sin su permiso.
 - **Ayuda ▸ Informar de un problema** y envío opcional de informes de error (solo si lo acepta al
   primer inicio).
-- **Idiomas de la interfaz:** rumano, checo y lituano.
+- **Enviar comentarios:** el botón de la carita en la barra de título (también en Ayuda) para
+  decirnos qué le gusta, qué falla o qué idea tiene, con correo opcional, captura de pantalla y
+  datos técnicos; sin conexión se guarda y se envía después.
+- **Idiomas de la interfaz:** rumano, checo, lituano y árabe (de derecha a izquierda).
+- Los diccionarios incluidos aparecen en Archivo ▸ Opciones ▸ Idioma, junto a los que puede
+  descargar para otros idiomas.
 - **Linux:** paquete Flatpak además de .deb y AppImage.
 - Del proyecto original (WordCraft): muchas correcciones de diseño de página y de importación.
 
@@ -61,7 +66,12 @@ está pendiente.
   додаєте до свого словника, щоб покращити словники Tinta. Без вашого дозволу нічого не надсилається.
 - **Довідка ▸ Повідомити про проблему** і необов'язкові звіти про помилки (лише якщо ви
   погодилися під час першого запуску).
-- **Мови інтерфейсу:** румунська, чеська й литовська.
+- **Надіслати відгук:** кнопка з усмішкою в заголовку вікна (а також у меню «Довідка»): що
+  подобається, що не працює або яка є ідея, з необов'язковою адресою пошти, знімком екрана й
+  технічними даними; без мережі відгук зберігається і надсилається пізніше.
+- **Мови інтерфейсу:** румунська, чеська, литовська й арабська (справа наліво).
+- Вбудовані словники видно в «Файл ▸ Параметри ▸ Мова», поруч зі словниками інших мов, які можна
+  завантажити.
 - **Linux:** пакет Flatpak на додачу до .deb і AppImage.
 - З основного проєкту (WordCraft): багато виправлень розмітки сторінок та імпорту.
 
@@ -89,7 +99,12 @@ What's new:
 - **Suggest my words** (off by default): send us the words you add to your dictionary to improve
   Tinta's dictionaries. Nothing leaves your computer without your consent.
 - **Help ▸ Report a problem**, and optional error reports (only if you agree at first start).
-- **Interface languages:** Romanian, Czech and Lithuanian.
+- **Send feedback:** the smiley button in the title bar (also in Help) tells us what you like, what
+  went wrong or an idea, with an optional e-mail address, a screenshot and technical details;
+  offline, it is kept and sent later.
+- **Interface languages:** Romanian, Czech, Lithuanian and Arabic (right to left).
+- The bundled dictionaries show in File ▸ Options ▸ Language, beside those you can download for
+  other languages.
 - **Linux:** a Flatpak bundle besides .deb and AppImage.
 - From the original project (WordCraft): many layout and import fixes.
 

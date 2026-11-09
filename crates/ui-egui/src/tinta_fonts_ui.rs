@@ -55,7 +55,7 @@ mod tests {
 
     fn app_with_aptos() -> WordApp {
         let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
-        a.session.doc.styles.default_chr.font = Some("Aptos".into());
+        std::sync::Arc::make_mut(&mut a.session.doc.styles).default_chr.font = Some("Aptos".into());
         a.session.path = Some(std::env::temp_dir().join("informe.docx"));
         a
     }
@@ -105,7 +105,7 @@ mod tests {
         for s in STRINGS {
             let langs =
                 rows.lines().filter(|l| l.split('\t').nth(1) == Some(s) && l.split('\t').nth(2).is_some_and(|t| !t.trim().is_empty())).count();
-            assert_eq!(langs, 30, "{s:?}");
+            assert_eq!(langs, 31, "{s:?}");
         }
     }
 }
