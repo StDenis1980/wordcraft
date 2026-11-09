@@ -387,7 +387,18 @@ pub const WORD_CELL_MARGINS: [f32; 4] = [0.0, 5.4, 0.0, 5.4];
 
 impl Default for Cell {
     fn default() -> Self {
-        Cell { blocks: Vec::new(), colspan: 1, rowspan: 1, covered: false, header: false, shading: None, borders: None, valign: None, margins: None, width: None }
+        Cell {
+            blocks: Vec::new(),
+            colspan: 1,
+            rowspan: 1,
+            covered: false,
+            header: false,
+            shading: None,
+            borders: None,
+            valign: None,
+            margins: None,
+            width: None,
+        }
     }
 }
 

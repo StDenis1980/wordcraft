@@ -592,6 +592,7 @@ impl Styles {
             right: pick(&auto, &|x| x.right),
             first: pick(&auto, &|x| x.first),
             line: own.iter().find_map(|s| s.spacing.line),
+            ..Default::default()
         };
         let indent = spacing.left.unwrap_or(0.0);
         let tabs = auto

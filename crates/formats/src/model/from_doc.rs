@@ -140,6 +140,8 @@ fn direct_spacing(p: &Paragraph) -> Spacing {
         left: pp.indent_left,
         right: pp.indent_right,
         first: pp.indent_first,
+        before_auto: pp.space_before_auto == Some(true),
+        after_auto: pp.space_after_auto == Some(true),
     }
 }
 
