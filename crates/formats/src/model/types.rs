@@ -249,6 +249,9 @@ pub struct Spacing {
     pub right: Option<f32>,
     /// First-line indent; negative = hanging.
     pub first: Option<f32>,
+    /// HTML's automatic space before / after (see `ParaProps::space_before_auto`).
+    pub before_auto: bool,
+    pub after_auto: bool,
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -275,6 +278,8 @@ pub struct Para {
     /// Tracked formatting change of the paragraph: the paragraph's formatting before it (kind,
     /// list, alignment, page break, spacing and borders of `old`; its inlines are unused).
     pub fmt_change: Option<Box<FmtChange<Para>>>,
+    /// Formatting of an empty paragraph's mark (what sizes its line), when the source gives it.
+    pub mark: Option<Box<Fmt>>,
 }
 
 impl Para {
@@ -371,6 +376,9 @@ pub struct Cell {
     /// The cell's margins (top, left, bottom, right) in points, when they aren't Word's default
     /// [`WORD_CELL_MARGINS`] (Tinta Office: .odt cell padding).
     pub margins: Option<[f32; 4]>,
+    /// The width, points, the source gives a cell spanning one column (HTML): see
+    /// [`FTable::widths_from_cells`].
+    pub width: Option<f32>,
 }
 
 /// Word's default cell margins (top, left, bottom, right), points: what a table cell gets when
@@ -379,7 +387,18 @@ pub const WORD_CELL_MARGINS: [f32; 4] = [0.0, 5.4, 0.0, 5.4];
 
 impl Default for Cell {
     fn default() -> Self {
-        Cell { blocks: Vec::new(), colspan: 1, rowspan: 1, covered: false, header: false, shading: None, borders: None, valign: None, margins: None }
+        Cell {
+            blocks: Vec::new(),
+            colspan: 1,
+            rowspan: 1,
+            covered: false,
+            header: false,
+            shading: None,
+            borders: None,
+            valign: None,
+            margins: None,
+            width: None,
+        }
     }
 }
 
@@ -412,6 +431,22 @@ impl FTable {
     pub fn cols(&self) -> usize {
         self.rows.iter().map(|r| r.iter().map(|c| c.colspan.clamp(1, 63) as usize).sum::<usize>()).max().unwrap_or(0)
     }
+    /// Grid column widths from the cells that give one (after [`Self::insert_covered`], so a
+    /// cell's column counts those spanned from rows above), when every column has one.
+    pub fn widths_from_cells(&mut self) {
+        let mut widths = vec![None; self.cols()];
+        for row in &self.rows {
+            let mut g = 0;
+            for c in row {
+                if let (Some(w), Some(slot)) = (c.width, widths.get_mut(g)) {
+                    slot.get_or_insert(w);
+                }
+                g += c.colspan.clamp(1, 63) as usize;
+            }
+        }
+        self.widths = widths.into_iter().collect::<Option<Vec<f32>>>().unwrap_or_default();
+    }
+
     /// After an importer that gives `rowspan` but no placeholder cells (HTML): insert covered
     /// cells into the rows below each spanning cell.
     pub fn insert_covered(&mut self) {

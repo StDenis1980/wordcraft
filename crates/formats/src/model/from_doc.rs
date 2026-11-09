@@ -140,6 +140,8 @@ fn direct_spacing(p: &Paragraph) -> Spacing {
         left: pp.indent_left,
         right: pp.indent_right,
         first: pp.indent_first,
+        before_auto: pp.space_before_auto == Some(true),
+        after_auto: pp.space_after_auto == Some(true),
     }
 }
 
@@ -163,6 +165,7 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
         mark_ins: None,
         mark_del: None,
         fmt_change: None,
+        mark: None,
     };
     let in_code = kind == Kind::Code;
     let mut k = 0usize;
@@ -195,6 +198,7 @@ fn flow_paras_in(doc: &Document, p: &Paragraph, tracked: bool) -> Vec<Para> {
                         mark_ins: None,
                         mark_del: None,
                         fmt_change: None,
+                        mark: None,
                     };
                     let prev = std::mem::replace(&mut out, next);
                     if prev.inlines.is_empty() {
@@ -345,6 +349,7 @@ fn flow_table(doc: &Document, t: &Table, depth: usize, tracked: bool) -> FTable 
                 borders: c.props.borders,
                 valign: c.props.valign,
                 margins: cell_margins(&t.props, &c.props),
+                width: None,
             });
         }
         rows.push(cells);
