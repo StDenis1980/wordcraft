@@ -125,7 +125,7 @@ mod tests {
 
     fn harness() -> egui_kittest::Harness<'static, WordApp> {
         let mut a = WordApp::new(wordcraft_engine::Session::new(wordcraft_doc::Document::new()), Services::default());
-        a.session.doc.styles.default_chr.lang = Some("es-ES".into());
+        std::sync::Arc::make_mut(&mut a.session.doc.styles).default_chr.lang = Some("es-ES".into());
         a.run("file.options", json!({"pane": "proofing"})).unwrap();
         let mut h = egui_kittest::Harness::builder().with_size(egui::vec2(1440.0, 2400.0)).build_ui_state(
             |ui, app: &mut WordApp| {
@@ -212,14 +212,14 @@ mod tests {
         assert_eq!(b.session.prefs.tinta_suggest.words.iter().map(|w| w.word.as_str()).collect::<Vec<_>>(), ["tintareinicio"]);
     }
 
-    /// Every string of the option, its notice and its buttons is translated in all 30 languages.
+    /// Every string of the option, its notice and its buttons is translated in all 31 languages (upstream added Arabic).
     #[test]
     fn every_string_is_translated() {
         let rows = include_str!("../i18n/tinta.tsv");
         for s in STRINGS {
             let langs =
                 rows.lines().filter(|l| l.split('\t').nth(1) == Some(s) && l.split('\t').nth(2).is_some_and(|t| !t.trim().is_empty())).count();
-            assert_eq!(langs, 30, "{s:?}");
+            assert_eq!(langs, 31, "{s:?}");
         }
     }
 }
