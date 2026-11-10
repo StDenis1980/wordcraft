@@ -99,6 +99,9 @@ if has deb || has rpm; then
   export NFPM_ARCH="$DEB_ARCH"
   # nfpm expands env vars in fields like `version` and `arch`, but not in `contents[].src`.
   tinta_nfpm "$HERE/nfpm.yaml" "$WORK/nfpm.brand.yaml"
+  # Tinta Office: the packages also carry the spelling dictionaries (nfpm.yaml names /usr/share
+  # files one by one since upstream's openSUSE fix, so add their directory here).
+  sed -i 's|^contents:$|contents:\n  - src: ${STAGE}/usr/share/wordcraft/\n    dst: /usr/share/wordcraft/\n    type: tree|' "$WORK/nfpm.brand.yaml"
   sed "s|\${STAGE}|$STAGE|g" "$WORK/nfpm.brand.yaml" >"$WORK/nfpm.yaml"
   for fmt in deb rpm; do
     if has "$fmt"; then (cd "$ROOT" && nfpm package -f "$WORK/nfpm.yaml" -p "$fmt" -t "$DIST/$BASENAME.$fmt"); fi

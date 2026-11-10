@@ -90,6 +90,7 @@ tinta_nfpm() {
     -e "s|^name: .*|name: $BRAND_SLUG\nconflicts:\n  - $upstream_pkg\nreplaces:\n  - $upstream_pkg|" \
     -e "s|^vendor: .*|vendor: $BRAND_PUBLISHER|" \
     -e "s|^homepage: .*|homepage: $BRAND_HOMEPAGE|" \
+    -e "s|/$UPSTREAM_ID\\.|/$BRAND_ID.|g" \
     "$1" >"$2"
   return
 }
