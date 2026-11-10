@@ -1,9 +1,9 @@
 # Tinta Texto — Preview 3
 
-> **Status:** 2026-11-09 · for the Preview 3 release (12 November 2026), with the 9 November
+> **Status:** 2026-11-10 · for the Preview 3 release (12 November 2026), with the 9 November
 > upstream sync · **Revision history:** 2026-11-05 created (changes from Preview 2, 27 October, to
 > #55); 2026-11-09 the upstream sync (spelling now through Language packs, Arabic interface) and
-> the feedback button.
+> the feedback button; 2026-11-10 the window fix (#56).
 
 Release notes for the GitHub release and the site, in Spanish, Ukrainian and English. Changes since
 Preview 2 (v0.11.0, 27 October 2026). Before publishing: set the version.
@@ -33,6 +33,7 @@ Novedades:
 - **Enviar comentarios:** el botón de la carita en la barra de título (también en Ayuda) para
   decirnos qué le gusta, qué falla o qué idea tiene, con correo opcional, captura de pantalla y
   datos técnicos; sin conexión se guarda y se envía después.
+- **Varios monitores:** las ventanas nuevas se abren en la pantalla correcta.
 - **Idiomas de la interfaz:** rumano, checo, lituano y árabe (de derecha a izquierda).
 - Los diccionarios incluidos aparecen en Archivo ▸ Opciones ▸ Idioma, junto a los que puede
   descargar para otros idiomas.
@@ -69,6 +70,7 @@ está pendiente.
 - **Надіслати відгук:** кнопка з усмішкою в заголовку вікна (а також у меню «Довідка»): що
   подобається, що не працює або яка є ідея, з необов'язковою адресою пошти, знімком екрана й
   технічними даними; без мережі відгук зберігається і надсилається пізніше.
+- **Кілька моніторів:** нові вікна відкриваються на правильному екрані.
 - **Мови інтерфейсу:** румунська, чеська, литовська й арабська (справа наліво).
 - Вбудовані словники видно в «Файл ▸ Параметри ▸ Мова», поруч зі словниками інших мов, які можна
   завантажити.
@@ -102,6 +104,7 @@ What's new:
 - **Send feedback:** the smiley button in the title bar (also in Help) tells us what you like, what
   went wrong or an idea, with an optional e-mail address, a screenshot and technical details;
   offline, it is kept and sent later.
+- **Several monitors:** new windows open on the right screen.
 - **Interface languages:** Romanian, Czech, Lithuanian and Arabic (right to left).
 - The bundled dictionaries show in File ▸ Options ▸ Language, beside those you can download for
   other languages.
