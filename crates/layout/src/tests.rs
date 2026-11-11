@@ -15452,3 +15452,54 @@ fn turned_cell_float_keeps_its_along_text_offset() {
         assert!((confined.y - reference.y).abs() < 0.01, "{direction:?}: {confined:?} vs {reference:?}");
     }
 }
+
+/// Tinta Office: a line of only lowercase letters in small capitals is drawn smaller but is as
+/// tall as the same line without them, as in Word (doc 17 of the comparison corpus: a title line
+/// "per a les xarxes socials" set in small caps keeps the 11 pt line).
+#[test]
+fn a_line_of_small_caps_lowercase_keeps_the_runs_line_height() {
+    crate::test_fonts();
+    let line = |small: bool| {
+        let mut d = Document::from_text("socials xarxes");
+        d.format_range(&Pos::body(0, 0), &Pos::body(0, "socials xarxes".len()), &|c| {
+            c.size = Some(11.0);
+            c.small_caps = Some(small);
+        })
+        .unwrap();
+        let l = lay(&d);
+        let pl = l.pages[0].items.iter().find_map(|it| if let Placed::Lines { para, .. } = it { Some((**para).clone()) } else { None }).unwrap();
+        let ln = &pl.lines[0];
+        (ln.height, ln.text_asc + ln.text_desc, text_clusters(&pl).iter().map(|c| c.4).sum::<f32>())
+    };
+    let ((plain_h, plain_text, plain_w), (small_h, small_text, small_w)) = (line(false), line(true));
+    assert!((small_h - plain_h).abs() < 0.01, "same line height: {plain_h} vs {small_h}");
+    assert!((small_text - plain_text).abs() < 0.01, "same text extent: {plain_text} vs {small_text}");
+    assert!(small_w > 0.0 && plain_w > 0.0, "both lines drawn");
+}
+
+/// Tinta Office: a cell whose top is a thin inside border, under a cell with a thick bottom
+/// border of its own, keeps its text below the thick one, as in Word (doc 17 of the comparison
+/// corpus: a heading row under a 2.25 pt cell border).
+#[test]
+fn a_cell_under_a_thicker_shared_edge_clears_it() {
+    use wordcraft_doc::props::{Border, Borders};
+    let second_row_text = |above_bottom: f32| {
+        let mut d = Document::new();
+        let mut t = Table::new(2, 1, 468.0);
+        t.props.borders = Some(Borders::all(Border::single(0.5)));
+        t.rows[0].cells[0].props.borders = Some(Borders { bottom: Some(Border::single(above_bottom)), ..Default::default() });
+        for row in &mut t.rows {
+            row.cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Row", Default::default()))];
+        }
+        d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::new())];
+        let l = lay(&d);
+        l.pages[0]
+            .items
+            .iter()
+            .filter_map(|i| if let Placed::Lines { y, path, .. } = i { (path.0.first() == Some(&0)).then_some(*y) } else { None })
+            .nth(1)
+            .expect("the second row's text")
+    };
+    let (thin, thick) = (second_row_text(0.5), second_row_text(2.25));
+    assert!((thick - thin - 1.75).abs() < 0.01, "the second row's text clears the thick edge: {thin} vs {thick}");
+}

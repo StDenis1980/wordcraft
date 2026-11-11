@@ -141,7 +141,10 @@ impl<'a> Builder<'a> {
             Some((a, d)) => (a * face.upem, d * face.upem),
             None => wordcraft_fonts::word::line_metrics(&face),
         };
-        let k = size as f64 / face.upem.max(1.0);
+        // Tinta Office: small capitals are drawn smaller, but the line keeps the run's own height,
+        // as in Word (a title line of only small-cap lowercase letters is as tall as one with
+        // capitals; doc 17 of the comparison corpus).
+        let k = rc.draw_size() as f64 / face.upem.max(1.0);
         // A fallback face (letters the requested font lacks) is emboldened or slanted when it has
         // no bold or italic of its own.
         let (synth_bold, synth_italic) = match face_override {

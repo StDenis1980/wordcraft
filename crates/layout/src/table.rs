@@ -593,7 +593,10 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
             let band = |b: Option<Border>| b.filter(Border::is_visible).map_or(0.0, |b| b.width.clamp(0.0, 12.0));
             let (band_t, band_b) = (band(borders.top), if ri + 1 == nrows { band(borders.bottom) } else { 0.0 });
             // A shared edge painted by the row above still clears this cell's text and minimum.
-            let band_t = if band_t > 0.0 || cell.props.vmerge == VMerge::Continue {
+            // Tinta Office: so does a wider one than the cell's own top (Word reserves the wider
+            // border of a shared edge: a style's thin inside border under a thick cell border
+            // takes the thick one's room, doc 17 of the comparison corpus).
+            let band_t = if cell.props.vmerge == VMerge::Continue {
                 band_t
             } else {
                 rows.last()
@@ -607,7 +610,7 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
                             })
                     })
                     .map(|above| band(above.borders.bottom))
-                    .fold(0.0, f32::max)
+                    .fold(band_t, f32::max)
             };
             let insets = margins[0] + margins[2] + band_t + band_b;
             let turn = cell.props.text_direction;
