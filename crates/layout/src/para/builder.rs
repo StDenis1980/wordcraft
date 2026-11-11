@@ -12,7 +12,7 @@ pub(super) struct Builder<'a> {
     pub(super) env: &'a ParaEnv<'a>,
     pub(super) styles: Vec<StyleRun>,
     /// Hash of a style's format → (index in `styles`, small caps), see `style`.
-    pub(super) style_index: std::collections::HashMap<u64, Vec<(u32, bool)>>,
+    pub(super) style_index: std::collections::HashMap<u64, Vec<(u32, bool, bool)>>,
     pub(super) glyphs: Vec<Glyph>,
     pub(super) clusters: Vec<Cluster>,
     /// Bidi level per byte of the paragraph text (empty: all left to right).
@@ -109,6 +109,12 @@ impl<'a> Builder<'a> {
 
     /// Style index for a resolved char in `face` (caps-scaled `size` override for small caps).
     pub(super) fn style(&mut self, rc: &Arc<ResolvedChar>, face_override: Option<FaceRef>, small: bool) -> u32 {
+        self.style_with(rc, face_override, small, false)
+    }
+
+    /// [`Self::style`]; `own_line`: a fallback face draws the glyphs but the line keeps the
+    /// height of the run's own font (symbols its font lacks, see `segment_keys`'s caller).
+    pub(super) fn style_with(&mut self, rc: &Arc<ResolvedChar>, face_override: Option<FaceRef>, small: bool, own_line: bool) -> u32 {
         let r = wordcraft_fonts::word::resolve(lookup_family(self.env.doc, &rc.font), rc.bold, rc.italic);
         let face = face_override.unwrap_or(r.face);
         // The display list reads every run's format (link target, strike kind, underline colour,
@@ -125,8 +131,9 @@ impl<'a> Builder<'a> {
         let bucket = self.style_index.entry(key).or_default();
         // Formats that never compare equal (a NaN from a hostile file) get their own styles; a capped
         // scan keeps such a bucket from turning quadratic.
-        for &(i, s) in bucket.iter().rev().take(64) {
+        for &(i, s, o) in bucket.iter().rev().take(64) {
             if s == small
+                && o == own_line
                 && let Some(st) = self.styles.get(i as usize)
                 && st.face.id() == face.id()
                 && (Arc::ptr_eq(&st.rc, rc) || *st.rc == **rc)
@@ -141,7 +148,20 @@ impl<'a> Builder<'a> {
             Some((a, d)) => (a * face.upem, d * face.upem),
             None => wordcraft_fonts::word::line_metrics(&face),
         };
-        let k = size as f64 / face.upem.max(1.0);
+        // Tinta Office: a symbol the run's font lacks (□ in Noto Sans) is drawn from a fallback
+        // face, but Word keeps the line as tall as the run's own font (doc 08 of the comparison
+        // corpus: a list of "□ A: …" lines at Noto Sans's 13.57 pt, not the fallback's 13.95).
+        let (a, d) = if own_line && face_override.is_some() {
+            let (ra, rd) = wordcraft_fonts::word::line_metrics(&r.face);
+            let to_face = face.upem / r.face.upem.max(1.0);
+            (ra * to_face, rd * to_face)
+        } else {
+            (a, d)
+        };
+        // Tinta Office: small capitals are drawn smaller, but the line keeps the run's own height,
+        // as in Word (a title line of only small-cap lowercase letters is as tall as one with
+        // capitals; doc 17 of the comparison corpus).
+        let k = rc.draw_size() as f64 / face.upem.max(1.0);
         // A fallback face (letters the requested font lacks) is emboldened or slanted when it has
         // no bold or italic of its own.
         let (synth_bold, synth_italic) = match face_override {
@@ -162,7 +182,7 @@ impl<'a> Builder<'a> {
         // hold in memory, so every format keeps its own style.
         let i = u32::try_from(self.styles.len()).unwrap_or(u32::MAX);
         self.styles.push(st);
-        self.style_index.entry(key).or_default().push((i, small));
+        self.style_index.entry(key).or_default().push((i, small, own_line));
         i
     }
 
@@ -329,7 +349,9 @@ impl<'a> Builder<'a> {
             };
             let rc = &rc;
             let small = key.small;
-            let si = self.style(rc, key.face, small);
+            // A segment of only symbols from a fallback face keeps the run's own line height.
+            let own_line = key.face.is_some() && sub.chars().all(|c| !c.is_alphanumeric() && !c.is_whitespace() && !east_asian(c) && !is_mark(c));
+            let si = self.style_with(rc, key.face, small, own_line);
             let Some(st) = self.styles.get(si as usize).cloned() else { continue };
             let upper = rc.caps || small;
             // All Caps and Small Caps draw a letter's full capital, which can be several
