@@ -15538,3 +15538,32 @@ fn a_fallback_symbol_keeps_the_runs_line_height() {
     let (plain, with_symbol) = (height("A B"), height(&format!("{sym} B")));
     assert!((plain - with_symbol).abs() < 0.01, "{sym:?}: the line keeps the run's height: {plain} vs {with_symbol}");
 }
+
+/// Tinta Office: text after a floating table whose last row has an exact height starts below the
+/// whole bottom border, as in Word (docs 16 and 17 of the comparison corpus: 2.25 pt).
+#[test]
+fn text_under_a_floating_table_clears_an_exact_last_rows_bottom_border() {
+    use wordcraft_doc::props::{Border, Borders, HeightRule, TableFloat};
+    let after = |bottom: f32| {
+        let mut d = Document::new();
+        let mut t = Table::new(2, 1, 468.0);
+        let mut b = Borders::all(Border::single(0.5));
+        b.bottom = Some(Border::single(bottom));
+        t.props.borders = Some(b);
+        t.props.float = Some(TableFloat { y: 1.0, ..Default::default() });
+        for row in &mut t.rows {
+            row.props.height = Some(20.0);
+            row.props.height_rule = HeightRule::Exact;
+            row.cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Row", Default::default()))];
+        }
+        d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::with_text("After", Default::default()))];
+        let l = lay(&d);
+        l.pages[0]
+            .items
+            .iter()
+            .find_map(|i| if let Placed::Lines { path, y, .. } = i { (path.0 == [1]).then_some(*y) } else { None })
+            .expect("the paragraph after the table")
+    };
+    let (thin, thick) = (after(0.5), after(2.25));
+    assert!((thick - thin - 1.75).abs() < 0.01, "the text clears the wider border: {thin} vs {thick}");
+}
