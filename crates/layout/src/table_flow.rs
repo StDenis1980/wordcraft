@@ -99,6 +99,26 @@ fn page_top_row(
     Some(table::RowLayout { height: row.height + delta, items, bottom: row.bottom, edge: row.edge, cells: Vec::new() })
 }
 
+/// Tinta Office: the width of the bottom border under `t`'s last row when that row has an exact
+/// height, 0 otherwise. Such a row's height runs to the top of its bottom border, so the border
+/// lies below the table: Word starts the text under a floating table after the whole border
+/// (docs 16 and 17 of the comparison corpus, 2.25 pt), where Texto started it at the stroke.
+fn exact_last_row_band(t: &wordcraft_doc::Table, tl: &table::TableLayout) -> f32 {
+    let (Some(row), Some(laid)) = (t.rows.last(), tl.rows.last()) else { return 0.0 };
+    if row.props.height_rule != HeightRule::Exact || !row.props.height.is_some_and(|h| h > 0.0) {
+        return 0.0;
+    }
+    laid.items
+        .iter()
+        .filter_map(|it| match it {
+            Placed::Rule { y0, y1, border, .. } if (y0 - laid.height).abs() < 0.01 && (y1 - laid.height).abs() < 0.01 && border.is_visible() => {
+                Some(border.width.clamp(0.0, 12.0))
+            }
+            _ => None,
+        })
+        .fold(0.0, f32::max)
+}
+
 /// Tinta Office: whether `row` sets its own top border, in a cell (`w:tcBorders`) or in its table
 /// property exceptions. Word then keeps that border at the top of a page instead of the table's
 /// outer one (docs 08, 16 and 19 of the comparison corpus).
@@ -246,6 +266,14 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
                 pb.advance(block, body_top);
             }
             place_floating_table(ctx, pb, &tl, &f, legacy, block, body_top);
+            // Tinta Office: an exact-height last row's bottom border lies below the table's
+            // height; the text wrapping under the table clears it too.
+            let band = exact_last_row_band(t, &tl);
+            if band > 0.0
+                && let Some(last) = pb.excl.last_mut()
+            {
+                last.0 = last.0.inset(0.0, 0.0, 0.0, -band);
+            }
             return;
         }
         // Too tall for a page: Word lets it run across pages like a table in the text, from its
@@ -371,6 +399,10 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             // (#4272): moving on can give the cell room there.
             let first_part = rest.is_none() && !pb.at_top() && !fresh && !under_top_headers;
             let moves_on = first_part && short_of_min(ri, room);
+            // Tinta Office: the part ending the page keeps room for the bottom border Word draws
+            // there (the table's outer one, 2.25 pt in doc 17 of the comparison corpus, where a
+            // line that fits above a 0.75 pt one doesn't fit above it and the row moves on).
+            let room = if pb.web { room } else { room - t.rows.get(ri).map_or(0.0, |r| table::bottom_at_break(ctx, t, r)) };
             let split = match (splittable && !moves_on && !defer_kept, first_part) {
                 (false, _) => None,
                 (true, true) => split_keeping_nested(ctx.doc, cur, room),
