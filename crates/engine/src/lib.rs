@@ -30,6 +30,7 @@ pub mod speech;
 pub mod tinta_fonts;
 pub mod tinta_packs;
 pub mod tinta_reports;
+pub mod tinta_risk;
 pub mod tinta_suggest;
 pub mod tinta_templates;
 pub(crate) mod view;
@@ -169,7 +170,7 @@ impl Registry {
         Value::Array(
             self.specs
                 .iter()
-                .map(|s| serde_json::json!({"id": s.id, "label": s.label, "location": s.location, "shortcut": s.shortcut, "params": s.params, "mutates": s.mutates}))
+                .map(|s| serde_json::json!({"id": s.id, "label": s.label, "location": s.location, "shortcut": s.shortcut, "params": s.params, "mutates": s.mutates, "risk": tinta_risk::risk(s)}))
                 .collect(),
         )
     }
