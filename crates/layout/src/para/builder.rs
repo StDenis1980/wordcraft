@@ -176,7 +176,7 @@ impl<'a> Builder<'a> {
             rc: rc.clone(),
             ascent: (a * k) as f32,
             descent: (d * k) as f32,
-            shift: rc.baseline_shift(),
+            shift: superscript_shift(rc, self.env.doc.settings.compat_mode),
         };
         // A `u32` index (like the glyph ranges) counts more distinct formats than a paragraph can
         // hold in memory, so every format keeps its own style.
@@ -775,4 +775,16 @@ impl Builder<'_> {
 /// tracked deletions in the final text. It takes no room, draws nothing and is no place to break.
 pub(crate) fn left_out(doc: &Document, rc: &ResolvedChar, show_hidden: bool, hide_deleted: crate::HideDeleted) -> bool {
     (rc.hidden && !show_hidden) || hide_deleted.hides(doc, rc.del)
+}
+
+/// Tinta Office: the baseline shift a run is drawn at. A document from before Word 2013 (no
+/// `compatibilityMode`, or below 15) raises superscript by half the run's size, not the third the
+/// newer mode uses (the comparison corpus: 54 marks in ten legacy documents, 5.04 pt at 10 pt and
+/// 4.56 pt at 9 pt in Word's PDFs).
+pub(crate) fn superscript_shift(rc: &ResolvedChar, compat_mode: u32) -> f32 {
+    if rc.vert_align == wordcraft_doc::props::VertAlign::Superscript && compat_mode < wordcraft_doc::COMPAT_MODE_CURRENT {
+        rc.position + rc.size * 0.5
+    } else {
+        rc.baseline_shift()
+    }
 }

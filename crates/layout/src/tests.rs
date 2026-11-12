@@ -15631,3 +15631,33 @@ fn a_row_split_at_the_page_bottom_keeps_room_for_the_outer_bottom_border() {
         assert!(room >= 4.5 - 0.01, "with {above} pt above, page 1's last line leaves room for the 4.5 pt bottom border: {room}");
     }
 }
+
+#[test]
+fn a_legacy_documents_superscript_is_raised_by_half_its_size() {
+    use wordcraft_doc::props::VertAlign;
+    // Tinta Office: Word lays out a document without `compatibilityMode` (before Word 2013)
+    // with superscript raised by half the run's size (5.04 pt at 10 pt, 4.56 at 9 in the
+    // comparison corpus); the current mode keeps the third.
+    let raise = |compat_mode: u32, size: f32| {
+        let mut p = wordcraft_doc::Paragraph::new();
+        for (text, va) in [("H", VertAlign::Baseline), ("1", VertAlign::Superscript)] {
+            let props = wordcraft_doc::CharProps { font: Some(WRAP_TEST_FONT.into()), size: Some(size), vert_align: Some(va), ..Default::default() };
+            p.runs.push(wordcraft_doc::para::Run { len: text.len(), props: props.clone() });
+            p.text.push_str(text);
+            p.mark = props;
+        }
+        let mut d = Document::new();
+        d.settings.compat_mode = compat_mode;
+        d.body = vec![wordcraft_doc::para_block(p)];
+        let l = lay(&d);
+        let ys: Vec<(String, f32)> = flat(display::page_display(&d, &l.pages[0], &display::DisplayOptions::default()))
+            .iter()
+            .filter_map(|i| if let display::Draw::Glyphs { text, glyphs, .. } = i { glyphs.first().map(|g| (text.clone(), g.2)) } else { None })
+            .collect();
+        let y = |t: &str| ys.iter().find(|(x, _)| x == t).map(|(_, y)| *y).unwrap();
+        y("H") - y("1")
+    };
+    assert!((raise(wordcraft_doc::LEGACY_COMPAT_MODE, 10.0) - 5.0).abs() < 0.01, "{}", raise(wordcraft_doc::LEGACY_COMPAT_MODE, 10.0));
+    assert!((raise(wordcraft_doc::LEGACY_COMPAT_MODE, 9.0) - 4.5).abs() < 0.01);
+    assert!((raise(wordcraft_doc::COMPAT_MODE_CURRENT, 10.0) - 3.3).abs() < 0.01);
+}
