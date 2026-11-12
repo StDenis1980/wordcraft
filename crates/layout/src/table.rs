@@ -138,6 +138,23 @@ pub(crate) fn top_and_between(ctx: &Ctx, t: &Table) -> (Option<Border>, Option<B
     (b.top, b.between)
 }
 
+/// Tinta Office: the width of the border Word draws under the part of `row` that ends a page in
+/// the middle of the table: the row's cells' own bottom borders when they set one, else the
+/// table's outer bottom border (its style's, overlaid by its own). 0 when none is visible.
+pub(crate) fn bottom_at_break(ctx: &Ctx, t: &Table, row: &wordcraft_doc::Row) -> f32 {
+    let width = |b: Option<Border>| b.filter(Border::is_visible).map_or(0.0, |b| b.width.clamp(0.0, 12.0));
+    let own: Vec<f32> = row.cells.iter().filter_map(|c| c.props.borders.and_then(|b| b.bottom)).map(|b| width(Some(b))).collect();
+    if !own.is_empty() {
+        return own.into_iter().fold(0.0, f32::max);
+    }
+    let style = table_style(ctx, t);
+    let mut b = style.and_then(|s| s.parts.borders).unwrap_or_default();
+    if let Some(own) = t.props.borders {
+        b.overlay(&own);
+    }
+    width(b.bottom)
+}
+
 /// The table's default cell margins: its own, else its style's, else Word's.
 fn default_margins(t: &Table, style: Option<&TableStyleProps>) -> [f32; 4] {
     t.props.cell_margins.or(style.and_then(|s| s.parts.cell_margins)).unwrap_or(DEFAULT_MARGINS)

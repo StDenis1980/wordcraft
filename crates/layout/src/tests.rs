@@ -4481,7 +4481,8 @@ fn a_nested_cell_cut_by_the_page_bottom_keeps_its_rest() {
         l.pages[pg].items.iter().find_map(|it| if let Placed::Cell { rect, table, .. } = it { (table.0.len() > 1).then_some(*rect) } else { None })
     };
     let (Some(a), Some(b)) = (nested(0), nested(1)) else { panic!("the nested cell is on both pages") };
-    assert!((a.bottom() - 720.0).abs() < 0.5, "cut at the page bottom: {a:?}");
+    // Tinta Office: less the table's 0.5 pt bottom border Word draws under the part ending the page.
+    assert!((a.bottom() - 719.5).abs() < 0.25, "cut at the page bottom: {a:?}");
     assert!(a.h + b.h >= 300.0 - 0.5 && a.h + b.h <= 300.0 + 2.5, "the nested cell keeps its height: {a:?} + {b:?}");
     let after = l.pages[1].items.iter().find_map(|it| match it {
         Placed::Lines { path, y, .. } if path.0 == vec![1, 0, 1, 1] => Some(*y),
@@ -15587,4 +15588,46 @@ fn a_right_aligned_number_ending_at_the_indent_takes_no_tab() {
     let x = l.caret(&Pos::body(0, 0)).unwrap().x;
     let want = d.last_section.margin_left + 85.0;
     assert!((x - want).abs() < 0.5, "the text starts at the indent: {x}, not {want}");
+}
+
+/// Tinta Office: a row's part that ends a page keeps room for the table's outer bottom border
+/// Word draws under it: a line that fits above a thin border but not above the thick outer one
+/// goes to the next page (doc 17 of the comparison corpus, 2.25 pt).
+#[test]
+fn a_row_split_at_the_page_bottom_keeps_room_for_the_outer_bottom_border() {
+    use wordcraft_doc::props::{Border, Borders};
+    // The room left under page 1's last line of a long row, with `above` points of space above it.
+    let slack = |above: f32, bottom: f32| {
+        let mut d = Document::from_text("Filler");
+        if let Some(Block::Para(p)) = d.body.first_mut().map(Arc::make_mut) {
+            p.props.space_before = Some(above);
+            p.props.space_after = Some(0.0);
+        }
+        // The long row isn't the last: its own bottom band holds only what lies between rows.
+        let mut t = Table::new(2, 1, 468.0);
+        let mut b = Borders::all(Border::single(0.5));
+        b.bottom = Some(Border::single(bottom));
+        t.props.borders = Some(b);
+        t.rows[0].cells[0].blocks =
+            (0..80).map(|i| wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(&format!("Line {i}"), Default::default()))).collect();
+        d.insert_block(StoryRef::Body, &Path::top(1), Block::Table(t)).unwrap();
+        let l = lay(&d);
+        let page = &l.pages[0];
+        let last = page
+            .items
+            .iter()
+            .filter_map(|i| {
+                if let Placed::Lines { y, para, l1, path, .. } = i {
+                    (path.0.len() > 1).then(|| para.lines.get(l1.saturating_sub(1)).map(|ln| *y + ln.top + ln.height)).flatten()
+                } else {
+                    None
+                }
+            })
+            .fold(f32::MIN, f32::max);
+        page.body.bottom() - last
+    };
+    for above in (0..14).map(|k| k as f32) {
+        let room = slack(above, 4.5);
+        assert!(room >= 4.5 - 0.01, "with {above} pt above, page 1's last line leaves room for the 4.5 pt bottom border: {room}");
+    }
 }

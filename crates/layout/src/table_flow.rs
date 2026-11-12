@@ -399,6 +399,10 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             // (#4272): moving on can give the cell room there.
             let first_part = rest.is_none() && !pb.at_top() && !fresh && !under_top_headers;
             let moves_on = first_part && short_of_min(ri, room);
+            // Tinta Office: the part ending the page keeps room for the bottom border Word draws
+            // there (the table's outer one, 2.25 pt in doc 17 of the comparison corpus, where a
+            // line that fits above a 0.75 pt one doesn't fit above it and the row moves on).
+            let room = if pb.web { room } else { room - t.rows.get(ri).map_or(0.0, |r| table::bottom_at_break(ctx, t, r)) };
             let split = match (splittable && !moves_on && !defer_kept, first_part) {
                 (false, _) => None,
                 (true, true) => split_keeping_nested(ctx.doc, cur, room),
