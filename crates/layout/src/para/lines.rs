@@ -298,9 +298,11 @@ impl<'e> Breaker<'e> {
         };
         let end = lab.x + lab.width;
         match self.level.map(|l| l.suffix).unwrap_or(LevelSuffix::Tab) {
-            // An empty label (a "none" level with no text) that ends right at the left indent takes
-            // no tab: the text starts there, as in Word (#4985), and not at the next stop.
-            LevelSuffix::Tab if lab.width <= 0.01 && (end - self.rp.indent_left).abs() <= 0.01 => end,
+            // A label that ends right at the left indent takes no tab: the text starts there, as in
+            // Word, and not at the next stop. An empty label (a "none" level with no text, #4985),
+            // and Tinta Office: a right-aligned number on a paragraph without a hanging indent
+            // ("iii." ending at the indent in doc 01 of the comparison corpus).
+            LevelSuffix::Tab if (end - self.rp.indent_left).abs() <= 0.01 => end,
             LevelSuffix::Tab => {
                 let t = next_tab(end, &self.rp.tabs, self.default_tab, self.hanging_at, self.tab_origin).pos;
                 // The level's own tab stop after the number, when it comes first.

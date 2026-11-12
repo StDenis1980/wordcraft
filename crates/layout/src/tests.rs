@@ -15567,3 +15567,24 @@ fn text_under_a_floating_table_clears_an_exact_last_rows_bottom_border() {
     let (thin, thick) = (after(0.5), after(2.25));
     assert!((thick - thin - 1.75).abs() < 0.01, "the text clears the wider border: {thin} vs {thick}");
 }
+
+/// Tinta Office: a right-aligned number on a paragraph with no hanging indent ends right at the
+/// left indent, and the text starts there, as in Word (doc 01 of the comparison corpus: "iii."
+/// ending at 3 cm, its text at 3 cm, not at the next default tab stop).
+#[test]
+fn a_right_aligned_number_ending_at_the_indent_takes_no_tab() {
+    crate::test_fonts();
+    let mut d = Document::from_text("Crear");
+    let id = std::sync::Arc::make_mut(&mut d.numbering).add_list(wordcraft_doc::ListKind::Numbered);
+    for a in &mut std::sync::Arc::make_mut(&mut d.numbering).abstracts {
+        if let Some(l) = a.levels.first_mut() {
+            l.align = wordcraft_doc::props::Align::Right;
+            (l.indent, l.hanging) = (85.0, 0.0);
+        }
+    }
+    d.format_paragraphs(&Pos::body(0, 0), &Pos::body(0, 5), &|p| p.numbering = Some(wordcraft_doc::props::NumRef { num: id, level: 0 })).unwrap();
+    let l = lay(&d);
+    let x = l.caret(&Pos::body(0, 0)).unwrap().x;
+    let want = d.last_section.margin_left + 85.0;
+    assert!((x - want).abs() < 0.5, "the text starts at the indent: {x}, not {want}");
+}
