@@ -535,6 +535,8 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
         let mut row_edge = 0.0f32;
         // Every cell an empty one with a hidden end-of-cell mark: the row is only its borders.
         let mut collapsed = true;
+        // Tinta Office: each cell's top band and insets, to give every cell the row's widest top.
+        let mut tops: Vec<(f32, f32)> = Vec::with_capacity(row.cells.len());
         // Word gives every cell in a row the row's largest top and bottom margins: a cell without
         // its own lines up with a neighbour that has 5.65pt ones.
         let (row_top, row_bottom) = row
@@ -679,6 +681,7 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
                 rh = rh.max(h);
             }
             row_insets = row_insets.max(insets);
+            tops.push((if cell.props.vmerge == VMerge::Continue || turned.is_some() { f32::NAN } else { band_t }, insets));
             row_below = row_below.max(margins[2] + band_b);
             if ri + 1 < nrows {
                 row_edge = row_edge.max(band(borders.bottom));
@@ -702,6 +705,11 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
             });
             g += span;
         }
+        // Tinta Office: Word reserves the row's widest top border in every cell: a cell under a
+        // thin edge starts its text, and takes its height, below a neighbour's thick top (doc 20
+        // of the comparison corpus: an empty cell beside one with a 2.25pt top makes the row
+        // 21.84pt, not 20.12pt).
+        widest_row_top(&mut cells, &tops, &mut rh, &mut row_insets);
         // Word adds the cells' top and bottom margins and border bands to an at-least row height:
         // a 30pt row with 5pt margins and 0.5pt borders is 40.5pt tall even when its text needs less.
         // An exact height gains only the bottom margin: it runs from the top border to the bottom
@@ -718,6 +726,27 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
     }
     grow_vertical_merges(&rows, &mut heights);
     finish_table_rows(ctx, TableRows { story, table: t, path, depth, cell_text, rows, heights, bottoms, edges, x, total })
+}
+
+/// Tinta Office: shift every cell under a thinner top than the row's widest down to it, growing
+/// the row height and insets it gives.
+fn widest_row_top(cells: &mut [CellBox], tops: &[(f32, f32)], rh: &mut f32, row_insets: &mut f32) {
+    let row_band_t = tops.iter().map(|t| t.0).filter(|b| b.is_finite()).fold(0.0f32, f32::max);
+    for (cell, &(band_t, insets)) in cells.iter_mut().zip(tops) {
+        let d = row_band_t - band_t;
+        if d.is_nan() || d <= 0.0 {
+            continue;
+        }
+        for it in &mut cell.items {
+            it.translate(0.0, d);
+        }
+        cell.h += d;
+        cell.end += d;
+        if cell.vmerge != VMerge::Restart {
+            *rh = rh.max(cell.h);
+        }
+        *row_insets = row_insets.max(insets + d);
+    }
 }
 
 fn grow_vertical_merges(rows: &[Vec<CellBox>], heights: &mut [f32]) {
