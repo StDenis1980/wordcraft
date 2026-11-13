@@ -112,8 +112,11 @@ config works across the suite) keep the agent to the folders you give it:
 - A refused path is an ordinary tool error the agent can read and correct, for example
   `automation path rejected: outside the write root /work/project/out: /etc/x.docx` or
   `automation filesystem access is not granted: write authority is absent: /work/project/out/x.docx`.
-- The roots must be existing folders; a missing one stops the server with an error. Each flag is
-  given once (`--flag <dir>` or `--flag=<dir>`).
+- Give a flag again for each further folder (`--flag <dir>` or `--flag=<dir>`): a path is allowed
+  when it lies inside any of the roots of its kind, for example
+  `--automation-read-root /work/project --automation-read-root /work/assets`. A refused path names
+  them all (`outside the read roots /work/project, /work/assets: ...`).
+- The roots must be existing folders; a missing one stops the server with an error.
 
 The flags confine the headless server; `--connect` with them is an error, since the server would
 otherwise talk to an app that isn't confined. WordCraft's desktop app has no equivalent flags yet,
@@ -161,6 +164,65 @@ to an `index.json`) when starting WordCraft or `wordcraft-cli`. That index isn't
 sha256 of each archive only matches what that index says: it catches a broken download, not a
 changed pack. `proof.packs` then returns `"index_override": "<url or path>"`, and the app shows the
 test source in File › Options › Language and on the bar's Install.
+
+## Confining commands
+
+```sh
+wordcraft-cli mcp --allow-commands "text.*, format.*, para.*, select.text, caret.*, file.new, file.save"
+wordcraft-cli mcp --allow-commands @allowed.txt   # one id or group.* per line, # comments
+```
+
+`--allow-commands` keeps the agent to the commands it was given, the way the roots above keep it
+to folders. Use both together.
+
+- Every command a client asks for must be on the list: `execute`, each command of `batch`, and
+  the commands behind `new_document` (`file.new`), `open_document` (`file.open`),
+  `save_document` (`file.save`, or `file.exportPng` for `.png`), `type_text` (`text.insert`),
+  `select_text` (`select.text`), `get_text` (`document.text`) and `list_documents`
+  (`view.switchWindows`). A command off the list is an ordinary tool error:
+  `command `insert.table` is not allowed: it is not on this session's --allow-commands list`.
+- So must every step a macro plays back: allowing `tools.macros` doesn't allow what its macros
+  run, so a macro (even one defined before) is never a way around the list.
+- Commands a command runs itself (Heading 1 applying its style) are part of the command that was
+  allowed and aren't checked again. `inspect_document`, `render_page` and `parity` read the
+  document without a command and stay available.
+- `list_commands` shows only the commands the client may run.
+- A list names ids (`format.bold`) and groups (`format.*`: every command whose id starts with
+  `format.`), separated by commas, spaces or new lines. An unknown id, or a group that matches no
+  command, stops the server at startup, so a typo never leaves the agent with less, or more, than
+  meant. An empty list is an error too, and so is the flag without a list or given twice: the
+  server never starts with every command allowed because the list went missing.
+- An `@FILE` list must be a regular file (or a link to one). A pipe, socket or device found at the
+  first check stops the server at startup without being opened. That check and the open are not
+  atomic: a path swapped to a FIFO in between can make the open wait for a writer, the same
+  check-then-open race described under "Confining file access". It is read up to 256 KiB and no
+  further, whatever the file claims to be; a longer one, or one that keeps growing, stops the
+  server too.
+- Like the roots, the list holds the headless server: `--connect` with it is an error, with or
+  without a list after the flag.
+
+## What each command may do (Tinta)
+
+Every command in `list_commands` (and `wordcraft-cli commands --json`) carries a `risk` object, so a
+permission layer such as Vilna OS's Herkos can grade a call before it runs (tintaoffice-web#26):
+
+| Flag | Set when the command… |
+|---|---|
+| `reads_document` / `changes_document` | reads / changes the open document |
+| `reads_disk` / `writes_disk` | reads / writes files (still held to the automation roots) |
+| `network` | may reach the network |
+| `print` | prints |
+| `sign` | signs with a certificate |
+| `other_program` | hands something to another program on the computer |
+| `runs_commands` | runs other commands (macros, scripts), each still held to `--allow-commands` |
+| `ui_only` | changes only the window |
+
+The flags come from hand-reviewed tables in `crates/engine/src/tinta_risk.rs`. Command ids and MCP
+tool names are kept stable between versions: `docs/tinta-commands.tsv` (every command id with its
+flags) and `docs/tinta-mcp-tools.tsv` (every MCP tool) are snapshots, and a test fails when a
+command or tool is added, renamed or removed, or a flag changes, until the snapshot is regenerated
+on purpose (`TINTA_UPDATE_SNAPSHOT=1`). A rename or removal is noted in the release notes and, where
+possible, the old id is kept as deprecated for one version.
 
 ## Tools
 
