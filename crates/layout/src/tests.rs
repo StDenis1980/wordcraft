@@ -15713,3 +15713,63 @@ fn a_split_rows_rest_gets_the_outer_top_border_at_the_page_top() {
     let (thin, thick) = (page_two_text(0.5), page_two_text(2.25));
     assert!((thick - thin - 1.75).abs() < 0.01, "the rest of the row clears the outer top: {thin} vs {thick}");
 }
+
+/// Tinta Office: every part of an at-least row split across pages is at least the row's minimum
+/// height, as in Word (synthetic tests in Word, legacy and 2013 modes; doc 07 of the comparison
+/// corpus); without a minimum the rest is as tall as its text.
+#[test]
+fn a_split_at_least_rows_rest_keeps_the_minimum_height() {
+    crate::test_fonts();
+    let rest = |min: Option<f32>, lines: usize| {
+        let mut d = Document::from_text("Filler");
+        let mut t = Table::new(1, 1, 400.0);
+        if let Some(h) = min {
+            t.rows[0].props.height = Some(h);
+            t.rows[0].props.height_rule = wordcraft_doc::props::HeightRule::AtLeast;
+        }
+        t.rows[0].cells[0].blocks =
+            (0..lines).map(|i| wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(&format!("Line {i}"), Default::default()))).collect();
+        d.insert_block(StoryRef::Body, &Path::top(1), wordcraft_doc::Block::Table(t)).unwrap();
+        let l = lay(&d);
+        let parts: Vec<f32> = l
+            .pages
+            .iter()
+            .flat_map(|pg| &pg.items)
+            .filter_map(|it| if let Placed::Cell { rect, table, .. } = it { (table.0.len() == 1).then_some(rect.h) } else { None })
+            .collect();
+        parts
+    };
+    // Enough lines that a line or two go to page 2.
+    let lines = (40..80).find(|&n| rest(None, n).len() == 2).expect("a row that splits");
+    let plain = rest(None, lines);
+    assert!(plain[1] < 40.0, "{plain:?}");
+    let kept = rest(Some(40.0), lines);
+    assert_eq!(kept.len(), 2, "{kept:?}");
+    assert!(kept[1] >= 40.0, "the rest keeps the 40 pt minimum: {kept:?}");
+}
+
+/// Tinta Office: the empty paragraph ending a cell right after a nested table takes no room, as
+/// in Word (doc 21 of the comparison corpus and synthetic tests); one with text keeps its line.
+#[test]
+fn an_empty_cell_end_after_a_nested_table_takes_no_room() {
+    let height = |end: &str| {
+        let mut nested = Table::new(1, 1, 200.0);
+        nested.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Nested", Default::default()))];
+        let mut t = Table::new(1, 1, 400.0);
+        t.rows[0].cells[0].blocks = vec![
+            wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Intro", Default::default())),
+            Arc::new(Block::Table(nested)),
+            wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(end, Default::default())),
+        ];
+        let mut d = Document::new();
+        d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::new())];
+        let l = lay(&d);
+        l.pages[0]
+            .items
+            .iter()
+            .find_map(|it| if let Placed::Cell { rect, table, .. } = it { (table.0.len() == 1).then_some(rect.h) } else { None })
+            .unwrap()
+    };
+    let (empty, text) = (height(""), height("End"));
+    assert!(text - empty > 10.0, "the empty end takes no line: {empty} vs {text}");
+}
