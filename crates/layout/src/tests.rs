@@ -15713,32 +15713,3 @@ fn a_split_rows_rest_gets_the_outer_top_border_at_the_page_top() {
     let (thin, thick) = (page_two_text(0.5), page_two_text(2.25));
     assert!((thick - thin - 1.75).abs() < 0.01, "the rest of the row clears the outer top: {thin} vs {thick}");
 }
-
-/// Tinta Office: a table right after another one, with no paragraph between, starts below the
-/// whole bottom border of the one above: Word stacks the two borders (doc 07 of the comparison
-/// corpus).
-#[test]
-fn a_table_right_after_another_starts_below_its_bottom_border() {
-    use wordcraft_doc::props::{Border, Borders};
-    let gap = |bottom: f32| {
-        let table = |b: Borders| {
-            let mut t = Table::new(1, 1, 468.0);
-            t.props.borders = Some(b);
-            t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Cell", Default::default()))];
-            Arc::new(Block::Table(t))
-        };
-        let mut a = Borders::all(Border::single(0.5));
-        a.bottom = Some(Border::single(bottom));
-        let mut d = Document::new();
-        d.body = vec![table(a), table(Borders::all(Border::single(0.5))), wordcraft_doc::para_block(Paragraph::new())];
-        let l = lay(&d);
-        let ys: Vec<f32> = l.pages[0]
-            .items
-            .iter()
-            .filter_map(|i| if let Placed::Lines { y, path, .. } = i { (path.0.len() > 1).then_some(*y) } else { None })
-            .collect();
-        ys[1] - ys[0]
-    };
-    let (thin, thick) = (gap(0.5), gap(2.25));
-    assert!((thick - thin - 3.5).abs() < 0.01, "the second table clears the first's whole bottom border: {thin} vs {thick}");
-}

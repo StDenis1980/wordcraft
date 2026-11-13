@@ -284,16 +284,6 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
     if let Some(s) = t.props.space_before.filter(|s| s.is_finite() && *s > 0.0 && !pb.at_top()) {
         pb.y += s.min(MAX_TABLE_SPACE);
     }
-    // Tinta Office: a table right after another one, with no paragraph between them, starts
-    // below the whole bottom border of the one above: Word stacks the two tables' borders
-    // instead of sharing one edge (doc 07 of the comparison corpus: 2.25 pt + 2.25 pt).
-    if t.props.float.is_none() && !pb.at_top() && !pb.web {
-        let above = block.checked_sub(1).and_then(|i| ctx.doc.body.get(i)).and_then(|b| match &**b {
-            wordcraft_doc::Block::Table(a) if a.props.float.is_none() => a.rows.last().map(|r| table::bottom_at_break(ctx, a, r)),
-            _ => None,
-        });
-        pb.y += above.unwrap_or(0.0);
-    }
     // A table in the text flow starts below the floating objects in its way: those its first row
     // would run into, also a floating table placed a little below where it starts.
     let first_row = tl.rows.first().map_or(0.0, |r| r.height);
