@@ -664,10 +664,24 @@ pub fn layout_table(ctx: &mut Ctx, story: StoryRef, t: &Table, path: &[u32], ava
                 );
                 // A hidden end-of-cell mark: an empty last paragraph takes no room (Word for
                 // Windows: a row of empty such cells is only its borders).
-                if cell.props.hide_mark && cell.blocks.last().and_then(|b| b.as_para()).is_some_and(|p| p.text.is_empty()) {
+                let empty_end = cell.blocks.last().and_then(|b| b.as_para()).is_some_and(|p| p.text.is_empty());
+                if cell.props.hide_mark && empty_end {
                     height = last_top;
                 } else {
                     collapsed = false;
+                    // Tinta Office: the empty paragraph ending a cell right after a nested table
+                    // takes no room either (Word, legacy and 2013 modes, with or without a row
+                    // height; doc 21 of the comparison corpus and synthetic tests). One with text,
+                    // or with anything between it and the table, keeps its line.
+                    let after_table = cell
+                        .blocks
+                        .len()
+                        .checked_sub(2)
+                        .and_then(|i| cell.blocks.get(i))
+                        .is_some_and(|b| matches!(&**b, wordcraft_doc::Block::Table(nested) if nested.props.float.is_none()));
+                    if empty_end && after_table {
+                        height = last_top;
+                    }
                 }
                 for it in &mut items {
                     it.translate(x0 + margins[1], margins[0] + band_t);
@@ -946,8 +960,17 @@ fn finish_table_rows(ctx: &mut Ctx, input: TableRows<'_>) -> TableLayout {
 /// otherwise. Each cell's text goes on at the top of the continuation, and the
 /// continuation is as tall as the cell needing the most room, and at least the rest of the row
 /// (a minimum height holds over the pages).
+#[cfg(test)]
 pub fn split_row(row: &RowLayout, cut: f32) -> Option<(RowLayout, RowLayout)> {
-    split_row_with(row, cut, false)
+    split_row_with(row, cut, false, 0.0)
+}
+
+/// [`split_row`] (or [`split_row_keeping_cells`] with `whole_cells`) whose continuation is at
+/// least `min_rest` tall. Tinta Office: Word gives each part of an at-least row split across
+/// pages the row's minimum height again (synthetic tests in Word, legacy and 2013 modes).
+pub(crate) fn split_row_min(row: &RowLayout, cut: f32, whole_cells: bool, min_rest: f32) -> Option<(RowLayout, RowLayout)> {
+    let min_rest = if min_rest.is_finite() { min_rest.clamp(0.0, row.height.max(0.0)) } else { 0.0 };
+    split_row_with(row, cut, whole_cells, min_rest)
 }
 
 /// [`split_row`] for the first part of a row on a page that already holds something: `None`
@@ -957,10 +980,10 @@ pub fn split_row(row: &RowLayout, cut: f32) -> Option<(RowLayout, RowLayout)> {
 /// other cells' text beside an empty cell, the row moves on whole (see `docs/layout-parity.md`,
 /// Tables). Content of a cell aligned below the cut doesn't count.
 pub fn split_row_keeping_cells(row: &RowLayout, cut: f32) -> Option<(RowLayout, RowLayout)> {
-    split_row_with(row, cut, true)
+    split_row_with(row, cut, true, 0.0)
 }
 
-fn split_row_with(row: &RowLayout, cut: f32, whole_cells: bool) -> Option<(RowLayout, RowLayout)> {
+fn split_row_with(row: &RowLayout, cut: f32, whole_cells: bool, min_rest: f32) -> Option<(RowLayout, RowLayout)> {
     // Also rejects a NaN cut.
     if !(cut > 0.0 && cut < row.height) {
         return None;
@@ -1088,7 +1111,7 @@ fn split_row_with(row: &RowLayout, cut: f32, whole_cells: bool) -> Option<(RowLa
             need = need.max(end.map_or(row.height, |e| e + row.bottom) - s);
         }
     }
-    let height = need.clamp(4.0, full);
+    let height = need.clamp(4.0, full).max(min_rest);
     // What runs to the row's bottom (cell areas, shading, side borders) ends at the
     // continuation's.
     let rest = (row.height - height).max(0.0);

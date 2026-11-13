@@ -217,6 +217,29 @@ fn split_keeping_nested(doc: &wordcraft_doc::Document, row: &table::RowLayout, r
     table::split_row_keeping_cells(row, nested_keep_cut(doc, row, room))
 }
 
+/// [`split_keeping_nested`] whose continuation is at least `min_rest` tall.
+fn split_keeping_nested_min(
+    doc: &wordcraft_doc::Document,
+    row: &table::RowLayout,
+    room: f32,
+    min_rest: f32,
+) -> Option<(table::RowLayout, table::RowLayout)> {
+    table::split_row_min(row, nested_keep_cut(doc, row, room), true, min_rest)
+}
+
+/// Tinta Office: how tall each continuation of an at-least row split across pages is at least:
+/// Word gives every part the row's minimum height again, plus its cell margins and border bands
+/// (synthetic tests in Word, legacy and 2013 modes; doc 07 of the comparison corpus). A minimum
+/// taller than a page (`page_height`) is left to run across the pages as before.
+fn continuation_min(row: Option<&wordcraft_doc::Row>, laid: &table::RowLayout, page_height: f32) -> f32 {
+    let Some(h) = row.filter(|r| r.props.height_rule == HeightRule::AtLeast).and_then(|r| r.props.height).filter(|h| h.is_finite() && *h > 0.0)
+    else {
+        return 0.0;
+    };
+    let min = h + laid.cells.iter().map(|c| c.top).fold(0.0, f32::max) + laid.bottom.max(0.0);
+    if min <= page_height { min } else { 0.0 }
+}
+
 fn row_can_start(doc: &wordcraft_doc::Document, row: &wordcraft_doc::Row, laid: &table::RowLayout, room: f32, page_height: f32) -> bool {
     if laid.height <= room + 0.01 {
         return true;
@@ -405,9 +428,14 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             let room = if pb.web { room } else { room - t.rows.get(ri).map_or(0.0, |r| table::bottom_at_break(ctx, t, r)) };
             let split = match (splittable && !moves_on && !defer_kept, first_part) {
                 (false, _) => None,
-                (true, true) => split_keeping_nested(ctx.doc, cur, room),
+                (true, true) => {
+                    split_keeping_nested_min(ctx.doc, cur, room, continuation_min(t.rows.get(ri), cur, pb.bottom - body_top - repeated_height))
+                }
                 // On a fresh page, a nested row taller than the room splits rather than overflowing.
-                (true, false) => table::split_row(cur, nested_keep_cut(ctx.doc, cur, room)).or_else(|| table::split_row(cur, room)),
+                (true, false) => {
+                    let min = continuation_min(t.rows.get(ri), cur, pb.bottom - body_top - repeated_height);
+                    table::split_row_min(cur, nested_keep_cut(ctx.doc, cur, room), false, min).or_else(|| table::split_row_min(cur, room, false, min))
+                }
             };
             match split {
                 Some((a, b)) => {
