@@ -431,11 +431,11 @@ pub(crate) fn place_table(ctx: &mut Ctx, pb: &mut PageBuilder, t: &wordcraft_doc
             fresh = true;
         }
         let last = rest.as_ref().unwrap_or(row);
-        // Tinta Office: a whole row starting a page in the middle of the table gets the table's
-        // outer top border there, and its text moves down by how much wider that border is
-        // than the one between rows (Word's PDFs of the Balearic forms).
-        if ri > 0
-            && rest.is_none()
+        // Tinta Office: a whole row starting a page in the middle of the table, or the rest of a
+        // row split at the page break, gets the table's outer top border there, and its text
+        // moves down by how much wider that border is than the one between rows (Word's PDFs of
+        // the Balearic forms; a continuation in docs 07 and 20 of the comparison corpus).
+        if (ri > 0 || rest.is_some())
             && pb.at_top()
             && !pb.web
             && t.rows.get(ri).is_some_and(|r| !row_has_own_top(r))
