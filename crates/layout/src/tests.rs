@@ -15686,3 +15686,59 @@ fn every_cell_in_a_row_clears_the_rows_widest_top_border() {
     assert_eq!(ys.len(), 4, "{ys:?}");
     assert!((ys[2] - ys[3]).abs() < 0.01, "both cells of the second row start below the thick top: {ys:?}");
 }
+
+/// Tinta Office: the rest of a row split at a page break gets the table's outer top border at the
+/// top of the next page, as a whole row there does (docs 07 and 20 of the comparison corpus).
+#[test]
+fn a_split_rows_rest_gets_the_outer_top_border_at_the_page_top() {
+    use wordcraft_doc::props::{Border, Borders};
+    let page_two_text = |top: f32| {
+        let mut d = Document::new();
+        let mut t = Table::new(2, 1, 468.0);
+        let mut b = Borders::all(Border::single(0.5));
+        b.top = Some(Border::single(top));
+        t.props.borders = Some(b);
+        t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("First", Default::default()))];
+        t.rows[1].cells[0].blocks =
+            (0..55).map(|i| wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text(&format!("Line {i}"), Default::default()))).collect();
+        d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::new())];
+        let l = lay(&d);
+        assert!(l.pages.len() >= 2);
+        l.pages[1]
+            .items
+            .iter()
+            .find_map(|i| if let Placed::Lines { y, path, .. } = i { (path.0.len() > 1).then_some(*y) } else { None })
+            .expect("page 2's text")
+    };
+    let (thin, thick) = (page_two_text(0.5), page_two_text(2.25));
+    assert!((thick - thin - 1.75).abs() < 0.01, "the rest of the row clears the outer top: {thin} vs {thick}");
+}
+
+/// Tinta Office: a table right after another one, with no paragraph between, starts below the
+/// whole bottom border of the one above: Word stacks the two borders (doc 07 of the comparison
+/// corpus).
+#[test]
+fn a_table_right_after_another_starts_below_its_bottom_border() {
+    use wordcraft_doc::props::{Border, Borders};
+    let gap = |bottom: f32| {
+        let table = |b: Borders| {
+            let mut t = Table::new(1, 1, 468.0);
+            t.props.borders = Some(b);
+            t.rows[0].cells[0].blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Cell", Default::default()))];
+            Arc::new(Block::Table(t))
+        };
+        let mut a = Borders::all(Border::single(0.5));
+        a.bottom = Some(Border::single(bottom));
+        let mut d = Document::new();
+        d.body = vec![table(a), table(Borders::all(Border::single(0.5))), wordcraft_doc::para_block(Paragraph::new())];
+        let l = lay(&d);
+        let ys: Vec<f32> = l.pages[0]
+            .items
+            .iter()
+            .filter_map(|i| if let Placed::Lines { y, path, .. } = i { (path.0.len() > 1).then_some(*y) } else { None })
+            .collect();
+        ys[1] - ys[0]
+    };
+    let (thin, thick) = (gap(0.5), gap(2.25));
+    assert!((thick - thin - 3.5).abs() < 0.01, "the second table clears the first's whole bottom border: {thin} vs {thick}");
+}
