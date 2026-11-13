@@ -15661,3 +15661,28 @@ fn a_legacy_documents_superscript_is_raised_by_half_its_size() {
     assert!((raise(wordcraft_doc::LEGACY_COMPAT_MODE, 9.0) - 4.5).abs() < 0.01);
     assert!((raise(wordcraft_doc::COMPAT_MODE_CURRENT, 10.0) - 3.3).abs() < 0.01);
 }
+
+/// Tinta Office: Word reserves a row's widest top border in every cell, so text beside a cell
+/// with a thick top starts on the same line as that cell's (doc 20 of the comparison corpus).
+#[test]
+fn every_cell_in_a_row_clears_the_rows_widest_top_border() {
+    use wordcraft_doc::props::{Border, Borders};
+    let mut d = Document::new();
+    let mut t = Table::new(2, 2, 468.0);
+    t.props.borders = Some(Borders::all(Border::single(0.5)));
+    t.rows[1].cells[0].props.borders = Some(Borders { top: Some(Border::single(2.25)), ..Default::default() });
+    for row in &mut t.rows {
+        for cell in &mut row.cells {
+            cell.blocks = vec![wordcraft_doc::para_block(wordcraft_doc::Paragraph::with_text("Row", Default::default()))];
+        }
+    }
+    d.body = vec![Arc::new(Block::Table(t)), wordcraft_doc::para_block(Paragraph::with_text("After", Default::default()))];
+    let l = lay(&d);
+    let ys: Vec<f32> = l.pages[0]
+        .items
+        .iter()
+        .filter_map(|i| if let Placed::Lines { y, path, .. } = i { (path.0.first() == Some(&0)).then_some(*y) } else { None })
+        .collect();
+    assert_eq!(ys.len(), 4, "{ys:?}");
+    assert!((ys[2] - ys[3]).abs() < 0.01, "both cells of the second row start below the thick top: {ys:?}");
+}
