@@ -202,3 +202,49 @@ fn proofing_reads_the_written_packs() {
     let wrong: Vec<_> = breaks.iter().filter(|(_, want, got)| want != got).collect();
     assert!(wrong.is_empty(), "{wrong:?}");
 }
+
+/// LibreOffice's patterns (the extra pack's Czech and Romanian) are read in their character set,
+/// without the first line, the settings, the compound level and the non-standard patterns.
+#[test]
+fn libreoffice_patterns_become_plain_utf8_patterns() {
+    // "ISO8859-2", then `.a4dč` with č as 0xE8 in ISO 8859-2.
+    let mut cs = b"ISO8859-2\nLEFTHYPHENMIN 2\n% note\n.a4d".to_vec();
+    cs.extend_from_slice(&[0xE8, b'\n']);
+    cs.extend_from_slice(b"1na\nss/s=s,1,2\nNEXTLEVEL\n1ba\n");
+    assert_eq!(libreoffice_patterns(&cs).as_deref(), Some("% note\n.a4dč\n1na\n"));
+    assert_eq!(libreoffice_patterns(b"UTF-8\n% only a comment\nNEXTLEVEL\n1na\n"), None, "no first-level pattern");
+    assert_eq!(libreoffice_patterns(b"NOT-A-CHARSET\n1na\n"), None);
+    assert_eq!(libreoffice_patterns(b""), None);
+}
+
+/// The extra pack's Czech and Romanian hyphenation (LibreOffice `hyph_*.dic`, which the fork
+/// can't bundle) become the packs' patterns, and words break with them.
+#[test]
+fn the_extra_packs_czech_and_romanian_patterns_hyphenate() {
+    use wordcraft_proof::ProofLang;
+    let _g = crate::cmd::packs::TEST_LOCK.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+    let root = temp("hyph-dic");
+    let dict = root.join("dictionaries");
+    std::fs::create_dir_all(dict.join("licences")).unwrap();
+    for (file, word) in [("cs_CZ", "faktura"), ("ro_RO", "factura")] {
+        std::fs::write(dict.join(format!("{file}.aff")), "SET UTF-8\n").unwrap();
+        std::fs::write(dict.join(format!("{file}.dic")), format!("1\n{word}\n")).unwrap();
+    }
+    std::fs::write(dict.join("hyph_cs_CZ.dic"), b"ISO8859-2\nLEFTHYPHENMIN 2\nk1t\nu1r\n2fa\n").unwrap();
+    std::fs::write(dict.join("hyph_ro_RO.dic"), "UTF-8\n% Authors: test\nc1t\nu1r\n2fa\n").unwrap();
+    let packs = root.join("packs");
+    let done = seed_into(&packs, std::slice::from_ref(&dict));
+    assert_eq!(done.written, ["ro", "cs"], "{done:?}");
+    assert_eq!(read(&packs.join("cs").join("hyphenation.pat")), "k1t\nu1r\n2fa\n");
+    assert!(read(&packs.join("ro").join("LICENCES").join("hyphenation.txt")).contains("Authors"));
+    wordcraft_proof::packs::set_packs_dir(Some(packs.clone()));
+    let lang = |t: &str| ProofLang::from_tag(Some(t));
+    let got = [shown("faktura", lang("cs-CZ")), shown("factura", lang("ro-RO"))];
+    wordcraft_proof::packs::set_packs_dir(None);
+    // Changing the patterns writes the pack again.
+    std::fs::write(dict.join("hyph_cs_CZ.dic"), b"ISO8859-2\n1r\n1k\n").unwrap();
+    let again = seed_into(&packs, &[dict]);
+    let _ = std::fs::remove_dir_all(&root);
+    assert_eq!(got, ["fak-tu-ra", "fac-tu-ra"]);
+    assert!(again.written.contains(&"cs".to_string()), "{again:?}");
+}

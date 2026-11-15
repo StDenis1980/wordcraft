@@ -59,10 +59,13 @@ keeps in its own cache without installing them, from where they are.
 French, Romanian, Lithuanian, Polish, Italian, Czech and German are a separate download of
 about 24 MB, so the main pack stays small. [`sources-extra.tsv`](sources-extra.tsv) lists them the same
 way; `fetch.sh DEST sources-extra.tsv` (Windows: `fetch.ps1 -Dest DEST -Manifest
-sources-extra.tsv`) fills a folder to zip as a release asset. Unzipped into the app's
-`dictionaries` folder, or a folder set in File › Options › Proofing, the languages are checked. On
-Linux the distribution's `hunspell-fr`, `hunspell-ro`… packages work too: the app also reads
-`/usr/share/hunspell`.
+sources-extra.tsv`) fills a folder, and the Windows release script (`tinta-build-release.ps1` in
+the PDF fork, `packaging/windows`) zips it as the release file `tinta-texto-dictionaries-extra.zip`,
+listed in `SHA256SUMS.txt` with the installers. Unzipped into the program's `dictionaries` folder
+(the portable zip's, or `C:\Program Files\Tinta Office\Tinta Texto\dictionaries` as an administrator), the
+languages become Language packs at the next start, like the shipped ones
+(`crates/engine/src/tinta_packs.rs`), and work without a network. Where the program's folder can't
+be written (the Flatpak, `/usr/share`), the same languages download in File › Options › Language.
 
 German is LibreOffice's `de_DE_frami` (igerman98 with additions), saved as `de_DE`: it builds
 compound words (`Rechnungsnummer`, `Krankenversicherungskarte`) from parts the dictionary marks,
@@ -71,7 +74,8 @@ which the spelling engine reads. Swiss German (`de-CH`, `de-LI`) writes `ss` for
 
 Czech and Romanian hyphenation patterns are GPL-2, so the app can't bundle them as it bundles the
 other languages' (`assets/hyphenation`); the pack carries LibreOffice's `hyph_cs_CZ.dic` and
-`hyph_ro_RO.dic`, which the app reads from the same folders as the dictionaries.
+`hyph_ro_RO.dic`, which Texto converts to the Czech and Romanian packs' patterns (their first
+level, in UTF-8) when it writes the packs.
 
 | File | Language | Source | Licence |
 |---|---|---|---|

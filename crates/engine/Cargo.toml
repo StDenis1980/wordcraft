@@ -15,6 +15,8 @@ workspace = true
 test-support = []
 
 [dependencies]
+# The extra pack's LibreOffice hyphenation patterns are ISO 8859-2 (Czech) (tinta_packs).
+encoding_rs = { workspace = true }
 wordcraft-brand = { workspace = true }
 wordcraft-geom = { workspace = true, features = ["image"] }
 wordcraft-doc = { workspace = true }
@@ -56,6 +58,5 @@ libc = { workspace = true }
 
 [dev-dependencies]
 wordcraft-doc = { workspace = true, features = ["test-support"] }
-encoding_rs = { workspace = true }
 zip = { workspace = true }
 cfb = { workspace = true }

@@ -31,6 +31,9 @@ struct Shipped {
     words: Option<&'static str>,
     /// Hyphenation patterns bundled with this fork (`assets/hyphenation`).
     hyphenation: Option<&'static str>,
+    /// Otherwise, the base name of LibreOffice hyphenation patterns the dictionaries folder may
+    /// carry (`hyph_cs_CZ` → `hyph_cs_CZ.dic`, the extra pack), written as the pack's patterns.
+    hyph_dic: Option<&'static str>,
     /// SPDX expression of the pack's data (dictionary, then patterns).
     licence: &'static str,
     /// The licence and readme files in the dictionaries folder's `licences/` that go with it.
@@ -53,6 +56,7 @@ const SHIPPED: &[Shipped] = &[
         file: "es_ES",
         words: Some("es"),
         hyphenation: Some(ES_PAT),
+        hyph_dic: None,
         licence: "(GPL-3.0-or-later OR LGPL-3.0-or-later OR MPL-1.1) AND MIT",
         licences: &["es-LICENSE.md", "es-README.txt", "MPL-1.1.txt", "GPL-3.0.txt", "LGPL-3.0.txt"],
     },
@@ -62,6 +66,7 @@ const SHIPPED: &[Shipped] = &[
         file: "ca",
         words: Some("ca"),
         hyphenation: Some(CA_PAT),
+        hyph_dic: None,
         licence: "(LGPL-2.1-or-later OR GPL-2.0-or-later) AND LPPL-1.3c",
         licences: &["ca-README.txt", "LGPL-2.1.txt", "GPL-2.0.txt"],
     },
@@ -71,6 +76,7 @@ const SHIPPED: &[Shipped] = &[
         file: "ca-valencia",
         words: Some("ca"),
         hyphenation: Some(CA_PAT),
+        hyph_dic: None,
         licence: "(LGPL-2.1-or-later OR GPL-2.0-or-later) AND LPPL-1.3c",
         licences: &["ca-README.txt", "LGPL-2.1.txt", "GPL-2.0.txt"],
     },
@@ -80,6 +86,7 @@ const SHIPPED: &[Shipped] = &[
         file: "gl_ES",
         words: Some("gl"),
         hyphenation: Some(GL_PAT),
+        hyph_dic: None,
         licence: "GPL-3.0-only AND Unlicense",
         licences: &["gl-README.txt", "GPL-3.0.txt"],
     },
@@ -89,6 +96,7 @@ const SHIPPED: &[Shipped] = &[
         file: "eu",
         words: Some("eu"),
         hyphenation: Some(EU_PAT),
+        hyph_dic: None,
         licence: "GPL-2.0-only AND LicenseRef-hyph-eu",
         licences: &["eu-README.md", "GPL-2.0.txt"],
     },
@@ -98,6 +106,7 @@ const SHIPPED: &[Shipped] = &[
         file: "uk_UA",
         words: Some("uk"),
         hyphenation: Some(UK_PAT),
+        hyph_dic: None,
         licence: "MPL-1.1 AND MIT",
         licences: &["uk-README.txt", "MPL-1.1.txt"],
     },
@@ -108,6 +117,7 @@ const SHIPPED: &[Shipped] = &[
         file: "fr",
         words: None,
         hyphenation: Some(FR_PAT),
+        hyph_dic: None,
         licence: "MPL-2.0 AND MIT",
         licences: &["fr-LICENSE.txt", "fr-README.md"],
     },
@@ -117,7 +127,8 @@ const SHIPPED: &[Shipped] = &[
         file: "ro_RO",
         words: None,
         hyphenation: None,
-        licence: "GPL-2.0-only OR LGPL-2.1-only OR MPL-1.1",
+        hyph_dic: Some("hyph_ro_RO"),
+        licence: "(GPL-2.0-only OR LGPL-2.1-only OR MPL-1.1) AND GPL-2.0-or-later",
         licences: &["GPL-2.0.txt", "LGPL-2.1.txt", "MPL-1.1.txt"],
     },
     Shipped {
@@ -126,6 +137,7 @@ const SHIPPED: &[Shipped] = &[
         file: "lt_LT",
         words: None,
         hyphenation: Some(LT_PAT),
+        hyph_dic: None,
         licence: "BSD-3-Clause AND MIT",
         licences: &["lt-COPYING.txt", "lt-README.txt"],
     },
@@ -135,6 +147,7 @@ const SHIPPED: &[Shipped] = &[
         file: "pl_PL",
         words: None,
         hyphenation: None,
+        hyph_dic: None,
         licence: "GPL-1.0-or-later OR LGPL-2.1-or-later OR MPL-1.1 OR Apache-2.0 OR CC-BY-SA-1.0",
         licences: &["pl-README.txt", "LGPL-2.1.txt", "MPL-1.1.txt"],
     },
@@ -144,6 +157,7 @@ const SHIPPED: &[Shipped] = &[
         file: "it_IT",
         words: None,
         hyphenation: None,
+        hyph_dic: None,
         licence: "GPL-3.0-only",
         licences: &["it-README.txt", "GPL-3.0.txt"],
     },
@@ -153,6 +167,7 @@ const SHIPPED: &[Shipped] = &[
         file: "cs_CZ",
         words: None,
         hyphenation: None,
+        hyph_dic: Some("hyph_cs_CZ"),
         licence: "GPL-2.0-only",
         licences: &["cs-README.txt", "GPL-2.0.txt"],
     },
@@ -162,6 +177,7 @@ const SHIPPED: &[Shipped] = &[
         file: "de_DE",
         words: None,
         hyphenation: None,
+        hyph_dic: None,
         licence: "GPL-2.0-only OR GPL-3.0-only",
         licences: &["de-README.txt", "GPL-2.0.txt", "GPL-3.0.txt"],
     },
@@ -171,6 +187,7 @@ const SHIPPED: &[Shipped] = &[
         file: "de_CH",
         words: None,
         hyphenation: None,
+        hyph_dic: None,
         licence: "GPL-2.0-only OR GPL-3.0-only",
         licences: &["de-README.txt", "GPL-2.0.txt", "GPL-3.0.txt"],
     },
@@ -304,12 +321,51 @@ fn read_ledger(packs: &Path) -> Vec<String> {
 
 /// A small text file, at most [`MAX_SMALL`] bytes read; `None` when missing or not UTF-8.
 fn read_small(path: &Path) -> Option<String> {
+    String::from_utf8(read_small_bytes(path)?).ok()
+}
+
+/// The bytes of the regular file `path`, at most [`MAX_SMALL`] of them.
+fn read_small_bytes(path: &Path) -> Option<Vec<u8>> {
     if !is_file(path) {
         return None;
     }
     let mut bytes = Vec::new();
     std::fs::File::open(path).ok()?.take(MAX_SMALL).read_to_end(&mut bytes).ok()?;
-    String::from_utf8(bytes).ok()
+    Some(bytes)
+}
+
+/// LibreOffice hyphenation patterns (`hyph_*.dic`: a character set on the first line, then
+/// Liang patterns, optional `LEFTHYPHENMIN`-style settings and a `NEXTLEVEL` of compound-word
+/// patterns) as the UTF-8 patterns a pack holds: the first level only, without the settings and
+/// without the non-standard patterns (`ss/s=s,1,2`), which plain Liang patterns can't express.
+/// `None` when the character set is unknown or no pattern is left.
+fn libreoffice_patterns(bytes: &[u8]) -> Option<String> {
+    let first = bytes.split(|b| *b == b'\n').next().unwrap_or_default();
+    let label = String::from_utf8_lossy(first);
+    let encoding = encoding_rs::Encoding::for_label(label.trim().as_bytes())?;
+    let rest = bytes.get(first.len().saturating_add(1)..).unwrap_or_default();
+    let (text, _, malformed) = encoding.decode(rest);
+    if malformed {
+        return None;
+    }
+    let mut out = String::new();
+    let mut patterns = 0usize;
+    for line in text.lines() {
+        let word = line.split('%').next().unwrap_or("").trim();
+        if word == "NEXTLEVEL" {
+            break;
+        }
+        let setting = word.split_whitespace().next().is_some_and(|w| w.chars().all(|c| c.is_ascii_uppercase() || c == '_'));
+        if word.contains('/') || setting {
+            continue;
+        }
+        if !word.is_empty() {
+            patterns = patterns.saturating_add(1);
+        }
+        out.push_str(line);
+        out.push('\n');
+    }
+    (patterns > 0).then_some(out)
 }
 
 /// What the pack written from `dir` depends on: the dictionary files' sizes and times, the
@@ -322,11 +378,12 @@ fn signature(s: &Shipped, dir: &Path) -> Result<String, String> {
     };
     let words = s.words.and_then(|w| read_small(&dir.join(words_file(w)))).unwrap_or_default();
     Ok(format!(
-        "{LAYOUT}:{}:{}:{:016x}:{:016x}",
+        "{LAYOUT}:{}:{}:{:016x}:{:016x}:{}",
         stamp(format!("{}.aff", s.file))?,
         stamp(format!("{}.dic", s.file))?,
         fnv(words.as_bytes()),
-        fnv(s.hyphenation.unwrap_or_default().as_bytes())
+        fnv(s.hyphenation.unwrap_or_default().as_bytes()),
+        s.hyph_dic.map(|h| stamp(format!("{h}.dic")).unwrap_or_default()).unwrap_or_default()
     ))
 }
 
@@ -409,7 +466,11 @@ fn build(stage: &Path, s: &Shipped, dir: &Path, signature: &str) -> Result<(), S
             f.write_all(text.as_bytes()).map_err(io("spelling.dic"))?;
         }
     }
-    if let Some(p) = s.hyphenation {
+    let converted = match (s.hyphenation, s.hyph_dic) {
+        (None, Some(h)) => read_small_bytes(&dir.join(format!("{h}.dic"))).and_then(|b| libreoffice_patterns(&b)),
+        _ => None,
+    };
+    if let Some(p) = s.hyphenation.or(converted.as_deref()) {
         std::fs::write(stage.join("hyphenation.pat"), p).map_err(io("hyphenation.pat"))?;
         let notice: String = p.lines().take_while(|l| l.starts_with('%') || l.trim().is_empty()).map(|l| format!("{l}\n")).collect();
         if !notice.trim().is_empty() {
