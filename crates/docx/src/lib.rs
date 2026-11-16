@@ -24,28 +24,9 @@ pub fn is_encrypted(bytes: &[u8]) -> bool {
 
 pub use model_bridge::{from_shared_model, to_shared_model};
 
-/// Tinta Office: widow/orphan control is off unless the file turns it on somewhere in the style
-/// hierarchy (ECMA-376 §17.3.1.44). Word leaves a single line of a list paragraph at the bottom
-/// of a page in a form whose styles never set it (doc 08 of the comparison corpus); the model's
-/// own default (on) stays for new documents and other formats.
-fn tinta_widow_control_read(shared: &mut craft_wordmodel::Document) {
-    if shared.styles.default_para.widow_control.is_none() {
-        std::sync::Arc::make_mut(&mut shared.styles).default_para.widow_control = Some(false);
-    }
-}
-
-/// Tinta Office: the model's unset default (on) is written as on, and an off one read from a file
-/// is written back by omission, as it was read.
-fn tinta_widow_control_write(shared: &mut craft_wordmodel::Document) {
-    let now = shared.styles.default_para.widow_control;
-    let written = match now {
-        None => Some(true),
-        Some(false) => None,
-        on => on,
-    };
-    if written != now {
-        std::sync::Arc::make_mut(&mut shared.styles).default_para.widow_control = written;
-    }
+/// Tinta Office: `docProps/app.xml` names the brand (Tinta Texto) as the application.
+fn tinta_application_name() {
+    craft_docx::set_application_name(wordcraft_brand::NAME);
 }
 
 /// An alternative format chunk's content, as a [`ChunkImporter`] gets it.
@@ -87,42 +68,41 @@ pub fn read_with(bytes: &[u8], opts: &ReadOptions) -> Result<wordcraft_doc::Docu
     let shared_opts =
         craft_docx::ReadOptions { password: opts.password, chunks: opts.chunks.as_ref().map(|_| &bridge_importer as craft_docx::ChunkImporter) };
 
-    let mut shared = craft_docx::read_with(bytes, &shared_opts)?;
-    tinta_widow_control_read(&mut shared);
+    let shared = craft_docx::read_with(bytes, &shared_opts)?;
     from_shared_model(shared)
 }
 
 /// Read a Word XML file (`.xml`).
 pub fn read_xml(bytes: &[u8]) -> Result<wordcraft_doc::Document, DocxError> {
-    let mut shared = craft_docx::read_xml(bytes)?;
-    tinta_widow_control_read(&mut shared);
+    let shared = craft_docx::read_xml(bytes)?;
     from_shared_model(shared)
 }
 
 /// Write a document as `.docx`.
 pub fn write(doc: &wordcraft_doc::Document) -> Result<Vec<u8>, DocxError> {
-    let mut shared = to_shared_model(doc)?;
-    tinta_widow_control_write(&mut shared);
+    let shared = to_shared_model(doc)?;
+    tinta_application_name();
     craft_docx::write(&shared)
 }
 
 /// Write a document with a specific package flavor.
 pub fn write_as(doc: &wordcraft_doc::Document, flavor: Flavor) -> Result<Vec<u8>, DocxError> {
-    let mut shared = to_shared_model(doc)?;
-    tinta_widow_control_write(&mut shared);
+    let shared = to_shared_model(doc)?;
+    tinta_application_name();
     craft_docx::write_as(&shared, flavor)
 }
 
 /// Write a document as a Flat OPC XML file.
 pub fn write_flat(doc: &wordcraft_doc::Document) -> Result<Vec<u8>, DocxError> {
-    let mut shared = to_shared_model(doc)?;
-    tinta_widow_control_write(&mut shared);
+    let shared = to_shared_model(doc)?;
+    tinta_application_name();
     craft_docx::write_flat(&shared)
 }
 
 /// Write a document as Word 2003 XML.
 pub fn write_wordml2003(doc: &wordcraft_doc::Document) -> Result<Vec<u8>, DocxError> {
     let shared = to_shared_model(doc)?;
+    tinta_application_name();
     craft_docx::write_wordml2003(&shared)
 }
 
