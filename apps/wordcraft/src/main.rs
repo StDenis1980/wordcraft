@@ -493,6 +493,8 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
 /// geometry, opens requested documents or the Start screen, starts the control server when
 /// asked, and runs the eframe event loop.
 fn main() -> eframe::Result {
+    // Tinta Office: this app shows the Tinta look (tests and examples keep the classic one).
+    wordcraft_ui_egui::tinta_theme::allow();
     #[cfg(windows)]
     if let Some(code) = print::isolated::helper_mode() {
         std::process::exit(code);

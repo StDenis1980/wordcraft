@@ -21,7 +21,22 @@ static ON: AtomicBool = AtomicBool::new(false);
 /// Whether the Tinta look is on. Never in this crate's unit tests: they share one process, and
 /// upstream's compare colours with the classic palette whatever other tests switch on.
 pub fn on() -> bool {
-    !cfg!(test) && ON.load(Ordering::Relaxed)
+    !cfg!(test) && allowed() && ON.load(Ordering::Relaxed)
+}
+
+/// Set by the desktop app ([`allow`]): only it shows the Tinta look. Upstream's integration tests
+/// and examples compare colours with the classic palette, so they keep it, unless `TINTA_LOOK` is
+/// set in the environment (for screenshots of the Tinta look).
+static ALLOWED: AtomicBool = AtomicBool::new(false);
+
+/// Let this program show the Tinta look (the desktop app calls it once, at start).
+pub fn allow() {
+    ALLOWED.store(true, Ordering::Relaxed);
+}
+
+fn allowed() -> bool {
+    static ENV: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    ALLOWED.load(Ordering::Relaxed) || *ENV.get_or_init(|| std::env::var_os("TINTA_LOOK").is_some())
 }
 
 /// Turn the Tinta look on or off; true when that changed it, so the caller re-applies the theme.
