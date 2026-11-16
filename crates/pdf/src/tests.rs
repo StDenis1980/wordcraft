@@ -2947,7 +2947,11 @@ fn undecodable_pictures_keep_their_grey_box_bytes() {
     assert!(text.contains("0.8157 0.8157 0.8157") || text.contains(".81"), "the grey box is drawn: {}", text.len());
     // FNV-1a of the file, recorded from the export before the shared decode check existed.
     let h = a.iter().fold(0xcbf29ce484222325u64, |h, b| (h ^ u64::from(*b)).wrapping_mul(0x100000001b3));
-    assert_eq!(h, 0x1edbbffab353d744, "{h:#x}");
+    // A rebranded build (the Tinta Office fork) writes its own name as the PDF's creator and
+    // producer, so the bytes differ from the recorded ones; the grey boxes are checked above.
+    if !wordcraft_brand::REBRANDED {
+        assert_eq!(h, 0x1edbbffab353d744, "{h:#x}");
+    }
 }
 
 /// A page with a chart label and an equation, exported without compression. Chart and equation
