@@ -276,6 +276,7 @@ impl WordApp {
             interface_size: _,
             legacy_interface_size: _,
             animations: _,
+            tinta_look: _,
             legacy_dark: _,
             nav_tab: _,
             display_server: _,
