@@ -178,6 +178,7 @@ file.saveAs	reads_document,writes_disk
 file.saveTemplate	reads_document,writes_disk
 file.setAuthor	reads_document
 file.share	reads_document
+file.strictReport	reads_document
 file.versions	reads_disk,reads_document,writes_disk
 font.add	reads_disk,reads_document,writes_disk
 font.list	reads_document
@@ -277,6 +278,7 @@ layout.columns	changes_document,reads_document
 layout.differentFirstPage	changes_document,reads_document
 layout.differentOddEven	changes_document,reads_document
 layout.documentGrid	changes_document,reads_document
+layout.fitOnePage	changes_document,reads_document
 layout.hyphenation	changes_document,reads_document
 layout.lineNumbers	changes_document,reads_document
 layout.linkToPrevious	changes_document,reads_document
@@ -639,6 +641,8 @@ view.gridlines	ui_only
 view.hideWhiteSpace	ui_only
 view.immersive	ui_only
 view.interfaceTheme	ui_only
+view.markdownSource	changes_document,ui_only
+view.markdownSourceText	changes_document,ui_only
 view.marks	ui_only
 view.multiplePages	ui_only
 view.navigationPane	ui_only

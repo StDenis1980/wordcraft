@@ -3525,7 +3525,8 @@ fn tracked_style_change_round_trips_through_docx() {
     let ch = st.chr_change.as_ref().expect("the change survives the round trip");
     assert_eq!(ch.old.bold, None, "the change keeps Heading 1 as it was");
     let rev = d.revisions.get(ch.rev as usize).expect("the revision is read back");
-    assert_eq!((rev.kind, rev.author.as_str()), (RevisionKind::Format, "WordCraft User"));
+    // The default author is the brand's ("Tinta Texto User" in the Tinta Office fork).
+    assert_eq!((rev.kind, rev.author.as_str()), (RevisionKind::Format, format!("{} User", crate::brand::NAME).as_str()));
 
     // And the change is resolved on the reopened document.
     let mut r = Session::new(d);

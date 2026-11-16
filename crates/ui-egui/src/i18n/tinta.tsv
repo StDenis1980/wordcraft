@@ -1139,6 +1139,45 @@ zh-hans	Lithuanian	立陶宛语
 zh-hant	Lithuanian	立陶宛語
 lt	Lithuanian	Lietuvių
 bg	German (Switzerland)	Немски (Швейцария)
+bs	Support	Podrška
+bs	Get help and support	Pomoć i podrška
+bs	A free, open-source word processor written from scratch in Rust.	Besplatan program za obradu teksta otvorenog koda, napisan od nule u Rustu.
+bs	Catalan	Katalonski
+bs	Catalan (Valencian)	Katalonski (valencijski)
+bs	Galician	Galicijski
+bs	Basque	Baskijski
+bs	Invoice (Spain)	Faktura (Španija)
+bs	Quote (Spain)	Ponuda (Španija)
+bs	Formal letter (Spain)	Službeno pismo (Španija)
+bs	CV (Spain)	CV (Španija)
+bs	Suggest my words	Predloži moje riječi
+bs	Suggest my words for Tinta's dictionaries	Predloži moje riječi za Tintine rječnike
+bs	Off by default. While it is on, the words you add to the dictionary are listed here with their language, on this computer only. Unless you also turn on sending them automatically, nothing is sent by itself: you review the list and email it to hola@tintaoffice.com.	Podrazumijevano isključeno. Dok je uključeno, riječi koje dodate u rječnik ovdje se prikazuju sa svojim jezikom, samo na ovom računaru. Ako ne uključite i njihovo automatsko slanje, ništa se ne šalje samo od sebe: pregledate listu i pošaljete je e-mailom na hola@tintaoffice.com.
+bs	Send them automatically	Šalji ih automatski
+bs	Off by default too. While it is on, the listed words in Spanish, Catalan, Galician, Basque and Ukrainian go once a day to report.tintaoffice.com (EU) with a random installation number; the server keeps only a fingerprint of it, never your IP address. A word joins Tinta's dictionaries once 5 installations (10 for Spanish) added it and Wiktionary lists it. Turning this off removes your words from the server's counts.	Također podrazumijevano isključeno. Dok je uključeno, navedene riječi na španskom, katalonskom, galicijskom, baskijskom i ukrajinskom šalju se jednom dnevno na report.tintaoffice.com (EU) sa nasumičnim brojem instalacije; server čuva samo njegov otisak, nikad vašu IP adresu. Riječ ulazi u Tintine rječnike kada je doda 5 instalacija (10 za španski) i kada je navodi Wiktionary. Isključivanjem se vaše riječi uklanjaju iz brojanja na serveru.
+bs	sent	poslano
+bs	Removing your words from the server's counts…	Vaše riječi se uklanjaju iz brojanja na serveru…
+bs	Only these words and their language are sent, never your documents; words with digits, @ or a capital inside are left out. Tinta Office uses them only to improve its dictionaries and deletes them within 12 months; your email address is used only to reply. To withdraw, turn this off (the list is deleted) and ask hola@tintaoffice.com to delete what you sent.	Šalju se samo te riječi i njihov jezik, nikada vaši dokumenti; riječi s ciframa, @ ili velikim slovom u sredini se izostavljaju. Tinta Office ih koristi samo za poboljšanje svojih rječnika i briše ih u roku od 12 mjeseci; vaša e-mail adresa koristi se samo za odgovor. Da povučete saglasnost, isključite ovo (lista se briše) i zamolite hola@tintaoffice.com da izbriše ono što ste poslali.
+bs	No words listed yet.	Još nema riječi.
+bs	Send by email	Pošalji e-mailom
+bs	Copy the list	Kopiraj listu
+bs	Clear the list	Očisti listu
+bs	The email holds {n} of {total} words; send the rest next time, or copy the list.	E-mail sadrži {n} od {total} riječi; ostatak pošaljite sljedeći put ili kopirajte listu.
+bs	Send error reports automatically?	Automatski slati izvještaje o greškama?
+bs	When the app crashes or stops responding, it can send a report so the problem gets fixed without you writing to us. A report holds the app version, the system, the language, where in the code the error happened and the last lines of the technical log. Never the text of your documents, file names, folders, e-mail addresses or passwords.	Kada se aplikacija sruši ili prestane odgovarati, može poslati izvještaj kako bi se problem otklonio bez da nam pišete. Izvještaj sadrži verziju aplikacije, sistem, jezik, mjesto u kodu gdje je nastala greška i posljednje redove tehničkog zapisnika. Nikada tekst vaših dokumenata, nazive datoteka, foldere, e-mail adrese ili lozinke.
+bs	Reports go to Tinta Office (report.tintaoffice.com, stored in the EU) and are deleted after 90 days. You can change this at any time in File › Options › General and delete your reports from the server there. Details: tintaoffice.com/aviso-legal	Izvještaji idu u Tinta Office (report.tintaoffice.com, pohranjeni u EU) i brišu se nakon 90 dana. Ovo možete promijeniti bilo kada u Datoteka › Opcije › Općenito i tamo izbrisati svoje izvještaje sa servera. Detalji: tintaoffice.com/en/legal
+bs	Yes, send reports	Da, šalji izvještaje
+bs	No	Ne
+bs	Error reports	Izvještaji o greškama
+bs	Send error reports automatically	Automatski šalji izvještaje o greškama
+bs	Installation id: {id}	ID instalacije: {id}
+bs	Delete my reports from the server	Izbriši moje izvještaje sa servera
+bs	Deletion requested: it completes the next time the app is online.	Brisanje je zatraženo: završit će se kada aplikacija sljedeći put bude na mreži.
+bs	Open the reports folder	Otvori folder izvještaja
+bs	Aptos not installed	Aptos nije instaliran
+bs	This document uses Aptos, Word's default font, which isn't installed. Tinta Office can't include it, so another font stands in and lines and pages may break differently from Word. Click to download Aptos free from Microsoft, then restart Tinta Texto.	Ovaj dokument koristi Aptos, Wordov podrazumijevani font, koji nije instaliran. Tinta Office ga ne smije uključiti, pa ga zamjenjuje drugi font i redovi i stranice mogu se prelamati drugačije nego u Wordu. Kliknite da besplatno preuzmete Aptos od Microsofta, a zatim ponovo pokrenite Tinta Texto.
+bs	Lithuanian	Litvanski
+bs	German (Switzerland)	Njemački (Švicarska)
 ca	German (Switzerland)	Alemany (Suïssa)
 cs	German (Switzerland)	Němčina (Švýcarsko)
 da	German (Switzerland)	Tysk (Schweiz)
