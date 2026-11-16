@@ -71,7 +71,7 @@ pub struct LangInfo {
 
 /// The languages WordCraft offers, when their catalogs are embedded. English first: it is the
 /// fallback and the source language.
-pub static LANGUAGES: [LangInfo; 32] = [
+pub static LANGUAGES: [LangInfo; 33] = [
     LangInfo { code: "en", prefer_hans: false, editing_lang: None },
     // Simplified Chinese; `zh`, `zh-CN`, `zh-SG` and `zh-Hans-*` resolve here (the crate's matching).
     LangInfo { code: "zh-hans", prefer_hans: true, editing_lang: None },
@@ -139,6 +139,9 @@ pub static LANGUAGES: [LangInfo; 32] = [
     LangInfo { code: "ca", prefer_hans: false, editing_lang: Some("ca-ES") },
     LangInfo { code: "gl", prefer_hans: false, editing_lang: Some("gl-ES") },
     LangInfo { code: "eu", prefer_hans: false, editing_lang: Some("eu-ES") },
+    // Bosnian, Latin script; `bs`, `bs-BA`, `bs_BA.UTF-8` and `bs-Latn-BA` resolve here. Cyrillic
+    // Bosnian (`bs-Cyrl-*`) has no catalog, so it stays in English.
+    LangInfo { code: "bs", prefer_hans: false, editing_lang: None },
 ];
 
 /// Interface languages written right to left. Their catalogs are written in typing order and
@@ -359,8 +362,15 @@ pub fn current() -> Lang {
     CURRENT.get()
 }
 
+/// The contextual tab has an existing saved/control-channel identity. Keep it separate from
+/// the source text displayed to users, so saved layouts and ui.tab calls keep working.
+fn display_source(source: &str) -> &str {
+    if source == "SmartArt Design" { "Diagram Design" } else { source }
+}
+
 /// Does `lang` have a translation for this string? (English never does: it is the source.)
 pub fn has(lang: Lang, s: &str) -> bool {
+    let s = display_source(s);
     fork_row(lang, s).is_some() || lang.i18n().get(lang.lang, "", s).is_some()
 }
 
@@ -389,6 +399,7 @@ pub fn tc<'a>(context: &str, s: &'a str) -> &'a str {
 
 /// [`tc`] in a given language.
 pub fn trc<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
+    let s = display_source(s);
     #[cfg(test)]
     if pseudo::on() {
         return I18N.tc(craft_i18n::Lang::PSEUDO, context, s);
@@ -403,6 +414,7 @@ pub fn trc<'a>(lang: Lang, context: &str, s: &'a str) -> &'a str {
 /// or English: for a word whose plain translation means something else here (the "Open"
 /// paragraph-spacing preset is not the file verb).
 pub fn get<'a>(context: &str, s: &'a str) -> Option<&'a str> {
+    let s = display_source(s);
     #[cfg(test)]
     if pseudo::on() {
         return I18N.get(craft_i18n::Lang::PSEUDO, context, s);
@@ -432,6 +444,7 @@ pub fn lowercase(s: &str) -> String {
 
 /// `s` in `lang`; strings without a translation come back unchanged.
 pub fn tr(lang: Lang, s: &str) -> &str {
+    let s = display_source(s);
     #[cfg(test)]
     if pseudo::on() {
         return I18N.t(craft_i18n::Lang::PSEUDO, s);

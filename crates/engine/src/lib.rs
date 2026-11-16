@@ -27,6 +27,7 @@ pub mod sample;
 mod session;
 pub(crate) mod snapshot;
 pub mod speech;
+pub mod strict;
 pub mod tinta_fonts;
 pub mod tinta_packs;
 pub mod tinta_reports;

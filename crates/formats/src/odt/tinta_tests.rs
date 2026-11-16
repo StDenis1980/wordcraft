@@ -13,7 +13,9 @@ use wordcraft_doc::para::InlineObject;
 use wordcraft_doc::props::{Border, BorderStyle, Borders, CharProps, LineSpacing, TabAlign, TabLeader, TabStop};
 use wordcraft_doc::{Block, Document, Paragraph, PartKind, StoryRef, Table, para_block};
 
-use super::{Align, Rgb, export, import};
+use wordcraft_doc::props::{Align, Rgb};
+
+use super::{export, import};
 
 fn part(bytes: &[u8], name: &str) -> String {
     let mut z = zip::ZipArchive::new(std::io::Cursor::new(bytes)).unwrap();
@@ -146,9 +148,12 @@ fn hostile_lengths_never_reach_the_xml() {
     p.props.tabs = Some(vec![TabStop { pos: f32::NAN, align: TabAlign::Left, leader: TabLeader::None }; 1000]);
     p.props.borders = Some(Borders::all(Border { style: BorderStyle::Single, width: f32::NAN, color: None, space: f32::INFINITY }));
     d.body = vec![para_block(p)];
-    let content = part(&export(&d).unwrap(), "content.xml");
+    // Upstream's shared-model bridge (2026-11-16) refuses non-finite lengths with an error; an
+    // export that does write must still keep them out of the XML.
+    let Ok(bytes) = export(&d) else { return };
+    let content = part(&bytes, "content.xml");
     assert!(!content.to_ascii_lowercase().contains("nan") && !content.contains("inf"), "{content}");
-    assert!(import(&export(&d).unwrap()).is_ok());
+    assert!(import(&bytes).is_ok());
 }
 
 #[test]

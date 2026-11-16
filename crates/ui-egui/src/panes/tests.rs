@@ -327,7 +327,8 @@ fn navigation_tabs_fit_the_narrowest_pane_in_every_language() {
     let _english = English;
     // 200 pt less the 10 pt body margins and the frame's 1 pt strokes.
     const BODY: f32 = 178.0;
-    let longest = crate::i18n::fixture_lang("x-fixture", "\tHeadings\tÜberschriften\n\tPages\tСтраницы\n\tResults\tEredmények\n");
+    // Tinta Office fork: Galician's "Encabezamentos" is the longest Headings of the fork's languages.
+    let longest = crate::i18n::fixture_lang("x-fixture", "\tHeadings\tEncabezamentos\n\tPages\tСтраницы\n\tResults\tEredmények\n");
     let mut widest = Vec::new();
     let mut langs = vec![longest];
     if crate::i18n::catalogs_embedded() {
