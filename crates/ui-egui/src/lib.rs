@@ -80,6 +80,7 @@ pub mod theme;
 pub mod tinta_feedback;
 mod tinta_fonts_ui;
 mod tinta_reports_ui;
+pub mod tinta_theme;
 pub mod updates_ui;
 pub mod widgets;
 pub mod window_close;
@@ -324,6 +325,8 @@ pub struct UiState {
     /// Animation effects (smooth scrolling, fades): on, off, or follow the system's setting, which
     /// is the default. An unknown saved value reads as the default.
     pub animations: theme::Animations,
+    /// Tinta Office: the Tinta look on or off ([`tinta_theme`]); on unless turned off.
+    pub tinta_look: bool,
     /// The dark-mode switch `ui.json` held before `theme` (#115): read once to migrate, never written.
     #[serde(rename = "dark", skip_serializing)]
     pub(crate) legacy_dark: Option<bool>,
@@ -500,6 +503,7 @@ impl Default for UiState {
             interface_size: theme::InterfaceSize::default(),
             legacy_interface_size: None,
             animations: theme::Animations::default(),
+            tinta_look: true,
             legacy_dark: None,
             nav_tab: "headings".into(),
             nav_pane: false,

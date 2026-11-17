@@ -288,7 +288,7 @@ impl WordApp {
             },
             other => other,
         };
-        if self.applied_theme != Some(effective) {
+        if crate::tinta_theme::set(self.ui.tinta_look) || self.applied_theme != Some(effective) {
             theme::apply(ctx, effective);
             self.applied_theme = Some(effective);
         }

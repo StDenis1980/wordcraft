@@ -224,6 +224,7 @@ fn flag(app: &mut WordApp, ui: &mut Ui, label: &str, key: &str, value: bool) {
 fn general(app: &mut WordApp, ui: &mut Ui) {
     section(ui, "Interface");
     theme_picker(app, ui);
+    crate::tinta_theme::option(app, ui);
     interface_size_picker(app, ui);
     ui.horizontal(|ui| {
         use wordcraft_engine::cmd::view::PaperColor;

@@ -529,6 +529,7 @@ impl WordApp {
                 self.tinta_feedback.request();
                 Value::Null
             }
+            "ui.tintaLook" => return Some(crate::tinta_theme::command(self, p)),
             "ui.checkForUpdates" | "help.checkForUpdates" => {
                 crate::updates_ui::check(self);
                 Value::Null
@@ -1168,6 +1169,7 @@ pub(crate) fn works_without_document(id: &str) -> bool {
             | "ui.touchpadScrollSpeed"
             | "ui.checkForUpdates"
             | "ui.feedback"
+            | "ui.tintaLook"
             // Tinta Office settings: the first-start question about error reports shows over
             // the Start screen, before any document is open.
             | "tools.errorReports"
