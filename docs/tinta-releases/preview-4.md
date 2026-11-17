@@ -1,8 +1,8 @@
 # Tinta Texto — Preview 4
 
-> **Status:** 2026-11-16 · draft for the Preview 4 release (10 December 2026), version 0.18.1, with
+> **Status:** 2026-11-17 · draft for the Preview 4 release (10 December 2026), version 0.18.1, with
 > the 16 November upstream sync · **Revision history:** 2026-11-16 created (changes from Preview 3,
-> 12 November, to #73). Updated at each weekly sync until the freeze on 7 December.
+> 12 November, to #73); 2026-11-17 added the Tinta Office look (#75). Updated at each weekly sync until the freeze on 7 December.
 
 Release notes for the GitHub release and the site, in Spanish, Ukrainian and English. Changes since
 Preview 3 (v0.15.1, 12 November 2026). Before publishing: build the Windows installers with
@@ -28,6 +28,8 @@ Novedades:
 - **Idiomas:** interfaz en bosnio; separación silábica en checo y rumano con el paquete de
   diccionarios adicionales.
 - **Linux:** funciona en Wayland aunque falten las bibliotecas de X11.
+- **Aspecto de Tinta Office:** los colores y la forma de los controles de Tinta Correo (gris suave
+  con un toque azul, esquinas más redondas), en claro y oscuro; una opción en Archivo › Opciones › General vuelve al aspecto clásico.
 - Del proyecto original (WordCraft): muchas correcciones de diseño, portapapeles y desplazamiento.
 
 Limitaciones conocidas: algunos documentos complejos de Word (gráficos y SmartArt editables, ciertas
@@ -54,6 +56,8 @@ euskera necesita sus diccionarios (incluidos).
 - **Мови:** інтерфейс боснійською; перенесення слів чеською й румунською з додатковим пакетом
   словників.
 - **Linux:** працює у Wayland, навіть якщо немає бібліотек X11.
+- **Вигляд Tinta Office:** кольори й форма елементів як у Tinta Correo (м'який сірий з синім
+  відтінком, заокругленіші кути), у світлій і темній темі; перемикач у «Файл › Параметри › Загальні» повертає класичний вигляд.
 - З основного проєкту (WordCraft): багато виправлень макета, буфера обміну й прокручування.
 
 Відомі обмеження: деякі складні документи Word (редаговані діаграми й SmartArt, окремі плаваючі
@@ -78,6 +82,8 @@ What's new:
   mouse and the touchpad.
 - **Languages:** a Bosnian interface; Czech and Romanian hyphenation with the extra dictionary pack.
 - **Linux:** runs on Wayland even without the X11 libraries.
+- **Tinta Office look:** Tinta Correo's colours and control shapes (soft grey with a touch of blue,
+  rounder corners), light and dark; an option in File › Options › General switches back to the classic look.
 - From the original project (WordCraft): many layout, clipboard and scrolling fixes.
 
 Known limits: some complex Word documents (editable charts and SmartArt, some floating tables) don't
