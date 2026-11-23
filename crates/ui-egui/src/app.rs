@@ -58,7 +58,9 @@ impl WordApp {
             seen_full_screen,
             escape_free,
             status_counts,
+            print_memo,
             missing_fonts,
+            export_error,
             last_autosave,
             equation_prev_tab,
             smart_art_item,
@@ -105,9 +107,12 @@ impl WordApp {
             printing: Default::default(),
             print_feedback_seen: None,
             tinta_feedback: Default::default(),
+            print_gen: 0,
             integrated_titlebar: false,
             mac_titlebar: chrome::MacTitleBar::default(),
             updates_rt: updates_ui::Runtime::default(),
+            font_notice_seen: Vec::new(),
+            font_notices: false,
             packs_rt: Default::default(),
             control_rx: None,
             shots: crate::control::Shots::default(),
@@ -179,7 +184,9 @@ impl WordApp {
             seen_full_screen,
             escape_free,
             status_counts,
+            print_memo,
             missing_fonts,
+            export_error,
             last_autosave,
             equation_prev_tab,
             smart_art_item,
@@ -245,6 +252,10 @@ impl WordApp {
         crate::language_packs::tick(self);
         let lang = i18n::Lang::from_pref(&self.ui.language);
         i18n::set_current(lang);
+        // PDFs and prints show a page reference or a REF to a missing bookmark in the
+        // interface's language, as Word prints them in its own.
+        wordcraft_engine::set_bookmark_error(i18n::tr(lang, "Error! Bookmark not defined."));
+        wordcraft_engine::set_reference_error(i18n::tr(lang, "Error! Reference source not found."));
         crate::rtl::sync(ctx);
         // New documents are written in the interface's language when WordCraft can proof it
         // (a Polish interface: Polish spelling, grammar and hyphenation from the first word).
@@ -500,6 +511,7 @@ impl WordApp {
         if !self.ui.backstage {
             backstage::forget_open_error(&ctx);
             backstage::forget_save_as_error(&ctx);
+            self.export_error.clear();
         }
         self.paint_window(ui, &ctx, t);
         if !moved(self) {
