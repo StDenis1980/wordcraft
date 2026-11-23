@@ -975,7 +975,7 @@ pub fn status_bar(app: &mut WordApp, ui: &mut Ui) {
                     }
                     // Tinta Office: a document set in Aptos on a computer without it.
                     if !crate::tinta_fonts_ui::missing(app).is_empty()
-                        && st(ui, tl!(crate::tinta_fonts_ui::LABEL)).on_hover_text(tl!(crate::tinta_fonts_ui::TIP)).clicked()
+                        && st(ui, tl!(crate::tinta_fonts_ui::LABEL)).is_some_and(|r| r.on_hover_text(tl!(crate::tinta_fonts_ui::TIP)).clicked())
                     {
                         crate::tinta_fonts_ui::open_download(app);
                     }

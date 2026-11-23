@@ -76,13 +76,7 @@ struct WordcraftTools {
 
 impl Tools for WordcraftTools {
     fn instructions(&self) -> String {
-        format!(
-            "{INSTRUCTIONS} Backend: {}. Community: {} · {} · {}",
-            self.backend.describe(),
-            brand::SUPPORT,
-            brand::APP_PAGE,
-            brand::GITHUB
-        )
+        format!("{INSTRUCTIONS} Backend: {}. Community: {} · {} · {}", self.backend.describe(), brand::SUPPORT, brand::APP_PAGE, brand::GITHUB)
     }
 
     fn list(&mut self) -> Vec<Value> {

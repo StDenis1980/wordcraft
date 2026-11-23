@@ -139,8 +139,10 @@ pub fn show(app: &mut WordApp, ui: &mut Ui) {
             let spacing = ui.spacing().item_spacing.y;
             // A long translation ("Отримати допомогу та підтримку") wraps onto a second line
             // inside the 200 px sidebar instead of running off its edge (Tinta Office).
-            let link_texts: Vec<_> =
-                links.iter().map(|(label, _)| ui.painter().layout(tl!(label).to_owned(), regular(13.0), egui::Color32::WHITE, 200.0 - 22.0 - 12.0)).collect();
+            let link_texts: Vec<_> = links
+                .iter()
+                .map(|(label, _)| ui.painter().layout(tl!(label).to_owned(), regular(13.0), egui::Color32::WHITE, 200.0 - 22.0 - 12.0))
+                .collect();
             let link_height = |text: &std::sync::Arc<egui::Galley>| (text.size().y + 14.0).max(32.0);
             let links_h = (link_texts.iter().map(|t| link_height(t) + spacing).sum::<f32>() - spacing).max(0.0);
             let fits = ui.available_height();

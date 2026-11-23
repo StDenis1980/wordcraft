@@ -6,6 +6,8 @@ use std::io::{BufRead, Write};
 use serde_json::{Value, json};
 
 use crate::backend::Backend;
+// Tinta Office: the old server also named the fork's brand and links.
+use wordcraft_engine::brand;
 use crate::server::{BoundedLine, MAX_REQUEST_LINE, read_bounded_line};
 use crate::server::{COMMANDS_URI, DOC_URI};
 use crate::tools::{call_tool, tool_definitions};
@@ -139,10 +141,13 @@ impl Server {
                 Ok(json!({
                     "protocolVersion": version,
                     "capabilities": {"tools": {}, "resources": {}},
-                    "serverInfo": {"name": "wordcraft", "title": "WordCraft", "version": env!("CARGO_PKG_VERSION"), "websiteUrl": "https://getartcraft.com/apps/wordcraft"},
+                    "serverInfo": {"name": "wordcraft", "title": brand::NAME, "version": env!("CARGO_PKG_VERSION"), "websiteUrl": brand::APP_PAGE},
                     "instructions": format!(
-                        "{INSTRUCTIONS} Backend: {}. Community: https://discord.gg/artcraft · https://getartcraft.com/apps/wordcraft · https://github.com/storytold/wordcraft",
-                        self.backend.describe()
+                        "{INSTRUCTIONS} Backend: {}. Community: {} · {} · {}",
+                        self.backend.describe(),
+                        brand::SUPPORT,
+                        brand::APP_PAGE,
+                        brand::GITHUB
                     ),
                 }))
             }
