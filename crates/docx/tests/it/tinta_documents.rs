@@ -53,6 +53,8 @@ fn styles(lang: &str) -> String {
 
 /// The passthrough key of the settings part as it was read.
 const SETTINGS_AS_READ: &str = "wordcraft:settings.orig";
+const FONT_TABLE: &str = "word/fontTable.xml";
+const EMBEDDED_PARTS: &str = "wordcraft:embedded.parts";
 
 const SETTINGS: &str = r#"<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:settings xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:zoom w:percent="100"/><w:proofState w:spelling="clean" w:grammar="clean"/><w:defaultTabStop w:val="708"/><w:hyphenationZone w:val="425"/><w:characterSpacingControl w:val="doNotCompress"/>{NOTES}<w:compat><w:compatSetting w:name="compatibilityMode" w:uri="http://schemas.microsoft.com/office/word" w:val="15"/></w:compat><w:themeFontLang w:val="es-ES"/><w:decimalSymbol w:val=","/><w:listSeparator w:val=";"/></w:settings>"#;
@@ -865,6 +867,16 @@ fn the_tinta_documents_read_back_equal_after_a_save() {
         // media names it was read with, and a save numbers them afresh; after that save it reads
         // back the same every time (below), and `a_save_keeps_every_…` checks nothing was lost.
         if pkg.objects.is_empty() {
+            // A file without a font table gets one built on save (craft-docx #1948), which reads
+            // back as the file's own (with its entry in the kept-parts list) and is written as read
+            // from then on: the one other part allowed to appear after the first save.
+            let mut b = b.clone();
+            if !a.passthrough.contains_key(FONT_TABLE) {
+                b.passthrough.remove(FONT_TABLE);
+                if !a.passthrough.contains_key(EMBEDDED_PARTS) {
+                    b.passthrough.remove(EMBEDDED_PARTS);
+                }
+            }
             assert!(a == b, "{name}: the document changed after open → save → open");
         }
         let mut third = open(&save(&second));
