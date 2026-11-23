@@ -7,10 +7,10 @@ use serde_json::{Value, json};
 
 use crate::backend::Backend;
 // Tinta Office: the old server also named the fork's brand and links.
-use wordcraft_engine::brand;
 use crate::server::{BoundedLine, MAX_REQUEST_LINE, read_bounded_line};
 use crate::server::{COMMANDS_URI, DOC_URI};
 use crate::tools::{call_tool, tool_definitions};
+use wordcraft_engine::brand;
 
 /// The MCP revision we implement.
 pub(crate) const PROTOCOL_VERSION: &str = "2025-06-18";
