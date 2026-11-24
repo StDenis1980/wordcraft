@@ -30,14 +30,15 @@ fn partial_margin_stays_partial() {
 
 /// Tinta Office: a table that sets only `w:left` in `w:tblCellMar` keeps its style's right margin
 /// (Word's PDFs of Balearic forms wrap each cell's text 5.4 pt before the cell's edge), and a
-/// table without a style keeps Word's own 0.08" one.
+/// table without a style keeps Word's own 0.08" one (in a file with a default table style, as Word
+/// writes it; a file without one gives such a table no margins).
 #[test]
 fn a_left_only_table_margin_keeps_the_other_sides() {
     let ns = r#"xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main""#;
     let root = r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="r1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>"#;
     let rels = r#"<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="s1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>"#;
     let styles = format!(
-        r#"<w:styles {ns}><w:style w:type="table" w:styleId="Grid"><w:name w:val="Table Grid"/><w:tblPr><w:tblCellMar><w:top w:w="20" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="160" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>"#
+        r#"<w:styles {ns}><w:style w:type="table" w:default="1" w:styleId="TableNormal"><w:name w:val="Normal Table"/></w:style><w:style w:type="table" w:styleId="Grid"><w:name w:val="Table Grid"/><w:tblPr><w:tblCellMar><w:top w:w="20" w:type="dxa"/><w:left w:w="108" w:type="dxa"/><w:bottom w:w="40" w:type="dxa"/><w:right w:w="160" w:type="dxa"/></w:tblCellMar></w:tblPr></w:style></w:styles>"#
     );
     let table = |style: &str| {
         format!(

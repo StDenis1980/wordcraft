@@ -109,6 +109,7 @@ impl Session {
             author: format!("{} User", crate::brand::NAME),
             initials: String::new(),
             painter: None,
+            copied_format: None,
             status: String::new(),
             new_header_parts,
             hf_return,
