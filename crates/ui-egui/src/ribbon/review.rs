@@ -181,6 +181,8 @@ pub(super) fn help(app: &mut WordApp, ui: &mut Ui) {
             let feedback = crate::tinta_feedback::tr(crate::i18n::current().code(), crate::tinta_feedback::BUTTON);
             big(ui, app, "comment", feedback, "ui.feedback", json!({}), false);
         }
+        let share = crate::tinta_share::tr(crate::i18n::current().code(), crate::tinta_share::MENU);
+        big(ui, app, "share", share, "ui.shareTinta", json!({}), false);
     });
     group(ui, "Agents", None, app, |ui, app| {
         big(ui, app, "macros", "Commands", "ui.dialog", json!({"name": "commands"}), false);
