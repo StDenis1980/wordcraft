@@ -581,6 +581,8 @@ fn open_non_unicode(app: &mut WordApp, path: &std::path::Path) {
 fn main() -> eframe::Result {
     // Tinta Office: this app shows the Tinta look (tests and examples keep the classic one).
     wordcraft_ui_egui::tinta_theme::allow();
+    // Tinta Office: the What's new window opens once after an update (it remembers in the settings).
+    wordcraft_ui_egui::tinta_whats_new::enable(wordcraft_control_key::settings_dir().filter(|_| prefs_enabled()));
     #[cfg(windows)]
     if let Some(code) = print::isolated::helper_mode() {
         std::process::exit(code);
