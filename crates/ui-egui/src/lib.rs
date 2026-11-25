@@ -81,6 +81,7 @@ pub mod theme;
 pub mod tinta_feedback;
 mod tinta_fonts_ui;
 mod tinta_reports_ui;
+pub mod tinta_share;
 pub mod tinta_theme;
 pub mod tinta_whats_new;
 pub mod updates_ui;
