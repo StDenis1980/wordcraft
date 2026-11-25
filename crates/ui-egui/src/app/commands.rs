@@ -569,6 +569,13 @@ impl WordApp {
                 };
                 json!({"url": crate::tinta_share::URL, "copied": copied})
             }
+            "ui.whatsNew" | "help.whatsNew" => {
+                // Tinta Office: the What's new window (it opens on the next frame).
+                if !crate::tinta_whats_new::request() {
+                    return Some(Err("What's new is only in the Tinta Office desktop app".into()));
+                }
+                Value::Null
+            }
             "ui.checkForUpdates" | "help.checkForUpdates" => {
                 crate::updates_ui::check(self);
                 Value::Null
@@ -1210,6 +1217,7 @@ pub(crate) fn works_without_document(id: &str) -> bool {
             | "ui.feedback"
             | "ui.shareTinta"
             | "ui.tintaLook"
+            | "ui.whatsNew"
             // Tinta Office settings: the first-start question about error reports shows over
             // the Start screen, before any document is open.
             | "tools.errorReports"

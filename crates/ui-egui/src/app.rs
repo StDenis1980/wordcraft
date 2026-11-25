@@ -473,6 +473,7 @@ impl WordApp {
         }
         crate::tinta_reports_ui::first_start(self, ui.ctx());
         self.tinta_feedback.show(ui.ctx(), crate::i18n::current().code());
+        crate::tinta_whats_new::show(ui.ctx(), crate::i18n::current().code());
     }
 
     /// Lay out the drawn window. A command that brings another window's state in (New, Open,
