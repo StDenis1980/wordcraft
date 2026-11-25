@@ -557,6 +557,18 @@ impl WordApp {
                 Value::Null
             }
             "ui.tintaLook" => return Some(crate::tinta_theme::command(self, p)),
+            "ui.shareTinta" | "help.share" => {
+                // Tinta Office: Help › Share Tinta Office copies the website's link.
+                let copied = match self.ctx.clone() {
+                    Some(ctx) => {
+                        let said = crate::tinta_share::copy(&ctx, crate::i18n::current().code());
+                        self.status(said);
+                        true
+                    }
+                    None => false,
+                };
+                json!({"url": crate::tinta_share::URL, "copied": copied})
+            }
             "ui.checkForUpdates" | "help.checkForUpdates" => {
                 crate::updates_ui::check(self);
                 Value::Null
@@ -1196,6 +1208,7 @@ pub(crate) fn works_without_document(id: &str) -> bool {
             | "ui.touchpadScrollSpeed"
             | "ui.checkForUpdates"
             | "ui.feedback"
+            | "ui.shareTinta"
             | "ui.tintaLook"
             // Tinta Office settings: the first-start question about error reports shows over
             // the Start screen, before any document is open.
