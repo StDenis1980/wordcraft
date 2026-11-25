@@ -1,0 +1,87 @@
+# Tinta Office: translations of the desktop entry and AppStream metadata (packaging/linux/tinta-l10n.py).
+# language<TAB>release's English, exactly as in the files<TAB>translation. AI-made (Claude), not reviewed by native speakers.
+
+uk	Word Processor	Текстовий редактор
+es	Word Processor	Procesador de textos
+pl	Word Processor	Edytor tekstu
+de	Word Processor	Textverarbeitung
+fr	Word Processor	Traitement de texte
+it	Word Processor	Elaboratore di testi
+ro	Word Processor	Procesor de text
+cs	Word Processor	Textový procesor
+lt	Word Processor	Teksto rengyklė
+ca	Word Processor	Processador de textos
+ca@valencia	Word Processor	Processador de textos
+gl	Word Processor	Procesador de textos
+eu	Word Processor	Testu-prozesadorea
+pt	Word Processor	Processador de texto
+uk	Write and design documents; open and save Word files	Пишіть і оформлюйте документи; відкривайте й зберігайте файли Word
+es	Write and design documents; open and save Word files	Escribe y diseña documentos; abre y guarda archivos de Word
+pl	Write and design documents; open and save Word files	Pisz i projektuj dokumenty; otwieraj i zapisuj pliki Word
+de	Write and design documents; open and save Word files	Dokumente schreiben und gestalten; Word-Dateien öffnen und speichern
+fr	Write and design documents; open and save Word files	Rédiger et mettre en page des documents ; ouvrir et enregistrer des fichiers Word
+it	Write and design documents; open and save Word files	Scrivi e impagina documenti; apri e salva file Word
+ro	Write and design documents; open and save Word files	Scrieți și aranjați documente; deschideți și salvați fișiere Word
+cs	Write and design documents; open and save Word files	Pište a navrhujte dokumenty; otevírejte a ukládejte soubory Word
+lt	Write and design documents; open and save Word files	Rašykite ir maketuokite dokumentus; atverkite ir įrašykite Word failus
+ca	Write and design documents; open and save Word files	Escriviu i dissenyeu documents; obriu i deseu fitxers de Word
+ca@valencia	Write and design documents; open and save Word files	Escriviu i dissenyeu documents; obriu i guardeu fitxers de Word
+gl	Write and design documents; open and save Word files	Escribe e deseña documentos; abre e garda ficheiros de Word
+eu	Write and design documents; open and save Word files	Idatzi eta diseinatu dokumentuak; ireki eta gorde Word fitxategiak
+pt	Write and design documents; open and save Word files	Escreva e formate documentos; abra e guarde ficheiros do Word
+uk	word;processor;document;docx;writer;text;letter;report;	текст;редактор;документ;docx;odt;лист;звіт;писати;
+es	word;processor;document;docx;writer;text;letter;report;	texto;procesador;documento;docx;odt;escribir;carta;informe;
+pl	word;processor;document;docx;writer;text;letter;report;	tekst;edytor;dokument;docx;odt;pisanie;list;raport;
+de	word;processor;document;docx;writer;text;letter;report;	text;textverarbeitung;dokument;docx;odt;schreiben;brief;bericht;
+fr	word;processor;document;docx;writer;text;letter;report;	texte;traitement de texte;document;docx;odt;écrire;lettre;rapport;
+it	word;processor;document;docx;writer;text;letter;report;	testo;elaboratore;documento;docx;odt;scrivere;lettera;relazione;
+ro	word;processor;document;docx;writer;text;letter;report;	text;procesor;document;docx;odt;scriere;scrisoare;raport;
+cs	word;processor;document;docx;writer;text;letter;report;	text;procesor;dokument;docx;odt;psaní;dopis;zpráva;
+lt	word;processor;document;docx;writer;text;letter;report;	tekstas;rengyklė;dokumentas;docx;odt;rašymas;laiškas;ataskaita;
+ca	word;processor;document;docx;writer;text;letter;report;	text;processador;document;docx;odt;escriure;carta;informe;
+ca@valencia	word;processor;document;docx;writer;text;letter;report;	text;processador;document;docx;odt;escriure;carta;informe;
+gl	word;processor;document;docx;writer;text;letter;report;	texto;procesador;documento;docx;odt;escribir;carta;informe;
+eu	word;processor;document;docx;writer;text;letter;report;	testua;prozesadorea;dokumentua;docx;odt;idatzi;gutuna;txostena;
+pt	word;processor;document;docx;writer;text;letter;report;	texto;processador;documento;docx;odt;escrever;carta;relatório;
+uk	The Open Studio Handbook sample with the Navigation pane	Зразок «Open Studio Handbook» з панеллю навігації
+es	The Open Studio Handbook sample with the Navigation pane	El ejemplo «Open Studio Handbook» con el panel de navegación
+pl	The Open Studio Handbook sample with the Navigation pane	Przykład „Open Studio Handbook” z okienkiem nawigacji
+de	The Open Studio Handbook sample with the Navigation pane	Das Beispiel „Open Studio Handbook“ mit dem Navigationsbereich
+fr	The Open Studio Handbook sample with the Navigation pane	L’exemple « Open Studio Handbook » avec le volet de navigation
+it	The Open Studio Handbook sample with the Navigation pane	L’esempio «Open Studio Handbook» con il riquadro di spostamento
+ro	The Open Studio Handbook sample with the Navigation pane	Exemplul „Open Studio Handbook” cu panoul de navigare
+cs	The Open Studio Handbook sample with the Navigation pane	Ukázka „Open Studio Handbook“ s navigačním podoknem
+lt	The Open Studio Handbook sample with the Navigation pane	Pavyzdys „Open Studio Handbook“ su naršymo sritimi
+ca	The Open Studio Handbook sample with the Navigation pane	L’exemple «Open Studio Handbook» amb la subfinestra de navegació
+ca@valencia	The Open Studio Handbook sample with the Navigation pane	L’exemple «Open Studio Handbook» amb el panell de navegació
+gl	The Open Studio Handbook sample with the Navigation pane	O exemplo «Open Studio Handbook» co panel de navegación
+eu	The Open Studio Handbook sample with the Navigation pane	«Open Studio Handbook» adibidea, nabigazio-panelarekin
+pt	The Open Studio Handbook sample with the Navigation pane	O exemplo «Open Studio Handbook» com o painel de navegação
+uk	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto — швидкий відкритий текстовий редактор зі звичною стрічкою: стилі, таблиці, відстеження змін, посилання, злиття для розсилки, а також файли .docx, PDF, ODT, RTF, HTML і Markdown. Ним можуть керувати ШІ-агенти через MCP.
+es	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto es un procesador de textos rápido y de código abierto con una cinta de opciones conocida: estilos, tablas, control de cambios, referencias, combinación de correspondencia y archivos .docx, PDF, ODT, RTF, HTML y Markdown. Los agentes de IA pueden manejarlo mediante MCP.
+pl	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto to szybki, otwarty edytor tekstu ze znajomą wstążką: style, tabele, śledzenie zmian, odwołania, korespondencja seryjna oraz pliki .docx, PDF, ODT, RTF, HTML i Markdown. Mogą nim sterować agenci AI przez MCP.
+de	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto ist eine schnelle, quelloffene Textverarbeitung mit vertrautem Menüband: Formatvorlagen, Tabellen, Änderungsverfolgung, Verweise, Serienbriefe sowie .docx-, PDF-, ODT-, RTF-, HTML- und Markdown-Dateien. KI-Agenten können sie über MCP steuern.
+fr	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto est un traitement de texte libre et rapide, avec un ruban familier : styles, tableaux, suivi des modifications, références, publipostage, et fichiers .docx, PDF, ODT, RTF, HTML et Markdown. Des agents d’IA peuvent le piloter via MCP.
+it	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto è un elaboratore di testi veloce e open source con una barra multifunzione familiare: stili, tabelle, revisioni, riferimenti, stampa unione e file .docx, PDF, ODT, RTF, HTML e Markdown. Gli agenti di IA possono comandarlo tramite MCP.
+ro	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto este un procesor de text rapid, open source, cu o panglică familiară: stiluri, tabele, urmărirea modificărilor, referințe, îmbinare de corespondență și fișiere .docx, PDF, ODT, RTF, HTML și Markdown. Poate fi comandat de agenți AI prin MCP.
+cs	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto je rychlý otevřený textový procesor se známým pásem karet: styly, tabulky, sledování změn, odkazy, hromadná korespondence a soubory .docx, PDF, ODT, RTF, HTML a Markdown. Mohou jej ovládat agenti AI přes MCP.
+lt	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto – sparti atvirojo kodo teksto rengyklė su įprasta juostele: stiliai, lentelės, keitimų sekimas, nuorodos, laiškų suliejimas ir .docx, PDF, ODT, RTF, HTML bei Markdown failai. Ją gali valdyti DI agentai per MCP.
+ca	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto és un processador de textos ràpid i de codi obert amb una cinta coneguda: estils, taules, control de canvis, referències, combinació de correspondència i fitxers .docx, PDF, ODT, RTF, HTML i Markdown. Els agents d’IA el poden controlar per mitjà de MCP.
+ca@valencia	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto és un processador de textos ràpid i de codi obert amb una cinta coneguda: estils, taules, control de canvis, referències, combinació de correspondència i fitxers .docx, PDF, ODT, RTF, HTML i Markdown. Els agents d’IA el poden controlar per mitjà de MCP.
+gl	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto é un procesador de textos rápido e de código aberto cunha cinta coñecida: estilos, táboas, control de cambios, referencias, combinación de correspondencia e ficheiros .docx, PDF, ODT, RTF, HTML e Markdown. Os axentes de IA poden manexalo mediante MCP.
+eu	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	Tinta Texto testu-prozesadore azkar eta kode irekikoa da, zinta ezagun batekin: estiloak, taulak, aldaketen jarraipena, erreferentziak, posta-konbinazioa eta .docx, PDF, ODT, RTF, HTML eta Markdown fitxategiak. AA agenteek MCP bidez gida dezakete.
+pt	WordCraft is a fast, open-source word processor with a familiar ribbon: styles, tables, track changes, references, mail merge, and .docx, PDF, ODT, RTF, HTML and Markdown files. It can be driven by AI agents over MCP.	O Tinta Texto é um processador de texto rápido e de código aberto, com um friso familiar: estilos, tabelas, controlo de alterações, referências, impressão em série e ficheiros .docx, PDF, ODT, RTF, HTML e Markdown. Pode ser controlado por agentes de IA através do MCP.
+uk	word processor;docx;document;writer;	текстовий редактор;docx;документ;текст;
+es	word processor;docx;document;writer;	procesador de textos;docx;documento;texto;
+pl	word processor;docx;document;writer;	edytor tekstu;docx;dokument;tekst;
+de	word processor;docx;document;writer;	textverarbeitung;docx;dokument;text;
+fr	word processor;docx;document;writer;	traitement de texte;docx;document;texte;
+it	word processor;docx;document;writer;	elaboratore di testi;docx;documento;testo;
+ro	word processor;docx;document;writer;	procesor de text;docx;document;text;
+cs	word processor;docx;document;writer;	textový procesor;docx;dokument;text;
+lt	word processor;docx;document;writer;	teksto rengyklė;docx;dokumentas;tekstas;
+ca	word processor;docx;document;writer;	processador de textos;docx;document;text;
+ca@valencia	word processor;docx;document;writer;	processador de textos;docx;document;text;
+gl	word processor;docx;document;writer;	procesador de textos;docx;documento;texto;
+eu	word processor;docx;document;writer;	testu-prozesadorea;docx;dokumentua;testua;
+pt	word processor;docx;document;writer;	processador de texto;docx;documento;texto;
